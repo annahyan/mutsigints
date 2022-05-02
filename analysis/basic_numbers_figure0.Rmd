@@ -1,0 +1,162 @@
+---
+title: "Descriptive plots from the data"
+output: html_notebook
+---
+
+```{r}
+knitr::opts_chunk$set(comment = '', fig.width = 6, 
+                      fig.height = 6, include = FALSE, message = FALSE)
+```
+
+
+```{r load-packages}
+fig.dir = here("figures/figure0")
+
+source(here("R/load_packages.R"))
+```
+
+
+```{r loading-the-input}
+source(here("R/process_TCGA.R"))
+source(here("R/process_PCAWG.R"))
+```
+
+
+```{r plotting-functions}
+plot_tissue_abundance = function(tissue_counts, title, bar_height_factor = 2, 
+                                 annot_x = 33) {
+    tissue_counts %>%
+    mutate(Cancer.Types = factor(Cancer.Types, levels = Cancer.Types)) %>% 
+    ggplot(aes(x = Cancer.Types, y = n, fill = Cancer.Types)) + 
+    geom_bar(stat = "identity") + 
+    scale_fill_manual(
+        values = c(unname(scales::muted(
+            rainbow(tissue_counts %>% 
+                        filter(n > MIN.TISSUE.SIZE) %>% nrow()), 
+            l = 50, c = 90 )), 
+                   rep("gray60", tissue_counts %>% 
+                           filter(n < MIN.TISSUE.SIZE) %>% nrow() )  ) 
+        ) +
+    geom_hline(yintercept = MIN.TISSUE.SIZE, size = 0.5) +
+    ylab("Counts") +
+    # scale_fill_manual(values = scales::muted(
+    #     rainbow(pcawg.active.sig.counts %>% pull(Tissues) %>% 
+    #                 n_distinct()), l = 50, c = 90 ), guide = "none" ) + 
+    theme_bw() +
+    theme(panel.grid.major.x = element_blank(),
+          panel.grid.minor.x = element_blank(),
+          panel.grid.minor.y = element_blank(),
+          axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+          axis.title.x = element_blank(),
+          panel.border = element_blank(),
+          legend.position = "none") +
+    annotate("text", y = bar_height_factor * MIN.TISSUE.SIZE, x = annot_x,
+             label = paste0(">", MIN.TISSUE.SIZE)) + 
+        ggtitle(title)
+}
+
+
+plot_active_signatures = function(dt.input) {
+    dt.sigs = dt.input %>% select(4:ncol(.))
+    dt.active.sig.counts = data.frame(Tissues = dt.input$Cancer.Types,
+                                      active.sig.counts = rowSums(dt.sigs > 0))
+    
+    tissue_abundance_order = sort(table(dt.active.sig.counts$Tissues), decreasing = FALSE)
+    dt.active.sig.counts$Tissues = factor(dt.active.sig.counts$Tissues,
+                                             levels = names(tissue_abundance_order) )
+    
+    active.sig.histogram = ggplot(dt.active.sig.counts, 
+                                  aes(x = active.sig.counts, fill = Tissues)) +
+        geom_histogram(binwidth = 1, color = "gray90") +
+        theme_classic(base_size = 13) + 
+        scale_x_continuous(breaks = seq(1, 11)) + 
+        coord_cartesian(expand = FALSE) + 
+        scale_fill_manual(values = scales::muted(
+            rainbow(dt.active.sig.counts %>% pull(Tissues) %>% 
+                        n_distinct()), l = 50, c = 90 ), guide = "none" ) +
+        xlab("Active signatures") + ylab("Number of samples") + 
+        theme(legend.position = c(1, 0.64), 
+              plot.margin = margin(1.3, 3, 0.2, 0.2, "cm"))
+    return(active.sig.histogram)
+}
+```
+
+
+### Sample distribution across tissues
+
+```{R pcawg-numbers}
+pcawg_tissue_counts = PCAWG.filter_rec_acc %>% 
+    select(Cancer.Types, Sample.Names) %>% 
+    count(Cancer.Types, sort = TRUE)
+
+pcawg_tissue_counts_plot = plot_tissue_abundance(pcawg_tissue_counts, 
+                                                 "PCAWG - samples across tissues")
+pcawg_tissue_counts_plot
+
+ggsave(filename = file.path(fig.dir, "pcawg_tissue_counts_plot.png"),
+    plot = pcawg_tissue_counts_plot, width = 5, height = 3)
+
+```
+
+
+
+```{R tcga-numbers}
+tcga_tissue_counts = TCGA.filter_rec_acc %>% 
+    select(Cancer.Types, Sample.Names) %>% 
+    count(Cancer.Types, sort = TRUE)
+
+tcga_tissue_counts_plot = plot_tissue_abundance(
+    tcga_tissue_counts, 
+    "TCGA - samples across tissues", 
+    annot_x = 25)
+tcga_tissue_counts_plot
+
+ggsave(filename = file.path(fig.dir, "tcga_tissue_counts_plot.png"),
+    plot = tcga_tissue_counts_plot, width = 5, height = 3)
+```
+
+### Number of active signatures across samples
+
+
+
+```{r pcawg-active-hists}
+pcawg.active.signatures.hist = plot_active_signatures(PCAWG.full.subset) + 
+    ggtitle("PCAWG") + theme(plot.margin = unit(c(2,2,2,2), "mm"))
+
+ggsave(pcawg.active.signatures.hist, 
+       filename = file.path(fig.dir, "PCAWG.active.signatures.histogram.png"),
+       width = 3, height = 3.6)
+```
+
+
+```{r tcga-combined}
+pcawg_combined = egg::ggarrange(pcawg_tissue_counts_plot, 
+                              pcawg.active.signatures.hist, 
+                          widths = c(5, 2.5),
+                          labels = c("A", "B"))
+ggsave(pcawg_combined, 
+       filename = file.path(fig.dir, "pcawg_combined_counts.png"),
+       width = 7, height = 3.6)
+```
+
+
+
+```{r pcawg-active-hists}
+tcga.active.signatures.hist = plot_active_signatures(TCGA.full.subset) + 
+    ggtitle("TCGA") + theme(plot.margin = unit(c(2,2,2,2), "mm"))
+
+ggsave(tcga.active.signatures.hist, 
+       filename = file.path(fig.dir, "TCGA.active.signatures.histogram.png"),
+       width = 3, height = 3.6)
+```
+
+```{r tcga-combined}
+tcga_combined = egg::ggarrange(tcga_tissue_counts_plot, 
+                              tcga.active.signatures.hist, 
+                          widths = c(5, 2.5),
+                          labels = c("A", "B"))
+ggsave(tcga_combined, 
+       filename = file.path(fig.dir, "tcga_combined_counts.png"),
+       width = 7, height = 3.6)
+```
+
