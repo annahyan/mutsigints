@@ -68,14 +68,13 @@ pcawg_path_mapping = cbind( pcawg_path_mapping ,
 
 mutated_pathways$donor_id = pcawg_pathway_donorids
 
-mutated_pathways_tissues = mutated_pathways
-mutated_pathways_tissues$Cancer.Types = pcawg_path_mapping[ 
+mutated.pathways.tissues = mutated_pathways
+mutated.pathways.tissues$Cancer.Types = pcawg_path_mapping[ 
     match(mutated_pathways$donor_id, pcawg_path_mapping$icgc_donor_id), ]$histology_abbreviation
 
 new_col_order = c("sample_id", "donor_id", "Cancer.Types") # bringing these columns first
-new_col_order = c(new_col_order, setdiff(colnames(mutated_pathways_tissues), new_col_order))
-mutated_pathways_tissues = mutated_pathways_tissues[, new_col_order]
-
+new_col_order = c(new_col_order, setdiff(colnames(mutated.pathways.tissues), new_col_order))
+mutated.pathways.tissues = mutated.pathways.tissues[, new_col_order]
 
 
 # merging signatures and pathways -----------------------------------------
@@ -84,19 +83,20 @@ PCAWG.full.subset.ann = readRDS(here("data/RDS/PCAWG/signatures",
                                      "PCAWG.full.subset.ann.RDS"))
 
 PCAWG.full.subset.ann.pathways = PCAWG.full.subset.ann[ 
-    match(mutated_pathways_tissues$donor_id, PCAWG.full.subset.ann$Sample.Names), ]
+    match(mutated.pathways.tissues$donor_id, PCAWG.full.subset.ann$Sample.Names), ]
 
-non_na_indeces = which(!is.na(PCAWG.full.subset.ann.pathways$Sample.Names ) )
+common.samples = intersect(mutated.pathways.tissues$donor_id,
+                           PCAWG.full.subset.ann.pathways$Sample.Names)
 
-PCAWG.full.subset.ann.pathways = PCAWG.full.subset.ann.pathways[non_na_indeces, ]
-mutated_pathways_tissues = mutated_pathways_tissues[ non_na_indeces, ]
+PCAWG.full.subset.ann.pathways = PCAWG.full.subset.ann.pathways[
+    match(common.samples, PCAWG.full.subset.ann.pathways$Sample.Names), ]
+mutated.pathways.tissues = mutated.pathways.tissues[ 
+    match(common.samples, mutated.pathways.tissues$donor_id), ]
 
-mutated_pathways_tissues = as.data.frame(mutated_pathways_tissues)
+rownames(PCAWG.full.subset.ann.pathways) = common.samples
+rownames(mutated.pathways.tissues) = common.samples
 
-rownames(PCAWG.full.subset.ann.pathways) = PCAWG.full.subset.ann.pathways$Sample.Names
-rownames(mutated_pathways_tissues) = PCAWG.full.subset.ann.pathways$Sample.Names
-
-saveRDS(mutated_pathways_tissues, file = here("data/RDS/PCAWG/10_onco_pathways",
+saveRDS(mutated.pathways.tissues, file = here("data/RDS/PCAWG/10_onco_pathways",
                                               "pcawg_pathways.RDS"))
 
 saveRDS(PCAWG.full.subset.ann.pathways, file = here("data/RDS/PCAWG/10_onco_pathways",

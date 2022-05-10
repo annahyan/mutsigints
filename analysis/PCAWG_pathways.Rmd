@@ -1,0 +1,164 @@
+---
+title: "Signalling pathways in PCAWG"
+output: html_notebook
+---
+
+```{r}
+knitr::opts_chunk$set(comment = '', fig.width = 6, 
+                      fig.height = 6, include = FALSE, message = FALSE)
+```
+
+
+```{r load-packages}
+library(here)
+fig.dir = here("figures/pathways_analysis")
+
+if(! file.exists(fig.dir)){
+    dir.create(fig.dir)
+}
+
+source(here("R/load_packages.R"))
+```
+
+```{r loading}
+mutated.pathways.tissues = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways",
+                                              "pcawg_pathways.RDS"))
+
+PCAWG.full.subset.ann.pathways = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways",
+                                              "PCAWG.full.subset.ann.pathways.RDS"))
+```
+
+### Heatmap of cancer types and pathways
+
+```{r pathway-summary-heatmap}
+pathway.summaries.by.tissues = mutated.pathways.tissues %>% 
+    mutate(across(`Cell Cycle`:Telomeric, ~as.numeric(.x > 0))) %>% 
+    group_by(Cancer.Types) %>% 
+    summarize(across(`Cell Cycle`:Telomeric, sum))
+
+pcawg.pathway.summaries.gg = pathway.summaries.by.tissues  %>% 
+    gather("Pathway", "Activity", -Cancer.Types) %>% 
+    group_by(Cancer.Types, Pathway) %>% 
+    summarise(total = sum(Activity))
+
+path.order = pcawg.pathway.summaries.gg %>% 
+    select(Pathway, total) %>% 
+    group_by(Pathway) %>% 
+    summarise(ss = sum(total)) %>% 
+    arrange(desc(ss)) %>% 
+    pull(Pathway)
+
+pcawg.pathways.plot = pcawg.pathway.summaries.gg %>% rename(Counts = total) %>% 
+    mutate(Pathway = factor(Pathway, levels = path.order)) %>% 
+    
+    ggplot(aes(x = Pathway, y = Cancer.Types) ) + 
+        geom_tile(aes(fill = Counts), color = "gray80") +
+        geom_text(aes(label = Counts), size = 3.4) + 
+    #scale_fill_viridis(option = "plasma")
+    scale_fill_gradient(low = "aliceblue", high = "orange") + 
+    theme_minimal(base_size = 14) + 
+    xlab("") + ylab("") + 
+    ggtitle("Pathway alterations across tissues",) +
+    theme(panel.grid = element_blank(),
+          axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+          legend.position = "none",
+          plot.title = element_text(size = 12))
+   
+
+print(pcawg.pathways.plot)
+
+ggsave(plot = pcawg.pathways.plot, 
+       filename = file.path(fig.dir, "pcawg_pathways_summary.png"),
+      width = 5, height = 6.2) 
+```
+
+### Interactions between PCAWG signatures and 10 pathway alterations
+
+```{r path-sig-prep}
+PATH_MIN_TISSUES = 30
+
+abundant.tissues = which(PCAWG.full.subset.ann.pathways$Cancer.Types %>% 
+                             table() > PATH_MIN_TISSUES) %>% names()
+```
+
+#### Interactions between all pathways and signatures
+
+```{r}
+all.path.sig.assocs = get_sig_path_assocs(
+    PCAWG.full.subset.ann.pathways %>% select(4:ncol(.)),
+    mutated.pathways.tissues %>% select(4:ncol(.)),
+    p.val.threshold = 0.05)
+
+all.path.sig.heatmap = ggheatmap::ggheatmap(rm_zeros(all.path.sig.assocs), colorPalette = "RdBu",
+                                 points = T, revColors = F, revRow = T, 
+                                 scaleName = "log(OR)",
+                                 limits = c(-4.6, 4.6))
+all.path.sig.heatmap
+ggsave(plot = all.path.sig.heatmap,
+       file = file.path(fig.dir, "all.path.sig.heatmap.png"),
+       width = 5, height = 6)
+```
+
+#### Fisher's exact test between signatures and pathways in individual tissues
+
+```{r, warning = FALSE}
+tissue.odds.ratio = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
+                                 pathways.input = mutated.pathways.tissues,
+                                 interaction_function = get_sig_path_assocs, 
+                                 path.min.tissues = 30,
+                                 p.val.threshold = 0.1,
+                                 p.adjust = TRUE,
+                                 method = "BH",
+                                 plot.limits = c(-6.5, 6.5))
+
+for (tissue in names(tissue.odds.ratio)) {
+   
+    if (any(abs(tissue.odds.mats[[tissue]]$mat) > 0) ) {
+        cat(tissue, "\n")
+        print(tissue.odds.mats[[tissue]]$plot)
+        ggsave(plot = tissue.odds.mats[[tissue]]$plot,
+               filename = file.path(fig.dir, "by_tissues", "oddsratio",  paste0(tissue, "_sig_pathway.dotplot.png")),
+               height = 5, width = 6, bg = "white")
+    }
+}
+```
+
+
+### Linear regression between signatures and pathways in individual tissues
+
+```{r}
+tissue.lm.coefs.mats = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
+                                 pathways.input = mutated.pathways.tissues,
+                                 interaction_function = get_sig_path_lms, 
+                                 path.min.tissues = 30,
+                                 p.val.threshold = 0.05,
+                                 p.adjust = TRUE,
+                                 method = "BH",
+                                 plot.limits = c(-6.5, 6.5),
+                                 sig.log = TRUE)
+    
+max.val = 0
+min.val = 0
+for (tissue in abundant.tissues) { 
+    cat(tissue, "\n")
+    if (sum(dim(tissue.lm.coefs.mats[[tissue]]$mat))) {
+        max.val = max(max.val, max(tissue.lm.coefs.mats[[tissue]]$mat))
+        min.val = min(min.val, min(tissue.lm.coefs.mats[[tissue]]$mat))
+    }
+}
+# cat(min.val, "\t", max.val, "\n")
+
+for (tissue in abundant.tissues) {
+   
+    if (any(abs(tissue.lm.coefs.mats[[tissue]]$mat) > 0) ) {
+        cat(tissue, "\n")
+        print(tissue.lm.coefs.mats[[tissue]]$plot)
+        ggsave(plot = tissue.lm.coefs.mats[[tissue]]$plot,
+               filename = file.path(fig.dir, "by_tissues", "lm", paste0(tissue, "_sig_pathway.dotplot.png")),
+               height = 5, width = 6, bg = "white")
+    }
+}
+```
+
+
+
