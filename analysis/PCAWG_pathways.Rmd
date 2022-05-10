@@ -42,7 +42,7 @@ pcawg.pathway.summaries.gg = pathway.summaries.by.tissues  %>%
     summarise(total = sum(Activity))
 
 path.order = pcawg.pathway.summaries.gg %>% 
-    select(Pathway, total) %>% 
+    dplyr::select(Pathway, total) %>% 
     group_by(Pathway) %>% 
     summarise(ss = sum(total)) %>% 
     arrange(desc(ss)) %>% 

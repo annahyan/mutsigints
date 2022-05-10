@@ -145,6 +145,7 @@ get_sig_path_assocs = function(sigs.df, pathways.df, p.val.threshold = 0.05,
 #' @param sigs.df signatures dataframe or matrix
 #' @param pathways.df pathways dataframe or matrix
 #' @param sig.log Defines whether signatures should be logged. Default: TRUE
+#' @param robust Specifies if robust statistics should be used. Default: TRUE
 #' @param p.val.threshold p-value threshold for BH correction. Default: 0.05
 #' @param p.adjust Controls if p-values should be adjusted. Default: TRUE
 #' @param method P-value adjustement methods. Default: BH
@@ -154,6 +155,7 @@ get_sig_path_assocs = function(sigs.df, pathways.df, p.val.threshold = 0.05,
 
 get_sig_path_lms = function(sigs.df, pathways.df, 
                             sig.log = TRUE, 
+                            robust = TRUE,
                             p.val.threshold = 0.05, 
                             p.adjust = TRUE, method = "BH") {
     
@@ -180,9 +182,18 @@ get_sig_path_lms = function(sigs.df, pathways.df,
     for (sig in sigs) {
         for (pathway in pathways) {
             # cat(sig, pathway, "\n")
-            lin.mod = lm(tissue.concat[, sig] ~ tissue.concat[, pathway])
-            int.mat[sig, pathway] = summary(lin.mod)$coefficients[, "Estimate"][2]
-            p.values[sig, pathway] = summary(lin.mod)$coefficients[,"Pr(>|t|)"][2]
+            
+            if ( robust ) {
+                rob.lin.mod = MASS::rlm(tissue.concat[, sig] ~ tissue.concat[, pathway])
+                int.mat[sig, pathway] = summary(rob.lin.mod)$coefficients[, "Value"][2]
+                p.values[sig, pathway] = tryCatch({
+                    sfsmisc::f.robftest(rob.lin.mod, var = -1)$p.value},
+                    error = function(e) {return(1)})
+            } else {
+                lin.mod = lm(tissue.concat[, sig] ~ tissue.concat[, pathway])
+                int.mat[sig, pathway] = summary(lin.mod)$coefficients[, "Estimate"][2]
+                p.values[sig, pathway] = summary(lin.mod)$coefficients[,"Pr(>|t|)"][2]
+            }
         }
     }
     
