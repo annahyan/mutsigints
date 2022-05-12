@@ -108,15 +108,16 @@ tissue.odds.ratio = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pat
                                  path.min.tissues = 30,
                                  p.val.threshold = 0.1,
                                  p.adjust = TRUE,
-                                 method = "BH",
-                                 plot.limits = c(-6.5, 6.5))
+                                 method = "BH")
 
 for (tissue in names(tissue.odds.ratio)) {
    
-    if (any(abs(tissue.odds.mats[[tissue]]$mat) > 0) ) {
+    if (any(abs(tissue.odds.ratio[[tissue]]) > 0) ) {
         cat(tissue, "\n")
-        print(tissue.odds.mats[[tissue]]$plot)
-        ggsave(plot = tissue.odds.mats[[tissue]]$plot,
+        int.heatmap = ggheatmap_wrapper(tissue.odds.ratio[[tissue]], 
+                                        title = tissue)
+        
+        ggsave(plot = int.heatmap,
                filename = file.path(fig.dir, "by_tissues", "oddsratio",  paste0(tissue, "_sig_pathway.dotplot.png")),
                height = 5, width = 6, bg = "white")
     }
@@ -126,7 +127,7 @@ for (tissue in names(tissue.odds.ratio)) {
 
 ### Linear regression between signatures and pathways in individual tissues
 
-```{r}
+```{r, warning = FALSE}
 tissue.lm.coefs.mats = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
                                  pathways.input = mutated.pathways.tissues,
                                  interaction_function = get_sig_path_lms, 
@@ -134,31 +135,48 @@ tissue.lm.coefs.mats = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.
                                  p.val.threshold = 0.05,
                                  p.adjust = TRUE,
                                  method = "BH",
-                                 plot.limits = c(-6.5, 6.5),
                                  sig.log = TRUE)
-    
-max.val = 0
-min.val = 0
-for (tissue in abundant.tissues) { 
-    cat(tissue, "\n")
-    if (sum(dim(tissue.lm.coefs.mats[[tissue]]$mat))) {
-        max.val = max(max.val, max(tissue.lm.coefs.mats[[tissue]]$mat))
-        min.val = min(min.val, min(tissue.lm.coefs.mats[[tissue]]$mat))
-    }
-}
-# cat(min.val, "\t", max.val, "\n")
-
+ 
 for (tissue in abundant.tissues) {
    
-    if (any(abs(tissue.lm.coefs.mats[[tissue]]$mat) > 0) ) {
+    if (any(abs(tissue.lm.coefs.mats[[tissue]]) > 0) ) {
         cat(tissue, "\n")
-        print(tissue.lm.coefs.mats[[tissue]]$plot)
-        ggsave(plot = tissue.lm.coefs.mats[[tissue]]$plot,
-               filename = file.path(fig.dir, "by_tissues", "lm", paste0(tissue, "_sig_pathway.dotplot.png")),
+        int.heatmap = ggheatmap_wrapper(tissue.lm.coefs.mats[[tissue]], 
+                                        title = tissue)
+        
+        ggsave(plot = int.heatmap,
+               filename = file.path(fig.dir, "by_tissues", "lm_log", 
+                                    paste0(tissue, "_sig_pathway.dotplot.png")),
                height = 5, width = 6, bg = "white")
     }
 }
 ```
 
+
+```{r, warning = FALSE}
+tissue.lm.coefs.mats = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
+                                 pathways.input = mutated.pathways.tissues,
+                                 interaction_function = get_sig_path_lms, 
+                                 path.min.tissues = 30,
+                                 p.val.threshold = 0.05,
+                                 p.adjust = TRUE,
+                                 method = "BH",
+                                 sig.log = FALSE)
+    
+
+for (tissue in abundant.tissues) {
+   
+    if (any(abs(tissue.lm.coefs.mats[[tissue]]) > 0) ) {
+        cat(tissue, "\n")
+        int.heatmap = ggheatmap_wrapper(tissue.lm.coefs.mats[[tissue]], 
+                                        title = tissue)
+        
+        ggsave(plot = int.heatmap,
+               filename = file.path(fig.dir, "by_tissues", "lm_counts", 
+                                    paste0(tissue, "_sig_pathway.dotplot.png")),
+               height = 5, width = 6, bg = "white")
+    }
+}
+```
 
 

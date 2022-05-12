@@ -240,8 +240,7 @@ get_tissue_pathway_activities = function(tissue,
 #' @param method P-value adjustement methods. Default: BH
 #' @param plot.limits Scale limits in the ggheatmap
 #' @return A list with the length of abundant tissues in the datasets, 
-#' where each element in the list contains the interaction matrix and 
-#' the heatmap of that matrix
+#' where each element is the interaction matrix
 
 pcawg_sig_pathway_int = function(sigs.input,
                                  pathways.input,
@@ -250,7 +249,7 @@ pcawg_sig_pathway_int = function(sigs.input,
                                  p.val.threshold = 0.1,
                                  p.adjust = TRUE,
                                  method = "BH",
-                                 plot.limits = c(-6.5, 6.5), ...) {
+                                 ...) {
     
     abundant.tissues = which(sigs.input$Cancer.Types %>% 
                                  table() > path.min.tissues) %>% names()
@@ -272,32 +271,56 @@ pcawg_sig_pathway_int = function(sigs.input,
             method = method, ...) %>% 
             rm_zeros()
         
-        # cat(dim(tissue.odds.mat))
-        cat (class(tissue.odds.mat))
-        if (( ! all(dim(tissue.odds.mat) > 0) ) | is.null(dim(tissue.odds.mat) ) ) {
-            tissue.odds.plot = NA
-        } else {
-            orderrow = T
-            ordercol = T
-            if(dim(tissue.odds.mat)[1] == 1) {
-                orderrow = F
-            } 
-            
-            if(dim(tissue.odds.mat)[2] == 1){
-                ordercol = F
-            } 
-            
-            tissue.odds.plot = ggheatmap::ggheatmap(
-                as.data.frame(tissue.odds.mat),
-                colorPalette = "RdBu",
-                orderCol = ordercol,
-                orderRow = orderrow,
-                points = T, revColors = F, revRow = T, 
-                scaleName = "log(OR)",
-                title = tissue,
-                limits = plot.limits)
-        }
-        tissue.odds.mats[[tissue]] = list(mat = tissue.odds.mat, plot = tissue.odds.plot)
+        tissue.odds.mats[[tissue]] = tissue.odds.mat
     }
     return(tissue.odds.mats)
+}
+
+# A ggheatmap wrapper for interaction matrix returns
+#' @param metric.matrix the input matrix
+#' @description All other parameters are passed to ggheatmap
+#' \link[ggheatmap]{ggheatmap} 
+#' @return Returns a ggheatmap (which is a gg object, 
+#' but not a conventional gg object unfortunately.)
+
+ggheatmap_wrapper = function(metric.matrix,
+                             colorPalette = "RdBu",
+                             points = T, revColors = F, revRow = T, 
+                             scaleName = "log(OR)",
+                             title = NULL,
+                             limits = NULL, 
+                             ...) {
+    
+    if (( ! all(dim(metric.matrix) > 0) ) | is.null(dim(metric.matrix) ) ) {
+        tissue.odds.plot = NA
+        cat("The input matrix has no active dimensions or is null.")
+    } else {
+        orderrow = T
+        ordercol = T
+        if(dim(metric.matrix)[1] == 1) {
+            orderrow = F
+        } 
+        
+        if(dim(metric.matrix)[2] == 1){
+            ordercol = F
+        } 
+        
+        if (is.null(limits)) {
+            range_lim = round(max(abs(range(metric.matrix))) * 1.1, 1)
+            limits = c(-range_lim, range_lim)
+        }
+        
+        tissue.odds.plot = ggheatmap::ggheatmap(
+            as.data.frame(metric.matrix), colorPalette = colorPalette,
+            orderCol = ordercol,
+            orderRow = orderrow,
+            points = points, 
+            revColors = revColors, 
+            revRow = revRow, 
+            scaleName = scaleName,
+            title = title,
+            limits = limits, ...)
+    }
+    
+    return(tissue.odds.plot)
 }
