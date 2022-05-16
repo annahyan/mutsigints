@@ -14,7 +14,7 @@ library(here)
 fig.dir = here("figures/pathways_analysis")
 
 if(! file.exists(fig.dir)){
-    dir.create(fig.dir)
+    dir.create(fig.dir, recursive = TRUE)
 }
 
 source(here("R/load_packages.R"))
@@ -89,10 +89,12 @@ all.path.sig.assocs = get_sig_path_assocs(
     mutated.pathways.tissues %>% select(4:ncol(.)),
     p.val.threshold = 0.05)
 
-all.path.sig.heatmap = ggheatmap::ggheatmap(rm_zeros(all.path.sig.assocs), colorPalette = "RdBu",
-                                 points = T, revColors = F, revRow = T, 
-                                 scaleName = "log(OR)",
-                                 limits = c(-4.6, 4.6))
+all.path.sig.heatmap = ggheatmap::ggheatmap(
+    dataMatrix = rm_zeros(all.path.sig.assocs), 
+    points = T, revColors = F, revRow = T, 
+    scaleName = "log(OR)",
+    colorPalette = "RdBu",
+    limits = c(-4.6, 4.6))
 all.path.sig.heatmap
 ggsave(plot = all.path.sig.heatmap,
        file = file.path(fig.dir, "all.path.sig.heatmap.png"),
@@ -146,7 +148,7 @@ for (tissue in abundant.tissues) {
         
         ggsave(plot = int.heatmap,
                filename = file.path(fig.dir, "by_tissues", "lm_log", 
-                                    paste0(tissue, "_sig_pathway.dotplot.png")),
+                                    paste0(tissue, "_sig_tilde_pathway.dotplot.png")),
                height = 5, width = 6, bg = "white")
     }
 }
@@ -173,7 +175,7 @@ for (tissue in abundant.tissues) {
         
         ggsave(plot = int.heatmap,
                filename = file.path(fig.dir, "by_tissues", "lm_counts", 
-                                    paste0(tissue, "_sig_pathway.dotplot.png")),
+                                    paste0(tissue, "_sig_tilde_pathway.dotplot.png")),
                height = 5, width = 6, bg = "white")
     }
 }

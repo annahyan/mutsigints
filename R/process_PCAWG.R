@@ -48,11 +48,11 @@ saveRDS(PCAWG.full.subset,
 
 # Signatures annotated ----------------------------------------------------
 
-signature_annotations = read.delim(here("data/raw", "signature_annotations.tsv"))
+signature.annotations = read.delim(here("data/raw", "signature_annotations.tsv"))
 
-PCAWG.sigs.annotated = set_signature_annotation(annotations = signature_annotations,
-                         signature_matrix_df = 
-                             PCAWG.full.subset %>% select(4:ncol(.))  %>% as.data.frame) 
+PCAWG.sigs.annotated = set_signature_annotation(annotations = signature.annotations, 
+                                                signature.matrix.df =
+                                                    PCAWG.full.subset %>% select(4:ncol(.))  %>% as.data.frame) 
 
 PCAWG.full.subset.ann = cbind(PCAWG.full.subset[,1:3], PCAWG.sigs.annotated)
 

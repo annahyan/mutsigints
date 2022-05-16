@@ -1,0 +1,104 @@
+---
+title: "Checking interaction metrics for signature-pathway interactions"
+output: html_notebook
+---
+
+```{r}
+knitr::opts_chunk$set(comment = '', fig.width = 6, 
+                      fig.height = 6, include = FALSE, message = FALSE)
+```
+
+```{r loading-in}
+library(here)
+library(randomRtools)
+source(here("R/load_packages.R"))
+
+mutated.pathways.tissues = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways",
+                                               "pcawg_pathways.RDS"))
+
+PCAWG.full.subset.ann.pathways = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways",
+                                                     "PCAWG.full.subset.ann.pathways.RDS"))
+
+```
+
+```{r skin-input}
+skin.data = get_tissue_pathway_activities("Skin_Melanoma", 
+                                          sigs.input = PCAWG.full.subset.ann.pathways,
+                                          pathways.input = mutated.pathways.tissues)
+
+skin.data$sigs.logged = skin.data$sigs %>% 
+    mutate(across(.cols = everything(), ~ log(.x + 1 )))
+
+skin.concat = merge(skin.data$sigs.logged, skin.data$paths, by = "row.names")
+
+```
+
+### Looking at interaction of UV and RTK RAS
+
+```{r}
+sig = "UV"
+path = "RTK RAS"
+
+int.cols = skin.concat[, c(sig, path)]
+```
+
+```{r}
+cont.table = table(as.data.frame(int.cols > 0))
+knitr::kable(cont.table)
+```
+
+```{r}
+binary.ints = int.cols %>% 
+    mutate(across(everything(), ~.x > 0))
+binary.ints %>% 
+    kable_contingency()
+```
+
+#### Fisher's exact test
+
+```{r}
+ft = fisher.test(table(binary.ints))
+print(ft)
+```
+
+```{r}
+int.cols = int.cols %>% 
+    rename (pathd = path, sigd = sig) 
+
+p = int.cols %>% 
+    mutate(pathd = factor(pathd)) %>% 
+    ggplot(aes(x = pathd, y = sigd, fill = pathd, group = pathd)) + 
+    geom_boxplot() + geom_jitter(color = "black") + 
+    xlab(path) + ylab(sig)
+print(p)
+```
+
+#### Robust linear regression pathway to signatures
+
+with MASS::rlm:: 
+```{r}
+rlmout = MASS::rlm(sigd ~ pathd, data = int.cols)
+```
+
+with lmrob:: 
+```{r}
+lmrobout = robustbase::lmrob(sigd ~ pathd, data = int.cols)
+print(summary(lmrobout))
+```
+Apparently, catches the difference between 1 and 2 mutations linked to increased
+number of UV mutations. 
+
+The wilcox test for 1 mutation vs 2 mutations is significant.
+
+```{r}
+print(int.cols %>% filter(pathd == 1 | pathd == 2) %>% rstatix::wilcox_test(sigd ~ pathd))
+```
+
+#### Robust linear regression signature to pathway
+
+```{r}
+lmrob0 = robustbase::glmrob((pathd > 0) ~ 1, data = int.cols, family = binomial)
+lmrob1 = robustbase::glmrob((pathd > 0) ~ sigd, data = int.cols, family = binomial)
+anova(lmrob0, lmrob1)
+```
+
