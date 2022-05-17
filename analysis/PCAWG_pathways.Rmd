@@ -97,8 +97,10 @@ all.path.sig.heatmap = ggheatmap::ggheatmap(
     points = T, revColors = F, revRow = T, 
     scaleName = "log(OR)",
     colorPalette = "RdBu",
-    limits = c(-4.6, 4.6))
+    limits = c(-5, 5))
+
 all.path.sig.heatmap
+
 ggsave(plot = all.path.sig.heatmap,
        file = file.path(fig.dir, "all.path.sig.heatmap.png"),
        width = 5, height = 6)
@@ -123,21 +125,25 @@ for (tissue in names(tissue.odds.ratio)) {
                                         title = tissue)
         
         ggsave(plot = int.heatmap,
-               filename = file.path(fig.dir, "by_tissues", "oddsratio",  paste0(tissue, "_sig_pathway.dotplot.png")),
+               filename = file.path(fig.dir, "by_tissues", "oddsratio",  
+                                    paste0(tissue, "_sig_pathway.dotplot.png")),
                height = 5, width = 6, bg = "white")
     }
 }
 ```
 
+### Linear regression predicting signatures from pathways across tissues
 
-### Linear regression between signatures and pathways in individual tissues
+I tried logging the signatures before the linear regression or using raw counts.
+In this first case, I tried logging. 
+
 
 ```{r, warning = FALSE}
 tissue.lm.coefs.mats.log = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
                                  pathways.input = mutated.pathways.tissues,
                                  interaction_function = get_sig_path_lms, 
                                  path.min.tissues = 30,
-                                 p.val.threshold = 0.05,
+                                 p.val.threshold = 0.1,
                                  p.adjust = TRUE,
                                  method = "BH",
                                  sig.log = TRUE)
@@ -157,6 +163,7 @@ for (tissue in abundant.tissues) {
 }
 ```
 
+In the example below I'm trying with raw counts.
 
 ```{r, warning = FALSE}
 tissue.lm.coefs.mats = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
@@ -184,4 +191,26 @@ for (tissue in abundant.tissues) {
 }
 ```
 
+### Summarizing the regression of signatures ~ pathways
+
+```{r}
+pp.logged = plot_all_counts(tissue.lm.coefs.mats.log, threshold = 0.2)
+print(pp.logged)
+
+ggsave(plot = pp.logged,
+               filename = file.path(fig.dir, "by_tissues", "lm_log", 
+                                    "logged_summarized.png"),
+               height = 3, width = 4, bg = "white")
+```
+
+
+```{r}
+pp.counts = plot_all_counts(tissue.lm.coefs.mats, threshold = 0.2)
+print(pp.counts)
+
+ggsave(plot = pp.counts,
+               filename = file.path(fig.dir, "by_tissues", "lm_counts", 
+                                    "counts_summarized.png"),
+               height = 3, width = 4, bg = "white")
+```
 

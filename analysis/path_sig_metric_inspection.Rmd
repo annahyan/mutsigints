@@ -101,6 +101,6 @@ print(int.cols %>% filter(pathd == 1 | pathd == 2) %>% rstatix::wilcox_test(sigd
 ```{r}
 lmrob0 = robustbase::glmrob((pathd > 0) ~ 1, data = int.cols, family = binomial)
 lmrob1 = robustbase::glmrob((pathd > 0) ~ sigd, data = int.cols, family = binomial)
-anova(lmrob0, lmrob1)
+print (anova(lmrob0, lmrob1) )
 ```
 
