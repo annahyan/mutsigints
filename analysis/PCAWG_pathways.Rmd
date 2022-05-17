@@ -1,11 +1,14 @@
 ---
 title: "Signalling pathways in PCAWG"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r}
 knitr::opts_chunk$set(comment = '', fig.width = 6, 
-                      fig.height = 6, include = FALSE, message = FALSE)
+                      fig.height = 6, echo = FALSE, 
+                      warning = FALSE)
 ```
 
 
@@ -130,7 +133,7 @@ for (tissue in names(tissue.odds.ratio)) {
 ### Linear regression between signatures and pathways in individual tissues
 
 ```{r, warning = FALSE}
-tissue.lm.coefs.mats = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
+tissue.lm.coefs.mats.log = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
                                  pathways.input = mutated.pathways.tissues,
                                  interaction_function = get_sig_path_lms, 
                                  path.min.tissues = 30,
@@ -141,9 +144,9 @@ tissue.lm.coefs.mats = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.
  
 for (tissue in abundant.tissues) {
    
-    if (any(abs(tissue.lm.coefs.mats[[tissue]]) > 0) ) {
+    if (any(abs(tissue.lm.coefs.mats.log[[tissue]]) > 0) ) {
         cat(tissue, "\n")
-        int.heatmap = ggheatmap_wrapper(tissue.lm.coefs.mats[[tissue]], 
+        int.heatmap = ggheatmap_wrapper(tissue.lm.coefs.mats.log[[tissue]], 
                                         title = tissue)
         
         ggsave(plot = int.heatmap,

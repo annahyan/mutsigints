@@ -1,11 +1,13 @@
 ---
 title: "Checking interaction metrics for signature-pathway interactions"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r}
 knitr::opts_chunk$set(comment = '', fig.width = 6, 
-                      fig.height = 6, include = FALSE, message = FALSE)
+                      fig.height = 6, echo = FALSE, warning = FALSE)
 ```
 
 ```{r loading-in}
@@ -44,7 +46,6 @@ int.cols = skin.concat[, c(sig, path)]
 
 ```{r}
 cont.table = table(as.data.frame(int.cols > 0))
-knitr::kable(cont.table)
 ```
 
 ```{r}
@@ -76,12 +77,13 @@ print(p)
 #### Robust linear regression pathway to signatures
 
 with MASS::rlm:: 
-```{r}
+```{r, echo = TRUE}
 rlmout = MASS::rlm(sigd ~ pathd, data = int.cols)
 ```
 
 with lmrob:: 
-```{r}
+
+```{r, echo = TRUE}
 lmrobout = robustbase::lmrob(sigd ~ pathd, data = int.cols)
 print(summary(lmrobout))
 ```

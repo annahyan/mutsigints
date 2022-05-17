@@ -128,7 +128,7 @@ get_sig_path_assocs = function(sigs.df, pathways.df, p.val.threshold = 0.05,
     
     # pheatmap(p.out)
     
-    odds.mat [ p.out >= p.val.threshold ] = 0
+    odds.mat [ p.out > p.val.threshold ] = 0
     
     # odds.mat = odds.mat[rowSums(abs(odds.mat), na.rm = TRUE) > 0, , drop = FALSE]
     # odds.mat = odds.mat[, colSums(abs(odds.mat), na.rm = TRUE) > 0 , drop = FALSE]
@@ -199,7 +199,8 @@ get_sig_path_lms = function(sigs.df, pathways.df,
     
     p.out = p_matrix_process(p.values, p.adjust = p.adjust, method = method)
 
-    int.mat[p.out < p.val.threshold] = 0
+    int.mat[p.out > p.val.threshold] = 0
+    # return(list(int.mat = int.mat, p.value = p.out))
     return(int.mat)
 }
 
