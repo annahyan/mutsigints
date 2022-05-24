@@ -145,7 +145,11 @@ get_sig_path_assocs = function(sigs.df, pathways.df, p.val.threshold = 0.05,
 #' @param sigs.df signatures dataframe or matrix
 #' @param pathways.df pathways dataframe or matrix
 #' @param sig.log Defines whether signatures should be logged. Default: TRUE
-#' @param robust Specifies if robust statistics should be used. Default: TRUE
+#' @param robust Specifies if robust statistics should be used. 
+#' Robust functions are called from robustbase package. Default: TRUE
+#' @param path.to.sig If true, linear regression is used to predict signatures
+#' from pathways. Otherwise, logistic regression is used to predict pathways 
+#' from signatures. Default: TRUE
 #' @param p.val.threshold p-value threshold for BH correction. Default: 0.05
 #' @param p.adjust Controls if p-values should be adjusted. Default: TRUE
 #' @param method P-value adjustement methods. Default: BH
@@ -156,6 +160,7 @@ get_sig_path_assocs = function(sigs.df, pathways.df, p.val.threshold = 0.05,
 get_sig_path_lms = function(sigs.df, pathways.df, 
                             sig.log = TRUE, 
                             robust = TRUE,
+                            path.to.sig = TRUE,
                             p.val.threshold = 0.05, 
                             p.adjust = TRUE, method = "BH") {
     
@@ -181,18 +186,35 @@ get_sig_path_lms = function(sigs.df, pathways.df,
     
     for (sig in sigs) {
         for (pathway in pathways) {
-            # cat(sig, pathway, "\n")
+            cat(sig, pathway, "\n")
             
             if ( robust ) {
-                rob.lin.mod = MASS::rlm(tissue.concat[, sig] ~ tissue.concat[, pathway])
-                int.mat[sig, pathway] = summary(rob.lin.mod)$coefficients[, "Value"][2]
-                p.values[sig, pathway] = tryCatch({
-                    sfsmisc::f.robftest(rob.lin.mod, var = -1)$p.value},
-                    error = function(e) {return(1)})
+                if (path.to.sig) {
+                    rob.lin.mod = robustbase::lmrob(
+                        tissue.concat[, sig] ~ tissue.concat[, pathway])
+                    int.mat[sig, pathway] = summary(rob.lin.mod)$coefficients[, "Estimate"][2]
+                    p.values[sig, pathway] = summary(rob.lin.mod)$coefficients[, "Pr(>|t|)"][2]
+                } else {
+                    sigs.binary = as.numeric(tissue.concat[, sig] > 0)
+                    rob.log.mod = robustbase::glmrob(
+                        tissue.concat[, pathway] ~ 1 + sigs.binary, 
+                        family = binomial)
+                    int.mat[sig, pathway] = summary(rob.log.mod)$coefficients[, "Estimate"][2]
+                    p.values[sig, pathway] = summary(rob.log.mod)$coefficients[, "Pr(>|z|)"][2]
+                }
             } else {
-                lin.mod = lm(tissue.concat[, sig] ~ tissue.concat[, pathway])
-                int.mat[sig, pathway] = summary(lin.mod)$coefficients[, "Estimate"][2]
-                p.values[sig, pathway] = summary(lin.mod)$coefficients[,"Pr(>|t|)"][2]
+                if (path.to.sig) {
+                    lin.mod = lm(tissue.concat[, sig] ~ tissue.concat[, pathway])
+                    int.mat[sig, pathway] = summary(lin.mod)$coefficients[, "Estimate"][2]
+                    p.values[sig, pathway] = summary(lin.mod)$coefficients[,"Pr(>|t|)"][2]
+                } else {
+                    sigs.binary = as.numeric(tissue.concat[, sig] > 0)
+                    log.mod = glm(
+                        tissue.concat[, pathway] ~ 1 + sigs.binary, 
+                        family = binomial)
+                    int.mat[sig, pathway] = summary(log.mod)$coefficients[, "Estimate"][2]
+                    p.values[sig, pathway] = summary(log.mod)$coefficients[, "Pr(>|z|)"][2]
+                }
             }
         }
     }
@@ -230,7 +252,8 @@ get_tissue_pathway_activities = function(tissue,
 
 
 
-#' Assess signature-pathway interactions across tissues for PCAWG
+#' Assess signature-pathway interactions across tissues for PCAWG with a custom
+#' function
 #' @param sigs.input Signature activities
 #' @param pathways.input Pathway status - formatted like mutated.pathways.tissues
 #' Pathway activities start at column 4.

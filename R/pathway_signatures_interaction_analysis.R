@@ -47,7 +47,8 @@ sfsmisc::f.robftest(skin.rlm2, var = -1)
 skin.lmrob = robustbase::lmrob(skin.concat[, "Ageing"] ~ skin.concat[, "HIPPO"])
 
 skin.lmrob0 = robustbase::glmrob(skin.concat[, "HIPPO"] ~ 1, family = binomial)
-skin.lmrob2 = robustbase::glmrob(skin.concat[, "HIPPO"] ~ 1 + skin.concat[, "Ageing"], family = binomial)
+skin.lmrob2 = robustbase::glmrob(skin.concat[, "HIPPO"] ~ 1 + skin.concat[, "APOBEC"], 
+                                 family = binomial)
 
 anova(skin.lmrob0, skin.lmrob2)
 
@@ -56,9 +57,9 @@ colSums(skin.concat[, c("HIPPO", "Ageing")] > 0)
 
 skin.concat[, c("HIPPO", "Ageing")] %>% rstatix::wilcox_test(Ageing ~ HIPPO)
 
-skin.concat[, c("HIPPO", "Ageing")] %>% 
+skin.concat[, c("HIPPO", "APOBEC")] %>% 
     mutate(HIPPO = factor(HIPPO)) %>% 
-    ggplot(aes(x = HIPPO, y = Ageing, color = HIPPO, group = HIPPO)) + 
+    ggplot(aes(x = HIPPO, y = APOBEC, color = HIPPO, group = HIPPO)) + 
     geom_boxplot() + geom_jitter(color = "black")
 
 
@@ -88,3 +89,29 @@ cont.table = table(as.data.frame(int.cols > 0))
 ft = fisher.test(cont.table)
 
 
+# panc_endocrine ----------------------------------------------------------
+
+
+Panc_Endocrine
+
+pancendo.data = get_tissue_pathway_activities("Panc_Endocrine", 
+                                          sigs.input = PCAWG.full.subset.ann.pathways,
+                                          pathways.input = mutated.pathways.tissues)
+
+
+get_sig_path_lms(pancendo.data$sigs, pancendo.data$paths, 
+                            sig.log = TRUE, 
+                            robust = TRUE,
+                            path.to.sig = TRUE,
+                            p.val.threshold = 0.05, 
+                            p.adjust = TRUE, method = "BH")
+
+
+pancendo.data$sigs.logged = pancendo.data$sigs %>% 
+    mutate(across(.cols = everything(), ~ log(.x + 1 )))
+pancendo.concat = merge(pancendo.data$sigs.logged, pancendo.data$paths, by = "row.names")
+
+sig = "MMR"
+path = "NOTCH"
+
+int.cols = pancendo.concat[, c(sig, path)]
