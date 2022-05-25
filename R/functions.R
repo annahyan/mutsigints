@@ -162,7 +162,8 @@ get_sig_path_lms = function(sigs.df, pathways.df,
                             robust = TRUE,
                             path.to.sig = TRUE,
                             p.val.threshold = 0.05, 
-                            p.adjust = TRUE, method = "BH") {
+                            p.adjust = TRUE, method = "BH",
+                            ...) {
     
     if (sig.log) {
         sigs.df = sigs.df %>% 
@@ -181,26 +182,60 @@ get_sig_path_lms = function(sigs.df, pathways.df,
     
     int.mat = matrix(0, nrow = length(sigs), ncol = length(pathways),
                      dimnames = list(sigs, pathways))
-    p.values = matrix(0, nrow = length(sigs), ncol = length(pathways),
+    p.values = matrix(1, nrow = length(sigs), ncol = length(pathways),
                       dimnames = list(sigs, pathways))
     
     for (sig in sigs) {
         for (pathway in pathways) {
-            cat(sig, pathway, "\n")
+            # cat(sig, pathway, "\n")
+            
+            ## Applying a threshold on minimal number of non-zero elements
+            # cat("before printing zero element counts.\n")
+            zero.sigs = sum(tissue.concat[, sig] != 0)
+            zero.paths = sum(tissue.concat[, pathway] != 0)
+            
+            if (zero.sigs < 3 | zero.paths < 3) {
+                # cat("zero.sigs = ", zero.sigs, " zero paths = ", zero.paths, "\n")
+                int.mat[sig, pathway] = 0
+                p.values[sig, pathway] = 1
+                next
+            }
             
             if ( robust ) {
                 if (path.to.sig) {
+                    ## with Robustbase
                     rob.lin.mod = robustbase::lmrob(
-                        tissue.concat[, sig] ~ tissue.concat[, pathway])
+                        tissue.concat[, sig] ~ tissue.concat[, pathway], ...)
                     int.mat[sig, pathway] = summary(rob.lin.mod)$coefficients[, "Estimate"][2]
                     p.values[sig, pathway] = summary(rob.lin.mod)$coefficients[, "Pr(>|t|)"][2]
+                    ## with rlm
+                    # rob.lin.mod = MASS::rlm(tissue.concat[, sig] ~ tissue.concat[, pathway], ...)
+                    # int.mat[sig, pathway] = summary(rob.lin.mod)$coefficients[, "Value"][2]
+                    # p.values[sig, pathway] = tryCatch({
+                    #     sfsmisc::f.robftest(rob.lin.mod, var = -1)$p.value},
+                    #     error = function(e) {return(1)})
+                    
                 } else {
-                    sigs.binary = as.numeric(tissue.concat[, sig] > 0)
-                    rob.log.mod = robustbase::glmrob(
-                        tissue.concat[, pathway] ~ 1 + sigs.binary, 
-                        family = binomial)
-                    int.mat[sig, pathway] = summary(rob.log.mod)$coefficients[, "Estimate"][2]
-                    p.values[sig, pathway] = summary(rob.log.mod)$coefficients[, "Pr(>|z|)"][2]
+                    paths.binary = as.numeric(tissue.concat[, pathway] > 0)
+                    ### Trying robust logistic regression first.
+                    ### If it throws an error, then regular logistic regression.
+                    
+                    log.mod = tryCatch({
+                        rob.out = robustbase::glmrob(
+                            paths.binary ~ 1 + tissue.concat[, sig], 
+                            family = binomial)
+                        rob.out
+                        }, 
+                        error = function(e) {
+                            print(e$message)
+                            cat("Robust regression cannot be computed. \n Running regular regression instead.\n")
+                            glm.out = glm(
+                                paths.binary ~ 1 + tissue.concat[, sig], 
+                                family = binomial)
+                            glm.out
+                        })
+                    int.mat[sig, pathway] = summary(log.mod)$coefficients[, "Estimate"][2]
+                    p.values[sig, pathway] = summary(log.mod)$coefficients[, "Pr(>|z|)"][2]
                 }
             } else {
                 if (path.to.sig) {
@@ -208,10 +243,10 @@ get_sig_path_lms = function(sigs.df, pathways.df,
                     int.mat[sig, pathway] = summary(lin.mod)$coefficients[, "Estimate"][2]
                     p.values[sig, pathway] = summary(lin.mod)$coefficients[,"Pr(>|t|)"][2]
                 } else {
-                    sigs.binary = as.numeric(tissue.concat[, sig] > 0)
+                    paths.binary = as.numeric(tissue.concat[, pathway] > 0)
                     log.mod = glm(
-                        tissue.concat[, pathway] ~ 1 + sigs.binary, 
-                        family = binomial)
+                        paths.binary ~ 1 + tissue.concat[, sig], 
+                        family = binomial, ...)
                     int.mat[sig, pathway] = summary(log.mod)$coefficients[, "Estimate"][2]
                     p.values[sig, pathway] = summary(log.mod)$coefficients[, "Pr(>|z|)"][2]
                 }
@@ -396,9 +431,6 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.3) {
         }
     }
     
-    col.indices = setNames(1:length(all.cols), all.cols)
-    row.indices = setNames(1:length(all.rows), all.rows)
-    
     pos.pivot = pos.ints.mat %>% 
         as.data.frame() %>% rownames_to_column(var = "rows") %>% 
         pivot_longer(cols = -rows, values_to = "count", names_to = "cols") %>% 
@@ -444,21 +476,25 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.3) {
                y = col.indices[cols])
     
     
-    gg.final.dt = gg.final.dt %>% 
-        mutate(xlab = ifelse(int.type == "pos", x - 0.2, x + 0.2), 
+    gg.final.dt = gg.final.dt %>%
+        mutate(xlab = ifelse(int.type == "pos", x - 0.2, x + 0.2),
                ylab = ifelse(int.type == "pos", y + 0.15, y - 0.15))
+
+    # gg.final.dt = gg.final.dt %>% 
+    #     mutate(xlab = x, 
+    #            ylab = y)
     
     gg.final.dt = as.data.frame(gg.final.dt)
     
     d <- ggplot(gg.final.dt, aes(x = x, y = y, color = int.type,
                                  shape = int.type, label = count)) +
         geom_point(size = 4.5) +
-        geom_text(aes(x = xlab, y = ylab), size = 2, color = "white", fontface = "bold") +
+        geom_text(aes(x = xlab, y = ylab), size = 2, color = "black", fontface = "bold") +
         scale_shape_manual(values=c("\u25E4","\u25E2")) +
         scale_color_brewer(palette = "Set1") 
     
     d = d +
-        theme_minimal() +
+        # theme_minimal() +
         theme( panel.border = element_blank(),
                panel.grid = element_blank(),
                panel.grid.major = element_blank(),
@@ -470,13 +506,13 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.3) {
                axis.title = element_blank(),
                legend.position = "none"
         ) +
-        scale_x_continuous(# expand = expansion(mult = c(0.01, 0.01)),
+        scale_x_continuous(expand = expansion(mult = c(0.01, 0.01)),
             breaks = row.indices,
             labels = names(row.indices),
             position = "top") +
-        scale_y_continuous(# expand = expansion(mult = c(0.01, 0.01)),
+        scale_y_continuous(expand = expansion(mult = c(0.01, 0.01)),
             breaks = col.indices,
             labels = names(col.indices))
-    
+    d
     return(d)
 }

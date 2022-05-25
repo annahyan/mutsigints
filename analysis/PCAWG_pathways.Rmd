@@ -146,7 +146,8 @@ tissue.lm.coefs.mats.log = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.
                                  p.val.threshold = 0.1,
                                  p.adjust = TRUE,
                                  method = "BH",
-                                 sig.log = TRUE)
+                                 sig.log = TRUE,
+                                 path.to.sig = TRUE)
  
 for (tissue in abundant.tissues) {
    
@@ -217,7 +218,6 @@ ggsave(plot = pp.counts,
                height = 3, width = 4, bg = "white")
 ```
 
-
 ### Logistic regression predicting pathways from signatures across tissues
 
 ```{r}
@@ -230,7 +230,7 @@ tissue.log.coefs.mats.log = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset
                                  method = "BH",
                                  sig.log = TRUE,
                                  robust = TRUE,
-                                 path.to.sig = TRUE)
+                                 path.to.sig = FALSE)
  
    
 for (tissue in abundant.tissues) {
@@ -241,7 +241,7 @@ for (tissue in abundant.tissues) {
         
         ggsave(plot = int.heatmap,
                filename = file.path(fig.dir, "signature_to_pathway", 
-                                    "by_tissues", "lm_log", 
+                                    "by_tissues", "log_log", 
                                     paste0(tissue, "_path_tilde_sig.dotplot.png")),
                height = 5, width = 6, bg = "white")
     }
@@ -249,3 +249,15 @@ for (tissue in abundant.tissues) {
 
 ```
 
+#### Summarizing the regression of pathways ~ signatures
+
+```{r}
+pp.logged = plot_all_counts(tissue.log.coefs.mats.log, threshold = 0.2)
+print(pp.logged)
+
+ggsave(plot = pp.logged,
+               filename = file.path(fig.dir, "pathway_to_signature", 
+                                    "by_tissues", "lm_log", 
+                                    "logged_summarized.png"),
+               height = 3, width = 4, bg = "white")
+```

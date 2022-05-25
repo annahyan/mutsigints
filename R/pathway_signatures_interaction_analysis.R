@@ -92,7 +92,7 @@ ft = fisher.test(cont.table)
 # panc_endocrine ----------------------------------------------------------
 
 
-Panc_Endocrine
+"Panc_Endocrine"
 
 pancendo.data = get_tissue_pathway_activities("Panc_Endocrine", 
                                           sigs.input = PCAWG.full.subset.ann.pathways,
@@ -102,7 +102,7 @@ pancendo.data = get_tissue_pathway_activities("Panc_Endocrine",
 get_sig_path_lms(pancendo.data$sigs, pancendo.data$paths, 
                             sig.log = TRUE, 
                             robust = TRUE,
-                            path.to.sig = TRUE,
+                            path.to.sig = FALSE,
                             p.val.threshold = 0.05, 
                             p.adjust = TRUE, method = "BH")
 
@@ -115,3 +115,34 @@ sig = "MMR"
 path = "NOTCH"
 
 int.cols = pancendo.concat[, c(sig, path)]
+
+robustbase::lmrob(
+    tissue.concat[, sig] ~ tissue.concat[, pathway])
+
+
+bone.osteosarc = get_tissue_pathway_activities("Bone_Osteosarc", 
+                                               sigs.input = PCAWG.full.subset.ann.pathways,
+                                               pathways.input = mutated.pathways.tissues)
+  
+bone.osteosarc.regs = get_sig_path_lms(bone.osteosarc$sigs, bone.osteosarc$paths, 
+                                       interaction_function = get_sig_path_lms, 
+                                       path.min.tissues = 30,
+                                       p.val.threshold = 0.1,
+                                       p.adjust = TRUE,
+                                       method = "BH",
+                                       sig.log = TRUE,
+                                       robust = TRUE,
+                                       path.to.sig = FALSE)
+
+  
+
+logged.sbs17 = log(bone.osteosarc$sigs[,"SBS17"] + 1)
+paths.binary = as.numeric(bone.osteosarc$paths[,"Cell Cycle"] > 0)
+
+robustbase::glmrob(paths.binary ~ 1 + sample(logged.sbs17), family = binomial)
+robustbase::glmrob(paths.binary ~ 1 + logged.sbs17, family = binomial)
+
+
+
+glm.out = glm(paths.binary ~ 1 + logged.sbs17, family = binomial)
+
