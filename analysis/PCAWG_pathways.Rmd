@@ -252,12 +252,12 @@ for (tissue in abundant.tissues) {
 #### Summarizing the regression of pathways ~ signatures
 
 ```{r}
-pp.logged = plot_all_counts(tissue.log.coefs.mats.log, threshold = 0.2)
+pp.logged = plot_all_counts(tissue.log.coefs.mats.log, threshold = 0.1)
 print(pp.logged)
 
 ggsave(plot = pp.logged,
-               filename = file.path(fig.dir, "pathway_to_signature", 
-                                    "by_tissues", "lm_log", 
+               filename = file.path(fig.dir, "signature_to_pathway", 
+                                    "by_tissues", "log_log", 
                                     "logged_summarized.png"),
-               height = 3, width = 4, bg = "white")
+               height = 1.1, width = 1.2, bg = "white")
 ```

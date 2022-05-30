@@ -399,7 +399,7 @@ ggheatmap_wrapper = function(metric.matrix,
 #' 
 #' @return ggplot object
 
-plot_all_counts = function(list.of.int.elems, threshold = 0.3) {
+plot_all_counts = function(list.of.int.elems, threshold = 0.1) {
     
     # all.sigs = do.call(c, lapply(summary.matrix, function(x) colnames(x)) ) %>%
     #     unique()
@@ -478,7 +478,8 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.3) {
     
     gg.final.dt = gg.final.dt %>%
         mutate(xlab = ifelse(int.type == "pos", x - 0.2, x + 0.2),
-               ylab = ifelse(int.type == "pos", y + 0.15, y - 0.15))
+               ylab = ifelse(int.type == "pos", y + 0.15, y - 0.15),
+               int.type = factor(int.type, levels = c("pos", "neg") ) )
 
     # gg.final.dt = gg.final.dt %>% 
     #     mutate(xlab = x, 
@@ -488,31 +489,37 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.3) {
     
     d <- ggplot(gg.final.dt, aes(x = x, y = y, color = int.type,
                                  shape = int.type, label = count)) +
-        geom_point(size = 4.5) +
-        geom_text(aes(x = xlab, y = ylab), size = 2, color = "black", fontface = "bold") +
+        geom_point(aes(alpha = abs(count)), size = 4.5) +
+        geom_text(aes(x = xlab, y = ylab), size = 2, color = "white", fontface = "bold") +
         scale_shape_manual(values=c("\u25E4","\u25E2")) +
         scale_color_brewer(palette = "Set1") 
     
     d = d +
         # theme_minimal() +
         theme( panel.border = element_blank(),
+               panel.background = element_blank(),
                panel.grid = element_blank(),
                panel.grid.major = element_blank(),
                panel.grid.minor = element_blank(),
+               axis.ticks = element_blank(),
                # axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
-               axis.text.x = element_text(angle = 45, margin = margin(r = 0, t = 0, b = 0, l = 0),
-                                          hjust = 0),
-               axis.text.y = element_text(margin = margin(r = 0)),
+               axis.text.x = element_text(
+                   angle = 45, 
+                   margin = margin(r = 0, t = 0, b = 0, l = 0),
+                   hjust = 0),
+               axis.text.y = element_text(
+                   margin = margin(r = 0, t = 0, b = 0, l = 0)),
                axis.title = element_blank(),
                legend.position = "none"
         ) +
-        scale_x_continuous(expand = expansion(mult = c(0.01, 0.01)),
+        scale_x_continuous(expand = expansion(mult = c(0.12, 0.12)),
             breaks = row.indices,
             labels = names(row.indices),
             position = "top") +
-        scale_y_continuous(expand = expansion(mult = c(0.01, 0.01)),
+        scale_y_continuous(expand = expansion(mult = c(0.12, 0.12)),
             breaks = col.indices,
             labels = names(col.indices))
     d
     return(d)
 }
+
