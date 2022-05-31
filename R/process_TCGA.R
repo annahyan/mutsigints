@@ -42,9 +42,10 @@ saveRDS(TCGA.full.subset,
 
 signature_annotations = read.delim(here("data/raw", "signature_annotations.tsv"))
 
-TCGA.sigs.annotated = set_signature_annotation(annotations = signature_annotations,
-                         signature_matrix_df = 
-                             TCGA.full.subset %>% select(4:ncol(.))  %>% as.data.frame) 
+TCGA.sigs.annotated = set_signature_annotation(
+    annotations = signature_annotations,
+    signature.matrix.df = 
+        TCGA.full.subset %>% select(4:ncol(.))  %>% as.data.frame) 
 
 TCGA.full.subset.ann = cbind(TCGA.full.subset[,1:3], TCGA.sigs.annotated)
 

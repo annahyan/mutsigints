@@ -512,14 +512,51 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.1) {
                axis.title = element_blank(),
                legend.position = "none"
         ) +
-        scale_x_continuous(expand = expansion(mult = c(0.12, 0.12)),
+        scale_x_continuous(expand = expansion(mult = c(0.15, 0.15)),
             breaks = row.indices,
             labels = names(row.indices),
             position = "top") +
-        scale_y_continuous(expand = expansion(mult = c(0.12, 0.12)),
+        scale_y_continuous(expand = expansion(mult = c(0.15, 0.15)),
             breaks = col.indices,
             labels = names(col.indices))
     d
     return(d)
 }
 
+
+#' Summarizing individual matrices of interactions
+#' 
+#' @param interaction.list Input list
+#' @param pos.ints Defines if positive or negative interactions 
+#' should be considered. Default: TRUE
+#' @return Matrix with element is concatenated tissue names
+#' bearing the interaction 
+#' 
+summarize_int_mat = function(interaction.list, pos.ints = TRUE) {
+    
+    interaction.list = lapply(interaction.list, as.data.frame)
+    
+    active.colnames = do.call(c, sapply(interaction.list, colnames) ) %>%
+        unique() %>% sort
+    active.rownames = do.call(c, sapply(interaction.list, rownames) ) %>%
+        unique() %>% sort
+    
+    outmat = matrix("", nrow = length(active.rownames), 
+                    ncol = length(active.colnames),
+                    dimnames = list(active.rownames,
+                                    active.colnames))
+    
+    for(rowelem in active.rownames) {
+        for(colelem in active.colnames) {
+            vals = sapply(interaction.list, function(x) 
+                as.data.frame(x)[rowelem, colelem]) %>% unlist
+            if(pos.ints) {
+                mat.names = which(vals > 0) %>% names
+            } else {
+                mat.names = which(vals < 0) %>% names
+            }
+            outmat [rowelem, colelem] = paste(mat.names, collapse = ",")
+        }
+    }
+    return(outmat)
+}

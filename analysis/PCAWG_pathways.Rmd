@@ -216,6 +216,7 @@ ggsave(plot = pp.counts,
                                     "by_tissues", "lm_counts", 
                                     "counts_summarized.png"),
                height = 3, width = 4, bg = "white")
+
 ```
 
 ### Logistic regression predicting pathways from signatures across tissues
@@ -229,7 +230,7 @@ tissue.log.coefs.mats.log = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset
                                  p.adjust = TRUE,
                                  method = "BH",
                                  sig.log = TRUE,
-                                 robust = TRUE,
+                                 robust = FALSE,
                                  path.to.sig = FALSE)
  
    
