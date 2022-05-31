@@ -206,18 +206,32 @@ ggsave(plot = pp.logged,
                height = 3, width = 4, bg = "white")
 ```
 
+We can look at some select interactions. E.g. tissues where the interaction
+between NOTCH and Aging is observed. 
 
 ```{r}
-pp.counts = plot_all_counts(tissue.lm.coefs.mats, threshold = 0.2)
-# print(pp.counts)
-
-ggsave(plot = pp.counts,
-               filename = file.path(fig.dir, "pathway_to_signature", 
-                                    "by_tissues", "lm_counts", 
-                                    "counts_summarized.png"),
-               height = 3, width = 4, bg = "white")
-
+NOTCH.Aging = summarize_int_mat(tissue.lm.coefs.mats.log)["Ageing", "NOTCH"]
+cat(gsub(",", ", ", NOTCH.Aging))
 ```
+
+NOTCH and SBS40
+
+```{r}
+NOTCH.SBS40 = summarize_int_mat(tissue.lm.coefs.mats.log)["SBS40", "NOTCH"]
+cat(gsub(",", ", ", NOTCH.SBS40))
+```
+
+```{r}
+TP53.ROS = summarize_int_mat(tissue.lm.coefs.mats.log)["ROS", "TP53"]
+cat(gsub(",", ", ", TP53.ROS))
+```
+
+
+```{r}
+TP53.HR = summarize_int_mat(tissue.lm.coefs.mats.log, pos.ints = FALSE)["HR", "TP53"]
+cat(gsub(",", ", ", TP53.HR))
+```
+
 
 ### Logistic regression predicting pathways from signatures across tissues
 
@@ -262,3 +276,8 @@ ggsave(plot = pp.logged,
                                     "logged_summarized.png"),
                height = 1.1, width = 1.2, bg = "white")
 ```
+
+```{r}
+
+```
+
