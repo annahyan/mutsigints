@@ -171,6 +171,7 @@ In the example below I'm trying with raw counts.
 tissue.lm.coefs.mats = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
                                  pathways.input = mutated.pathways.tissues,
                                  interaction_function = get_sig_path_lms, 
+                                 robust = FALSE,
                                  path.min.tissues = 30,
                                  p.val.threshold = 0.05,
                                  p.adjust = TRUE,
@@ -202,7 +203,7 @@ print(pp.logged)
 ggsave(plot = pp.logged,
                filename = file.path(fig.dir, "pathway_to_signature", 
                                     "by_tissues", "lm_log", 
-                                    "logged_summarized.png"),
+                                    "logged_summarized_OLS.png"),
                height = 3, width = 4, bg = "white")
 ```
 
@@ -231,6 +232,74 @@ cat(gsub(",", ", ", TP53.ROS))
 TP53.HR = summarize_int_mat(tissue.lm.coefs.mats.log, pos.ints = FALSE)["HR", "TP53"]
 cat(gsub(",", ", ", TP53.HR))
 ```
+
+### Case inspection of melanoma
+
+```{r}
+skin.data = get_tissue_pathway_activities("Skin_Melanoma", 
+                                          sigs.input = PCAWG.full.subset.ann.pathways,
+                                          pathways.input = mutated.pathways.tissues)
+
+skin.data$sigs.logged = skin.data$sigs %>% 
+    mutate(across(.cols = everything(), ~ log(.x + 1 )))
+
+skin.concat = merge(skin.data$sigs.logged, skin.data$paths, by = "row.names")
+
+
+uv.rtkras = skin.concat %>% 
+    mutate (`RTK RAS` = factor(`RTK RAS`, levels = c(0, 1,2,3))) %>%
+    ggplot(aes(x = `RTK RAS`, y = UV, 
+                           group = `RTK RAS`, fill = `RTK RAS`) ) + 
+    geom_boxplot() + geom_jitter(width = 0.25, height = 0.25) + 
+    theme_bw(base_size = 13) + 
+    ylab("log(UV)")
+
+print(uv.rtkras)
+
+ggsave(filename = file.path(fig.dir, paste0(tissue, "uv_rtkras_relationship.png")), 
+       plot = uv.rtkras, width = 4, height = 3.2)
+
+
+rev.uv.rtkras = skin.concat %>% 
+    mutate (`RTK RAS` = factor(`RTK RAS`, levels = c(0, 1,2,3))) %>%
+    ggplot(aes(x = UV, y = `RTK RAS`) ) + 
+    geom_jitter(width = 0.25, height = 0.25) + 
+    theme_bw(base_size = 13) + 
+    xlab("log(UV)")
+
+ggsave(filename = file.path(fig.dir, paste0(tissue, "rev_uv_rtkras_relationship.png")), 
+       plot = rev.uv.rtkras, width = 4, height = 3.2)
+```
+
+
+```{r}
+skin.hippo.apo = skin.concat %>% 
+    ggplot(aes(x = factor(HIPPO), y = APOBEC, 
+                            fill = factor(HIPPO) ) ) +
+    theme_bw(base_size = 13) +
+    geom_boxplot(outlier.shape = NA) + 
+    geom_jitter(width = 0.2, height = 0.02) +
+    geom_smooth(aes(group = 1), 
+                    data = skin.concat, method = lm, se = FALSE)
+
+ggsave(filename = file.path(fig.dir, paste0(tissue, "apobec_hippo_relationship.png")), 
+       plot = skin.hippo.apo, width = 4, height = 3.2)
+```
+
+```{r}
+skin.hippo.apo.rev = skin.concat %>% 
+    ggplot(aes(x = APOBEC, y = HIPPO)) +
+    theme_classic() + 
+    scale_x_continuous(expand = c(0.2, 0.2)) + 
+    geom_smooth(method = "glm", 
+    method.args = list(family = "binomial"), 
+    se = FALSE) + geom_jitter(aes(color = factor(HIPPO)), width = 0.1, height = 0.1)
+
+ggsave(filename = file.path(fig.dir, paste0(tissue, "apobec_hippo_rev_relationship_logistic.png")), 
+       plot = skin.hippo.apo.rev, width = 4, height = 3.2)
+```
+
+
 
 
 ### Logistic regression predicting pathways from signatures across tissues
@@ -274,7 +343,7 @@ ggsave(plot = pp.logged,
                filename = file.path(fig.dir, "signature_to_pathway", 
                                     "by_tissues", "log_log", 
                                     "logged_summarized.png"),
-               height = 1.1, width = 1.2, bg = "white")
+               height = 1.1, width = 1.5, bg = "white")
 ```
 
 ```{r}

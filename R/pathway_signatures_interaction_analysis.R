@@ -26,6 +26,34 @@ skin.data$sigs.logged = skin.data$sigs %>%
 
 skin.concat = merge(skin.data$sigs.logged, skin.data$paths, by = "row.names")
 
+
+skin.concat %>% 
+    mutate (`RTK RAS` = factor(`RTK RAS`, levels = c(0, 1,2,3))) %>%
+    ggplot(aes(x = `RTK RAS`, y = UV, 
+                           group = `RTK RAS`, fill = `RTK RAS`) ) + 
+    geom_boxplot() + geom_jitter() + 
+    theme_bw(base_size = 13)
+
+
+rtk.rlm = robustbase::lmrob(UV ~ `RTK RAS`, data = skin.concat)
+
+rtk.lm = lm(UV ~ `RTK RAS`, data = skin.concat)
+
+rtk.rev.rlm = robustbase::lmrob(`RTK RAS` ~ UV, data = skin.concat)
+
+rtk.rev.lm = lm(`RTK RAS` ~ UV, data = skin.concat)
+
+
+skin.hippo.apo.rlm = robustbase::lmrob(APOBEC ~ HIPPO, data = skin.concat)
+
+skin.hippo.apo.lm = lm(APOBEC ~ HIPPO, data = skin.concat)
+
+skin.hippo.apo.logit = glm(HIPPO ~ APOBEC, data = skin.concat, family = binomial)
+
+
+
+
+
 skin.rlm = MASS::rlm(skin.concat[, "Ageing"] ~ skin.concat[, "TGF-Beta"])
 
 skin.rlm2 = MASS::rlm(skin.concat[, "TGF-Beta"] ~ skin.concat[, "Ageing"])
@@ -34,9 +62,6 @@ skin.rlm2 = MASS::rlm(skin.concat[, "TGF-Beta"] ~ skin.concat[, "Ageing"])
 skin.lmrob = robustbase::lmrob(skin.concat[, "Ageing"] ~ skin.concat[, "TGF-Beta"])
 
 skin.lmrob2 = robustbase::lmrob(skin.concat[, "TGF-Beta"] ~ skin.concat[, "Ageing"])
-
-
-
 
 skin.rlm = MASS::rlm(skin.concat[, "Ageing"] ~ skin.concat[, "HIPPO"])
 sfsmisc::f.robftest(skin.rlm, var = -1)
