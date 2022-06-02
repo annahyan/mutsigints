@@ -125,7 +125,7 @@ for (tissue in names(tissue.odds.ratio)) {
                                         title = tissue)
         
         ggsave(plot = int.heatmap,
-               filename = file.path(fig.dir, "by_tissues", "oddsratio",  
+               filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",  
                                     paste0(tissue, "_sig_pathway.dotplot.png")),
                height = 5, width = 6, bg = "white")
     }
@@ -187,7 +187,7 @@ for (tissue in abundant.tissues) {
                                         title = tissue)
         
         ggsave(plot = int.heatmap,
-               filename = file.path(fig.dir, "by_tissues", "lm_counts", 
+               filename = file.path(fig.dir,"pathway_to_signature", "by_tissues", "lm_counts", 
                                     paste0(tissue, "_sig_tilde_pathway.dotplot.png")),
                height = 5, width = 6, bg = "white")
     }
@@ -196,7 +196,7 @@ for (tissue in abundant.tissues) {
 
 #### Summarizing the regression of signatures ~ pathways
 
-```{r}
+```{r, warning= FALSE}
 pp.logged = plot_all_counts(tissue.lm.coefs.mats.log, threshold = 0.2)
 print(pp.logged)
 
@@ -205,6 +205,12 @@ ggsave(plot = pp.logged,
                                     "by_tissues", "lm_log", 
                                     "logged_summarized_OLS.png"),
                height = 3, width = 4, bg = "white")
+
+ggsave(plot = pp.logged,
+               filename = file.path(fig.dir, "pathway_to_signature", 
+                                    "by_tissues", "lm_log", "logged_summarized_OLS.pdf"),
+               height = 3, width = 4, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
+
 ```
 
 We can look at some select interactions. E.g. tissues where the interaction
