@@ -236,7 +236,8 @@ cat(gsub(",", ", ", TP53.HR))
 ### Case inspection of melanoma
 
 ```{r}
-skin.data = get_tissue_pathway_activities("Skin_Melanoma", 
+tissue = "Skin_Melanoma"
+skin.data = get_tissue_pathway_activities(tissue, 
                                           sigs.input = PCAWG.full.subset.ann.pathways,
                                           pathways.input = mutated.pathways.tissues)
 
@@ -250,7 +251,7 @@ uv.rtkras = skin.concat %>%
     mutate (`RTK RAS` = factor(`RTK RAS`, levels = c(0, 1,2,3))) %>%
     ggplot(aes(x = `RTK RAS`, y = UV, 
                            group = `RTK RAS`, fill = `RTK RAS`) ) + 
-    geom_boxplot() + geom_jitter(width = 0.25, height = 0.25) + 
+    geom_boxplot() + geom_jitter(width = 0.15, height = 0.15) + 
     theme_bw(base_size = 13) + 
     ylab("log(UV)")
 
@@ -263,7 +264,7 @@ ggsave(filename = file.path(fig.dir, paste0(tissue, "uv_rtkras_relationship.png"
 rev.uv.rtkras = skin.concat %>% 
     mutate (`RTK RAS` = factor(`RTK RAS`, levels = c(0, 1,2,3))) %>%
     ggplot(aes(x = UV, y = `RTK RAS`) ) + 
-    geom_jitter(width = 0.25, height = 0.25) + 
+    geom_jitter(width = 0.1, height = 0.15) + 
     theme_bw(base_size = 13) + 
     xlab("log(UV)")
 

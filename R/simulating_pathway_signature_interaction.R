@@ -91,3 +91,14 @@ log.out = get_sig_path_lms(sim.out[, "signature", drop = FALSE],
 
 
 
+
+x = runif(100)
+y = 100 * x + 10 * rnorm(100)
+
+y.x = lm(y ~ x)
+summary(y.x)$coefficients
+
+x.y = lm(x ~ y)
+summary(x.y)$coefficients
+
+
