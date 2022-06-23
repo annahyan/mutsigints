@@ -488,9 +488,16 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.1) {
     gg.final.dt = as.data.frame(gg.final.dt)
     
     d <- ggplot(gg.final.dt, aes(x = x, y = y, color = int.type,
-                                 shape = int.type, label = count)) +
-        geom_point(aes(alpha = abs(count)), size = 4.5) +
-        geom_text(aes(x = xlab, y = ylab), size = 2, color = "white", fontface = "bold") +
+             shape = int.type, label = count))
+    
+    if (Sys.info()['sysname'] == "Darwin") {
+        d = d + point_with_family(geom_point(size = 5), "wqy-microhei")
+    } else {
+        d = d + geom_point(size = 4.5)
+    }
+    d = d +
+        point_with_family(geom_point(size = 18), "impact") +
+        geom_text(aes(x = xlab, y = ylab), size = 2, color = "black", fontface = "bold") +
         scale_shape_manual(values=c("\u25E4","\u25E2")) +
         scale_color_brewer(palette = "Set1") 
     
@@ -522,6 +529,7 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.1) {
     d
     return(d)
 }
+
 
 
 #' Summarizing individual matrices of interactions
@@ -559,4 +567,28 @@ summarize_int_mat = function(interaction.list, pos.ints = TRUE) {
         }
     }
     return(outmat)
+}
+
+### https://stackoverflow.com/questions/48531257/ggplot-geom-point-how-to-set-font-of-custom-plotting-symbols
+point_with_family <- function(layer, family) {
+    old_geom <- layer$geom
+    new_geom <- ggproto(
+        NULL, old_geom,
+        draw_panel = function(self, data, panel_params, coord, na.rm = FALSE) {
+            pts <- ggproto_parent(GeomPoint, self)$draw_panel(
+                data, panel_params, coord, na.rm = na.rm
+            )
+            pts$gp$fontfamily <- family
+            pts
+        },
+        draw_key = function(self, data, params, size) {
+            pts <- ggproto_parent(GeomPoint, self)$draw_key(
+                data, params, size
+            )
+            pts$gp$fontfamily <- family
+            pts
+        }
+    )
+    layer$geom <- new_geom
+    layer
 }
