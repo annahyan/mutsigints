@@ -49,8 +49,6 @@ simulate_exp = function(N, r, mu1, mu2, zero.p1, zero.p2) {
     return(out.df)
 }
 
-
-
 N = 100
 r = 0.3
 
@@ -90,7 +88,18 @@ log.out = get_sig_path_lms(sim.out[, "signature", drop = FALSE],
                                   path.to.sig = FALSE)
 
 
+lm.sim = lm(signature ~ pathway, data = sim.out)
+lm.sim.summary = summary(lm.sim)
 
+lm.sim.summary$residuals %>% 
+    enframe %>% 
+    ggplot(aes(x = value) ) + geom_histogram()
+
+
+log.sim = glm(pathway ~ signature, data = sim.out, family = binomial)
+log.sim.summary = summary(log.sim)
+
+log.sim.summary$
 
 x = runif(100)
 y = 100 * x + 10 * rnorm(100)

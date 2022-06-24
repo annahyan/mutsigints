@@ -171,3 +171,48 @@ robustbase::glmrob(paths.binary ~ 1 + logged.sbs17, family = binomial)
 
 glm.out = glm(paths.binary ~ 1 + logged.sbs17, family = binomial)
 
+
+# Pancreatic adenocarcinoma -----------------------------------------------
+
+
+pancadeno.data = get_tissue_pathway_activities("Panc_AdenoCA", 
+                                              sigs.input = PCAWG.full.subset.ann.pathways,
+                                              pathways.input = mutated.pathways.tissues)
+
+pancadeno.data$sigs.logged = pancadeno.data$sigs %>% 
+    mutate(across(.cols = everything(), ~ log(.x + 1 )))
+
+pancadeno.concat = merge(pancadeno.data$sigs.logged, 
+                         pancadeno.data$paths, by = "row.names")
+
+panc.lm = lm(SBS40 ~ NOTCH, data = pancadeno.concat)
+summary(panc.lm)
+
+
+panc.odds.mat = get_sig_path_lms(pancadeno.data$sigs,
+                                 pancadeno.data$paths, 
+                                 p.val.threshold = 0.1,
+                                 robust = FALSE,
+                                 p.adjust = TRUE,
+                                 method = "BH",
+                                 sig.log = TRUE,
+                                 path.to.sig = TRUE)
+
+
+ggheatmap_wrapper(panc.odds.mat)
+
+
+
+
+ova.data = get_tissue_pathway_activities("Ovary_AdenoCA", 
+                                               sigs.input = PCAWG.full.subset.ann.pathways,
+                                               pathways.input = mutated.pathways.tissues)
+
+ova.odds.mat = get_sig_path_lms(ova.data$sigs,
+                                ova.data$paths, 
+                                 p.val.threshold = 0.1,
+                                 robust = FALSE,
+                                 p.adjust = TRUE,
+                                 method = "BH",
+                                 sig.log = TRUE,
+                                 path.to.sig = TRUE)
