@@ -142,6 +142,7 @@ In this first case, I tried logging.
 tissue.lm.coefs.mats.log = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
                                  pathways.input = mutated.pathways.tissues,
                                  interaction_function = get_sig_path_lms, 
+                                 robust = FALSE,
                                  path.min.tissues = 30,
                                  p.val.threshold = 0.1,
                                  p.adjust = TRUE,
