@@ -201,6 +201,15 @@ get_sig_path_lms = function(sigs.df, pathways.df,
                 next
             }
             
+            paths.binary = as.numeric(tissue.concat[, pathway] > 0)
+            
+            ### Drop if all elements are non-zero
+            if (length(unique(paths.binary)) == 1) {
+                int.mat[sig, pathway] = 0
+                p.values[sig, pathway] = 1
+                next
+            }
+            
             if ( robust ) {
                 if (path.to.sig) {
                     ## with Robustbase
@@ -216,7 +225,6 @@ get_sig_path_lms = function(sigs.df, pathways.df,
                     #     error = function(e) {return(1)})
                     
                 } else {
-                    paths.binary = as.numeric(tissue.concat[, pathway] > 0)
                     ### Trying robust logistic regression first.
                     ### If it throws an error, then regular logistic regression.
                     
@@ -239,7 +247,8 @@ get_sig_path_lms = function(sigs.df, pathways.df,
                 }
             } else {
                 if (path.to.sig) {
-                    lin.mod = lm(tissue.concat[, sig] ~ tissue.concat[, pathway])
+                    # lin.mod = lm(tissue.concat[, sig] ~ tissue.concat[, pathway])
+                    lin.mod = lm(tissue.concat[, sig] ~ paths.binary)
                     int.mat[sig, pathway] = summary(lin.mod)$coefficients[, "Estimate"][2]
                     p.values[sig, pathway] = summary(lin.mod)$coefficients[,"Pr(>|t|)"][2]
                 } else {
@@ -369,7 +378,7 @@ ggheatmap_wrapper = function(metric.matrix,
             limits = c(-range_lim, range_lim)
         }
         
-        tissue.odds.plot = ggheatmap::ggheatmap(
+        tissue.odds.plot = myggheatmap(
             as.data.frame(metric.matrix), colorPalette = colorPalette,
             orderCol = ordercol,
             orderRow = orderrow,
