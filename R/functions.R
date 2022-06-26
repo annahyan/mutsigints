@@ -408,7 +408,8 @@ ggheatmap_wrapper = function(metric.matrix,
 #' 
 #' @return ggplot object
 
-plot_all_counts = function(list.of.int.elems, threshold = 0.1) {
+plot_all_counts = function(list.of.int.elems, threshold = 0.1, 
+                           psize = 8, expand.mult = c(0.04, 0.04)) {
     
     # all.sigs = do.call(c, lapply(summary.matrix, function(x) colnames(x)) ) %>%
     #     unique()
@@ -501,12 +502,12 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.1) {
     
     if (Sys.info()['sysname'] == "Darwin") {
         # d = d + point_with_family(geom_point(size = 5), "wqy-microhei")
-        d = d + point_with_family(geom_point(size = 1), "Arial Unicode MS")
+        d = d + point_with_family(geom_point(size = psize), "Arial Unicode MS")
     } else {
-        d = d + geom_point(size = 4.5)
+        d = d + geom_point(size = psize)
     }
     d = d +
-        point_with_family(geom_point(size = 18), "impact") +
+        # point_with_family(geom_point(size = 18), "impact") +
         geom_text(aes(x = xlab, y = ylab), size = 2, color = "black", fontface = "bold") +
         scale_shape_manual(values=c("\u25E4","\u25E2")) +
         scale_color_brewer(palette = "Set1") 
@@ -529,16 +530,17 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.1) {
                axis.title = element_blank(),
                legend.position = "none"
         ) +
-        scale_x_continuous(expand = expansion(mult = c(0.15, 0.15)),
+        scale_x_continuous(expand = expansion(mult = expand.mult),
             breaks = row.indices,
             labels = names(row.indices),
             position = "top") +
-        scale_y_continuous(expand = expansion(mult = c(0.15, 0.15)),
+        scale_y_continuous(expand = expansion(mult = expand.mult),
             breaks = col.indices,
             labels = names(col.indices))
     d
     return(d)
 }
+
 
 
 
