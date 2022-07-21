@@ -543,7 +543,6 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.1,
 
 
 
-
 #' Summarizing individual matrices of interactions
 #' 
 #' @param interaction.list Input list
@@ -604,3 +603,112 @@ point_with_family <- function(layer, family) {
     layer$geom <- new_geom
     layer
 }
+
+
+#' Calculates interaction values using a given metric_func in a dataset
+#' through bootstrapping.
+#' @param data.input Input mutational signatures
+#' @param metric_func Function calculating the interaction from a matrix
+#' @param min.tissue.samples Tissues with less than 
+#' this number of samples are discarded. Default: 20
+#' @param sample.rate The proportion of samples which should be sampled during 
+#' the bootstrapping procedure. Default: 0.9
+#' @param sample.N Number of times to sample. Default: 100
+#' @param N Number of times the function should be called for each sampled set:
+#' Default: 1
+#' @param seed Random number generator seed. Default: 1.
+#' @param ... Parameters to be passed to metric_func.
+
+get_metrics_list = function(data.input, metric_func,
+                            min.tissue.samples = 20,
+                            sample.rate = 0.9, sample.N = 100, 
+                            N = 1, seed = 1,  ...) {
+    
+    action_func = function(x) {
+        metric_func(x, ...)
+    }
+    
+    tissues = unique(data.input$Cancer.Types)
+    
+    int.metric.list = list()
+    
+    for (tissue in tissues) {
+
+        #### Filtering for tissues with enough samples
+        tissue.signatures = list()
+        cat("Processing tissue ", tissue, "\n")
+            
+        dt = data.input
+        tissue.sig = dt %>% filter(Cancer.Types == tissue) %>%
+            select(4:ncol(dt))
+        # tissue.sig = tissue.sig %>% filter(MMR == 0)
+        tissue.sig = tissue.sig[, colSums(tissue.sig) > 10,
+                                drop = FALSE]
+        
+            if (nrow(tissue.sig) < min.tissue.samples) {
+                cat("Tissue:", tissue , " has <", min.tissue.samples,
+                    "samples in ", dataset, ". Skipping.\n")
+                tissue.signatures = NULL
+            } else {
+                tissue.signatures = tissue.sig
+            }
+        
+        metric_out = run_calc_metrics(tissue.signatures, action_func,
+                                      sample.rate, sample.N, N, seed)
+        int.metric.list[[tissue]] = metric_out
+    }
+    return(int.metric.list)
+}
+
+
+# Calculates the metric for a list or a dataframe.
+
+run_calc_metrics = function(tissue.signatures, action_func, sample.rate = 0.9, 
+                            sample.N = 100, N = 1, seed = 1) {
+    
+    if (inherits(tissue.signatures, "list")) {
+        int.metric.calcs = lapply(tissue.signatures, function(dt)
+            calc_metric(dt, action_func, sample.rate, sample.N, N, seed)
+        )
+    } else if (inherits(tissue.signatures, "data.frame")) {
+        int.metric.calcs = calc_metric(tissue.signatures, action_func, 
+                                       sample.rate, sample.N, N, seed)
+    }
+    return(int.metric.calcs)
+}
+
+#' Calculates the metric function for a matrix, by performing bootstrapping.
+#' @param dt.sigs A dataframe or a matrix of mutational signatures.
+#' @param action_func Function calculating the interaction from a matrix
+#' @param sample.rate The proportion of samples which should be sampled during 
+#' the bootstrapping procedure. Default: 0.9
+#' @param sample.N Number of times to sample. Default: 100
+#' @param N Number of times the function should be called for each sampled set:
+#' Default: 1
+#' @param seed Random number generator seed. Default: NULL.
+
+calc_metric = function(dt.sigs, action_func, sample.rate, sample.N, N, seed = NULL ) {
+    
+    if (!is.null(seed)) { set.seed(seed)}
+    if (is.null(dt.sigs)) {
+        return(NULL)
+    } else {
+        sample.length = nrow(dt.sigs)
+        sample.counts = round(sample.length * sample.rate)
+        
+        sampled.out = lapply(1:sample.N, function(i) {
+            sampled.signatures = sample_n(dt.sigs, sample.counts)
+            ll <- replicate(N, action_func(sampled.signatures),
+                            simplify = FALSE )
+            
+            ll.named = lapply(ll, function(x) {
+                colnames(x) = colnames(sampled.signatures)
+                rownames(x) = colnames(sampled.signatures)
+                return(x)
+            })
+            return(ll.named)
+            
+        }) }
+}
+
+
