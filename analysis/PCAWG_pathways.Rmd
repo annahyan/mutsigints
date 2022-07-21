@@ -92,7 +92,7 @@ all.path.sig.assocs = get_sig_path_assocs(
     mutated.pathways.tissues %>% select(4:ncol(.)),
     p.val.threshold = 0.05)
 
-all.path.sig.heatmap = ggheatmap::ggheatmap(
+all.path.sig.heatmap = myggheatmap(
     dataMatrix = rm_zeros(all.path.sig.assocs), 
     points = T, revColors = F, revRow = T, 
     scaleName = "log(OR)",
