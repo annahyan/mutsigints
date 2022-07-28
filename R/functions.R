@@ -711,4 +711,318 @@ calc_metric = function(dt.sigs, action_func, sample.rate, sample.N, N, seed = NU
         }) }
 }
 
+#' Extracts the interaction metrics of a tissue 
+#' from a list of interaction networks.
+#' @param tissue Tissue to be extracted
+#' @param network.lists The input list
+#' @param filter.list A list of metric values to be filtered out. The list 
+#' element names have the same names as metric names in network.lists. 
+#' The values specify filtering threshold. Everything below the number is 
+#' set to 0. Default: NULL
+#' @return A list with interaction metric matrices. The list element names match
+#' those in the input network.lists.
 
+get_tissue_dataset_networks = function(tissue,
+                                       network.lists, 
+                                       filter.list = NULL) {
+    
+    out.list = lapply(network.lists, function(x) 
+        x[[tissue]])
+    
+    if (is.null(filter.list)) {
+        return(out.list)
+    } 
+    
+    filter.list.absent = setdiff(names(filter.list), names(out.list))
+    
+    if (length( filter.list.absent > 0))  {
+        stop(paste("filter.llist has variable names not present:", 
+                   paste(filter.list.absent, collapse = " ")) )
+    } 
+    
+    for (var in names(filter.list)) {
+        varlim = filter.list[[var]]
+        mat = out.list[[var]]
+        mat[ abs(mat) < varlim ] = 0
+        mat = mat[rowSums(mat) > 0, colSums(mat) > 0]
+        out.list[[var]] = mat
+    }
+    return(out.list)
+}
+
+
+#' Plotting a heatmap for signature networks. Can be a PCAWG-format with first 
+#' 3 columns being a metadata, or a matrix/data.frame with all signature activity
+#' values.
+#' @param .dataset Input dataset
+#' @param filename If provided the pheatmap will be save with this filename.
+#' Default: NULL
+#' @param main Title of the heatmap
+#' @param ... Parameters will be passed to pheatmap function.
+#' 
+#' 
+
+plot_tissue_heatmap = function(.dataset, filename = NULL, main = NULL, ...) {
+    
+    classes = sapply(.dataset, class)
+    if (! all(sapply(.dataset, class)[1:3] %in% c("numeric", "integer")))  {
+        dt.plot = .dataset[, 4:ncol(.dataset)]
+    } else {
+        
+        dt.plot = .dataset
+    }
+    
+    dt.plot = dt.plot[, colSums(dt.plot) > 0]
+    
+    if (is.null(main)) {
+        main = paste(nrow(.dataset), "samples")
+    } else {
+        main = paste(main, "-", nrow(.dataset), "samples")
+    }
+    
+    if (is.null(filename) ) {
+        pheatmap(log(dt.plot + 1), 
+                 color = viridis(15),
+                 show_rownames = FALSE,
+                 main = main, 
+                 width = 7.1, height = 6.83,
+                 # filename = here("figures/signature_heatmaps/", "TCGA.annotated.tissues.png"),
+                 # annotation_row = tcga.annotation.row,
+                 # annotation_colors = tcga.mycolors
+                 # # annotation_legend = FALSE
+                 ...)
+    } else {
+        pheatmap(log(dt.plot + 1), 
+                 color = viridis(15),
+                 show_rownames = FALSE,
+                 width = 7.1, height = 6.83,
+                 main = main,
+                 filename = filename,
+                 # annotation_row = tcga.annotation.row,
+                 # annotation_colors = tcga.mycolors
+                 # # annotation_legend = FALSE
+                 ...)   
+    }
+}
+
+
+#' Adds a legend title to pheatmap legend
+#' 
+#' @param p ggplot object produced by pheatmap.
+#' @param legend.grob.index The grob which contains the legend grob.
+#' @details Based on Mike H.'s answer from https://stackoverflow.com/questions/36852101/r-legend-title-or-units-when-using-pheatmap
+#' 
+
+add_pheatmap_legend_title = function(p, legend.grob.index = 6, 
+                                     legend.text = "log(n)") {
+    
+    legend.grob <- p$gtable$grob[[legend.grob.index]]
+    
+    legend.grob$children[[1]]$y <- legend.grob$children[[1]]$y - 0.08 * legend.grob$children[[1]]$y 
+    legend.grob$children[[2]]$y <- legend.grob$children[[2]]$y - 0.08 * legend.grob$children[[2]]$y
+    legend.grob$children[[1]]$x <- legend.grob$children[[1]]$x + 0.15 * legend.grob$children[[1]]$x
+    legend.grob$children[[2]]$x <- legend.grob$children[[2]]$x + 0.15 * legend.grob$children[[2]]$x
+    
+    leg_label <- textGrob(legend.text,
+                          x=0,y=0.95,hjust=0,vjust=0,gp=gpar(fontsize=10,fontface="bold"))
+    
+    legend.grob2 <- addGrob(legend.grob,leg_label)
+    
+    p$gtable$grobs[[legend.grob.index]] = legend.grob2
+    return(p)
+}
+
+
+#' The function summarizes interactions for a given metric across tissues, 
+#' identifies common interaction motifs.
+#' @param metric.list input metric.list, element names are different interaction
+#' metrics. Each element is a list corresponding to interactions corresponding
+#' to individual tissues.
+#' @param metric Metric for which the summaries should be obtained.
+#' @param outdir The output directory where the interaction matrices and the 
+#' outputs should be written.
+#' @param threshold All interactions below this threshold are set to 0. 
+#' Default: 0.2.
+#' 
+
+get_common_sigs = function(metric.list, metric, outdir, threshold = 0.2) {
+
+    for (tissue in names(metric.list[[metric]])) {
+        cat("\t\tTissue = ", tissue, "\n")
+        tissue.int.mat = metric.list[[metric]][[tissue]]  
+        
+        if(is.null(tissue.int.mat)) next
+        
+        tissue.int.mat[ abs(tissue.int.mat) < threshold] = 0
+        tissue.int.mat  = sign(tissue.int.mat)
+        write.table(tissue.int.mat, file = paste0(outdir, "/",  tissue, ".txt"),
+                    sep = "\t", quote = F, row.names = TRUE, col.names = TRUE)
+    }
+    python.call = paste("python3", here("python", "combine_networks.py"),
+                        outdir)
+    cat(python.call, "\n")
+    system(python.call, wait = TRUE)
+}
+
+
+#' 
+#' @param network.lists The input list.
+#' @param tissue Tissue to be extracted.
+#' @param filter.list A list of metric values to be filtered out. The list 
+#' element names have the same names as metric names in network.lists. 
+#' The values specify filtering threshold. Everything below the number is 
+#' set to 0. Default: NULL
+
+concat_networks = function(network.lists, tissue, filter.list) {
+    
+    try({
+        tissue.nets = get_tissue_dataset_networks(
+            tissue,
+            network.lists = network.lists, 
+            filter.list = filter.list
+        )
+        
+        for (type in names(tissue.nets)) {
+            if (sum(abs(tissue.nets[[type]]) ) == 0  ) {
+                tissue.nets[[type]] = NULL
+            }
+        }
+        
+        ts.multi.graph = tissue_multi_graph(tissue.nets)
+        ## layout = "dh"
+        ts.adj.mat = as.matrix(as_adjacency_matrix(ts.multi.graph))
+        ts.adj.mat[ts.adj.mat < 2] = 0
+        ts.adj.mat[ts.adj.mat > 0] = 1
+        ts.adj.mat = ts.adj.mat + t(ts.adj.mat)
+        
+        
+        edge.info = ts.multi.graph %>% activate(edges) %>% data.frame() %>% 
+            filter(int_type != "MI")
+        
+        adj.net = as.matrix(as_adjacency_matrix(ts.multi.graph)) * 0
+        for(i in 1:nrow(edge.info)) {
+            adj.net[edge.info[i, "from"], edge.info[i, "to"]] = 
+                adj.net[edge.info[i, "from"], edge.info[i, "to"]] + edge.info[i, "weight_"]
+        }
+        adj.net = adj.net + t(adj.net)
+        ts.adj.mat = ts.adj.mat * adj.net
+        ts.adj.mat = ts.adj.mat [colSums(abs(ts.adj.mat) ) > 0, 
+                                 rowSums(abs(ts.adj.mat)) > 0]
+        return(ts.adj.mat)
+    })
+    
+    return(c())
+}
+
+
+
+#' Wrapper of tissue interaction network plot
+#' @param tissue Tissue to be extracted
+#' @param network.lists The input list
+#' @param filter.list A list of metric values to be filtered out. The list 
+#' element names have the same names as metric names in network.lists. 
+#' The values specify filtering threshold. Everything below the number is 
+#' set to 0. Default: NULL
+#' @param layout layout to be passed to ggraph. Default: stress. Some useful
+#' alternative is dh.
+#' 
+
+plot_multi_network = function(network.lists, tissue, filter.list, layout = "stress") {
+    
+    tissue.nets = get_tissue_dataset_networks(
+        tissue,
+        network.lists = all.interactions, 
+        filter.list = list(MI = 0.2))
+    
+    for (type in names(tissue.nets)) {
+        if (sum(abs(tissue.nets[[type]]) ) == 0  ) {
+            tissue.nets[[type]] = NULL
+        }
+    }
+    
+    ts.multi.graph = tissue_multi_graph(tissue.nets)
+    pp = print_multi_graphs(ts.multi.graph, layout = layout)
+    
+}
+
+
+#' Summarize positive and negative interactions across tissues 
+#'
+#' For each signature pair the function counts how many positive and negative 
+#' interactions were observed across tissues and returns a matrix of lists with 
+#' two elements called pos and neg or NULL if no interactions were found. 
+#' 
+#' @param summary.list A list of interactions for individual tissues. Each 
+#' element is a matrix.
+#' @param tissue.names 
+#' @return a list of two matrices for each dataset. The elements of the matrices
+#' are lists as elements with two elements called pos and neg for positive and 
+#' negative interactions.
+
+summarize_by_tissues = function(summary.list, tissue.names = FALSE) {
+    
+    all.signatures = sapply(networks.concat, rownames) %>% 
+        unlist() %>% 
+        unique()
+    
+    all.mat = matrix(list(), ncol = length(all.signatures),
+                                  nrow = length(all.signatures),
+                                  dimnames = list(all.signatures, all.signatures))
+
+    for(tissue in names(summary.list)) {
+        cat("tissue =", tissue, "\n")
+        dt_res = summary.list[[tissue]]
+        
+        signames = colnames(dt_res)
+        
+        if (is.null(dt_res)) {
+            dt.inds.pos = c()
+            dt_inds_neg = c()
+            next
+        }
+        
+        dt.inds.pos = which(dt_res > 0, arr.ind = TRUE)
+        
+        if ( length(dt.inds.pos) != 0) {
+            for(i in 1:nrow(dt.inds.pos)) {
+                sig1 = signames[dt.inds.pos[i, "row"]]
+                sig2 = signames[dt.inds.pos[i, "col"]]
+                if (tissue.names) {
+                    if (is.null(all.mat[sig1, sig2][[1]]))  {
+                        all.mat[sig1, sig2][[1]] = list(pos = "", neg = "")
+                    }
+                    all.mat[sig1, sig2][[1]][["pos"]] = 
+                        paste(tissue, all.mat[sig1, sig2][[1]][["pos"]], sep = ",")
+                    
+                } else {
+                    if (is.null(all.mat[sig1, sig2][[1]]))  {
+                        all.mat[sig1, sig2][[1]] = list(pos = 0, neg = 0)
+                    }
+                    all.mat[sig1, sig2][[1]][["pos"]] = all.mat[sig1, sig2][[1]][["pos"]]  + 1
+                }
+            }
+        }
+        
+        dt.inds.neg = which(dt_res < 0, arr.ind = TRUE)
+        if(length(dt.inds.neg) != 0 ) {
+            for(i in 1:nrow(dt.inds.neg)) {
+                sig1 = signames[dt.inds.neg[i, "row"]]
+                sig2 = signames[dt.inds.neg[i, "col"]]
+                if (tissue.names) {
+                    if (is.null(all.mat[sig1, sig2][[1]])){
+                        all.mat[sig1, sig2][[1]] = list(pos = "", neg = "")
+                    }
+                    all.mat[sig1, sig2][[1]][["neg"]] = 
+                        paste(tissue, all.mat[sig1, sig2][[1]][["neg"]], sep = ",")     
+                } else {
+                    if (is.null(all.mat[sig1, sig2][[1]])){
+                        all.mat[sig1, sig2][[1]] = list(pos = 0, neg = 0)
+                    }
+                    all.mat[sig1, sig2][[1]][["neg"]] = all.mat[sig1, sig2][[1]][["neg"]] - 1
+                }
+            }
+        }
+    }
+
+    return(all.mat)
+}
