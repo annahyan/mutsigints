@@ -524,7 +524,7 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.1,
     }
     d = d +
         # point_with_family(geom_point(size = 18), "impact") +
-        geom_text(aes(x = xlab, y = ylab), size = 2, color = "black", fontface = "bold") +
+        geom_text(aes(x = xlab, y = ylab), size = lsize, color = "black", fontface = "bold") +
         scale_shape_manual(values=c("\u25E4","\u25E2")) +
         scale_color_brewer(palette = "Set1") 
     
