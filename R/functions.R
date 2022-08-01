@@ -25,6 +25,25 @@ set_signature_annotation = function(annotations, signature.matrix.df) {
     return(signature.matrix.df.ann)
 }
 
+#' A function-wrapper to read sample sheet. 
+#' @param file.dir File directory.
+#' @details The function can be later used in case some sort of processing
+#' becomes necessary.
+#' 
+get_sample_sheet = function(file.dir) {
+    read.delim(file.dir)
+}
+
+
+#' A function-wrapper to read specimen histology file. 
+#' @param file.dir File directory.
+#' @details The function can be later used in case some sort of processing
+#' becomes necessary.
+#' 
+get_specimen_hist = function(file.dir) {
+    read_excel(file.dir)
+}
+
 
 #' Performs p-value adjustment on a matrix of p-values based on input parameters. 
 #' 

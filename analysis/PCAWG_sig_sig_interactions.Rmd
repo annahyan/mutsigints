@@ -145,12 +145,12 @@ for (tissue in tissues) {
 }
 
 sig.sig.ints.summary.plot = plot_all_counts(networks.concat, min.abssum = 3,
-                                            psize = 5, lsize = 2.2, 
+                                            psize = 4.5, lsize = 1.7, 
                                             expand.mult = c(0.02, 0.02)) + 
-    coord_cartesian(x = c(1, 19), clip = "off")
+    coord_cartesian(x = c(1, 20), clip = "off")
 
 ggsave(filename = file.path(fig.dir, paste0("sig_sig_ints_summary_plot.png") ),
        plot = sig.sig.ints.summary.plot,
-       width = 4.5, height = 4.5)
+       width = 3.7, height = 3.5)
 # concat.summaries = summarize_by_tissues(networks.concat)
 ```
