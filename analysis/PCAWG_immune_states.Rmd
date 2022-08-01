@@ -1,0 +1,32 @@
+---
+title: "Immune states in PCAWG"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r}
+knitr::opts_chunk$set(comment = '', fig.width = 6, 
+                      fig.height = 6, echo = FALSE, 
+                      warning = FALSE)
+```
+
+
+```{r load-packages}
+library(here)
+fig.dir = here("figures/immune_analysis")
+
+if(! file.exists(fig.dir)){
+    dir.create(fig.dir, recursive = TRUE)
+}
+
+source(here("R/load_packages.R"))
+```
+
+<!-- ```{r loading} -->
+<!-- mutated.pathways.tissues = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways", -->
+<!--                                               "pcawg_pathways.RDS")) -->
+
+<!-- PCAWG.full.subset.ann.pathways = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways", -->
+<!--                                               "PCAWG.full.subset.ann.pathways.RDS")) -->
+<!-- ``` -->
