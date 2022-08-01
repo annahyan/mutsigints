@@ -400,6 +400,12 @@ ggheatmap_wrapper = function(metric.matrix,
 #' 
 #' @param list.of.int.elems A list with matrix elements.
 #' @param threshold All the values below the threshold are discarded.
+#' @param psize Controls the size of the triangles. Default: 8.
+#' @param lsize Label size. Default: 2.
+#' @param expand.mult A vector of expansion factors for x and y axes. 
+#' Default. c(0.04, 0.04)
+#' @param diag.only If true, for symmetric matrices only diagonal will be printed.
+#' Default:TRUE.
 #' 
 #' @details The input is a list of matrices corresponding to e.g. interactions
 #' in different tissues. The output plot summarizes the number of list elements
@@ -409,7 +415,8 @@ ggheatmap_wrapper = function(metric.matrix,
 #' @return ggplot object
 
 plot_all_counts = function(list.of.int.elems, threshold = 0.1, 
-                           psize = 8, expand.mult = c(0.04, 0.04)) {
+                           psize = 8, lsize = 2, expand.mult = c(0.04, 0.04), 
+                           diag.only = TRUE) {
     
     # all.sigs = do.call(c, lapply(summary.matrix, function(x) colnames(x)) ) %>%
     #     unique()
@@ -485,12 +492,21 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.1,
         mutate(x = row.indices[rows],
                y = col.indices[cols])
     
+    ### If the matrices are symmetric, then only upper triangle is plotted.
+
+    if (all.equal(neg.ints.mat, t(neg.ints.mat)) &
+            all.equal(pos.ints.mat, t(pos.ints.mat)) & diag.only) {
+        gg.final.dt = gg.final.dt %>% filter(x < y)
+        
+        row.indices = row.indices[ which(row.indices %in% gg.final.dt$x)]
+        col.indices = col.indices[ which(col.indices %in% gg.final.dt$y)]
+    }
     
     gg.final.dt = gg.final.dt %>%
         mutate(xlab = ifelse(int.type == "pos", x - 0.2, x + 0.2),
                ylab = ifelse(int.type == "pos", y + 0.15, y - 0.15),
                int.type = factor(int.type, levels = c("pos", "neg") ) )
-
+    
     # gg.final.dt = gg.final.dt %>% 
     #     mutate(xlab = x, 
     #            ylab = y)
