@@ -400,6 +400,8 @@ ggheatmap_wrapper = function(metric.matrix,
 #' 
 #' @param list.of.int.elems A list with matrix elements.
 #' @param threshold All the values below the threshold are discarded.
+#' @param min.abssum Rows and columns containing with less than this number of 
+#' interactions (absolute) are removed. Default: 1.
 #' @param psize Controls the size of the triangles. Default: 8.
 #' @param lsize Label size. Default: 2.
 #' @param expand.mult A vector of expansion factors for x and y axes. 
@@ -414,7 +416,7 @@ ggheatmap_wrapper = function(metric.matrix,
 #' 
 #' @return ggplot object
 
-plot_all_counts = function(list.of.int.elems, threshold = 0.1, 
+plot_all_counts = function(list.of.int.elems, threshold = 0.1, min.abssum = 1,
                            psize = 8, lsize = 2, expand.mult = c(0.04, 0.04), 
                            diag.only = TRUE) {
     
@@ -473,13 +475,13 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.1,
     abs.row.nonzero = gg.final.dt %>% 
         group_by(rows) %>% 
         summarise(abssum = sum(abs(count))) %>% 
-        filter(abssum > 0) %>% 
+        filter(abssum >= min.abssum) %>% 
         pull(rows)
     
     abs.col.nonzero = gg.final.dt %>% 
         group_by(cols) %>% 
         summarise(abssum = sum(abs(count))) %>% 
-        filter(abssum > 0) %>% 
+        filter(abssum >= min.abssum) %>% 
         pull(cols)
     
     
@@ -492,6 +494,11 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.1,
         mutate(x = row.indices[rows],
                y = col.indices[cols])
     
+    gg.final.dt$text.col = sapply(gg.final.dt$count, function(x) {
+        if ( x > 0 ) { return("black")
+        }  else {return ("white")}
+    })
+    print(head(gg.final.dt))    
     ### If the matrices are symmetric, then only upper triangle is plotted.
 
     if (all.equal(neg.ints.mat, t(neg.ints.mat)) &
@@ -524,9 +531,10 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.1,
     }
     d = d +
         # point_with_family(geom_point(size = 18), "impact") +
-        geom_text(aes(x = xlab, y = ylab), size = lsize, color = "black", fontface = "bold") +
         scale_shape_manual(values=c("\u25E4","\u25E2")) +
-        scale_color_brewer(palette = "Set1") 
+        scale_color_brewer(palette = "Set1") +
+        geom_text(aes(x = xlab, y = ylab),
+                  size = lsize, fontface = "bold", color = "black")
     
     d = d +
         # theme_minimal() +
