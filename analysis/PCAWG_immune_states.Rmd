@@ -30,3 +30,23 @@ source(here("R/load_packages.R"))
 <!-- PCAWG.full.subset.ann.pathways = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways", -->
 <!--                                               "PCAWG.full.subset.ann.pathways.RDS")) -->
 <!-- ``` -->
+
+
+```{r}
+immune.states = readRDS(file = file.path(out.dir, "pcawg_immune_states.RDS"))
+
+PCAWG.full.subset.ann.immune= readRDS(
+    file = file.path(out.dir, "PCAWG.full.subset.ann.immune.RDS"))
+```
+
+### Summary of immune states
+
+```{r}
+table(immune.states[, c("RF", "DN")]) %>% 
+    as.data.frame() %>% 
+    ggplot(aes(x = RF, y = DN, fill = Freq)) + 
+    geom_tile() + 
+    geom_text(aes(label = Freq), color = "white") + 
+    scale_fill_viridis()
+```
+
