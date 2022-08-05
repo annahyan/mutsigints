@@ -21,6 +21,8 @@ if(! file.exists(fig.dir)){
 }
 
 source(here("R/load_packages.R"))
+
+out.dir = here("data/RDS/PCAWG/immune_states")
 ```
 
 <!-- ```{r loading} -->
@@ -33,6 +35,7 @@ source(here("R/load_packages.R"))
 
 
 ```{r}
+
 immune.states = readRDS(file = file.path(out.dir, "pcawg_immune_states.RDS"))
 
 PCAWG.full.subset.ann.immune= readRDS(
@@ -48,5 +51,19 @@ table(immune.states[, c("RF", "DN")]) %>%
     geom_tile() + 
     geom_text(aes(label = Freq), color = "white") + 
     scale_fill_viridis()
+```
+
+### High-confidence samples
+
+```{r}
+hc.immune.states = immune.states %>% filter(RF == DN) 
+```
+
+In total `r nrow(hc.immune.states)` samples have matching immune type predictions
+from the two methods. Among these `r nrow(hc.immune.states %>% filter(RF != "CNA"))`
+have a immune type other than NA.
+
+```{r}
+
 ```
 
