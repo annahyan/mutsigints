@@ -7,7 +7,7 @@ output:
 
 ```{r}
 knitr::opts_chunk$set(comment = '', fig.width = 6, 
-                      fig.height = 6, echo = FALSE, 
+                      fig.height = 5, echo = FALSE, 
                       warning = FALSE)
 ```
 
@@ -35,7 +35,6 @@ out.dir = here("data/RDS/PCAWG/immune_states")
 
 
 ```{r}
-
 immune.states = readRDS(file = file.path(out.dir, "pcawg_immune_states.RDS"))
 
 PCAWG.full.subset.ann.immune= readRDS(
@@ -50,7 +49,24 @@ table(immune.states[, c("RF", "DN")]) %>%
     ggplot(aes(x = RF, y = DN, fill = Freq)) + 
     geom_tile() + 
     geom_text(aes(label = Freq), color = "white") + 
-    scale_fill_viridis()
+    scale_fill_viridis() + ggtitle("RF vs DN")
+```
+```{r}
+table(immune.states[, c("RF", "XGboost")]) %>% 
+    as.data.frame() %>% 
+    ggplot(aes(x = RF, y = XGboost, fill = Freq)) + 
+    geom_tile() + 
+    geom_text(aes(label = Freq), color = "white") + 
+    scale_fill_viridis() + ggtitle("RF vs XGboost")
+```
+
+```{r}
+table(immune.states[, c("DN", "XGboost")]) %>% 
+    as.data.frame() %>% 
+    ggplot(aes(x = DN, y = XGboost, fill = Freq)) + 
+    geom_tile() + 
+    geom_text(aes(label = Freq), color = "white") + 
+    scale_fill_viridis() + ggtitle("DN vs XGboost")
 ```
 
 ### High-confidence samples

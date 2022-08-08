@@ -63,9 +63,16 @@ colnames(immune.states.mapping)[1:2] = c("sample_id", "donor_id")
 immune.states.mapping = immune.states.mapping[, c("sample_id", "donor_id", 
                                                   "Cancer.Types", "RF", "DN")]
 
+## Adding xgboost classification output
+
+xgboost.pcawg = readRDS(file = file.path(out.dir, "pcawg.xgboost.out.RDS"))
+
+immune.states.mapping$XGboost = paste0("C", xgboost.pcawg[
+    match(immune.states.mapping$sample_id, xgboost.pcawg$SampleIDs), "BestCall"])
+
+
 saveRDS(immune.states.mapping, 
         file = file.path(out.dir, "pcawg_immune_states.RDS"))
 
 saveRDS(PCAWG.full.subset.ann.immune, 
         file = file.path(out.dir, "PCAWG.full.subset.ann.immune.RDS"))
-

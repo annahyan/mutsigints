@@ -6,7 +6,8 @@ eh = ExperimentHub()
 query(eh , 'msigdb')
 
 
-eh[["M5042"]]
+## Sources of data
+## https://gdc.cancer.gov/about-data/publications/panimmune
 
 msigdb.hs = getMsigdb(org = 'hs', id = 'EZID', version = '7.4')
 msigdb.hs
