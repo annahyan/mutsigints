@@ -25,20 +25,25 @@ source(here("R/load_packages.R"))
 out.dir = here("data/RDS/PCAWG/immune_states")
 ```
 
-<!-- ```{r loading} -->
-<!-- mutated.pathways.tissues = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways", -->
-<!--                                               "pcawg_pathways.RDS")) -->
-
-<!-- PCAWG.full.subset.ann.pathways = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways", -->
-<!--                                               "PCAWG.full.subset.ann.pathways.RDS")) -->
-<!-- ``` -->
-
-
 ```{r}
 immune.states = readRDS(file = file.path(out.dir, "pcawg_immune_states.RDS"))
 
+majority.stats = apply(immune.states[4:6], MARGIN = 1, 
+                       function(x) {
+                           tt = table(x); 
+                           ind = which.max(tt); 
+                           c(names(tt)[ind], tt[ind] / length(x)) 
+                           }) %>% t() %>% as.data.frame() 
+colnames(majority.stats) = c("Majority", "Prop")
+
+
+immune.states = cbind(immune.states, majority.stats)    
+
+
 PCAWG.full.subset.ann.immune= readRDS(
     file = file.path(out.dir, "PCAWG.full.subset.ann.immune.RDS"))
+
+ssGSEA = readRDS(file = file.path(out.dir, "ssGSEA_pcawg.RDS"))
 ```
 
 ### Summary of immune states
@@ -68,18 +73,62 @@ table(immune.states[, c("DN", "XGboost")]) %>%
     geom_text(aes(label = Freq), color = "white") + 
     scale_fill_viridis() + ggtitle("DN vs XGboost")
 ```
-
-### High-confidence samples
+### ssGSEA value processing
 
 ```{r}
-hc.immune.states = immune.states %>% filter(RF == DN) 
+ssGSEA = t(ssGSEA)
+
+ssGSEA = as.data.frame(ssGSEA[immune.states$sample_id, ])
+rownames(ssGSEA) = rownames(immune.states)
+
+immune.data = cbind(immune.states, ssGSEA)
 ```
 
-In total `r nrow(hc.immune.states)` samples have matching immune type predictions
-from the two methods. Among these `r nrow(hc.immune.states %>% filter(RF != "CNA"))`
-have a immune type other than NA.
+
+### Comparing the PCAWG classes
 
 ```{r}
+ssGSEA_pivot = immune.data %>% pivot_longer(cols = LIexpression_score:CHANG_CORE_SERUM_RESPONSE_UP,
+                                names_to = "pathway", values_to = "ssGSEA")
+```
 
+
+```{r, fig.width = 10}
+RF.ssGSEA = ssGSEA_pivot %>% 
+    ggplot(aes(x = RF, y = ssGSEA, fill = RF)) + 
+    geom_boxplot() + 
+    facet_wrap(~pathway, scales = "free_y") + 
+    scale_fill_discrete() + ggtitle("RF predictions")
+print(RF.ssGSEA)
+```
+
+
+```{r, fig.width = 10}
+DN.ssGSEA = ssGSEA_pivot %>% 
+    ggplot(aes(x = DN, y = ssGSEA, fill = DN)) + 
+    geom_boxplot() + 
+    facet_wrap(~pathway, scales = "free_y") + 
+    scale_fill_discrete() + ggtitle("DN predictions")
+print(DN.ssGSEA)
+```
+
+
+```{r, fig.width = 10}
+xgboost.ssGSEA = ssGSEA_pivot %>% 
+    ggplot(aes(x = XGboost, y = ssGSEA, fill = XGboost)) + 
+    geom_boxplot() + 
+    facet_wrap(~pathway, scales = "free_y") + 
+    scale_fill_discrete() + ggtitle("XGboost predictions")
+print(xgboost.ssGSEA)
+```
+
+
+```{r, fig.width = 10}
+Majority.ssGSEA = ssGSEA_pivot %>% 
+    ggplot(aes(x = Majority, y = ssGSEA, fill = Majority)) + 
+    geom_boxplot() + 
+    facet_wrap(~pathway, scales = "free_y") + 
+    scale_fill_discrete() + ggtitle("Majority predictions")
+print(Majority.ssGSEA)
 ```
 
