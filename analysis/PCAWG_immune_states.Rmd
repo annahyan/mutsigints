@@ -8,7 +8,7 @@ output:
 ```{r}
 knitr::opts_chunk$set(comment = '', fig.width = 6, 
                       fig.height = 5, echo = FALSE, 
-                      warning = FALSE)
+                      warning = FALSE, message = FALSE)
 ```
 
 
@@ -56,6 +56,7 @@ table(immune.states[, c("RF", "DN")]) %>%
     geom_text(aes(label = Freq), color = "white") + 
     scale_fill_viridis() + ggtitle("RF vs DN")
 ```
+
 ```{r}
 table(immune.states[, c("RF", "XGboost")]) %>% 
     as.data.frame() %>% 
@@ -126,7 +127,7 @@ print(xgboost.ssGSEA)
 ```{r, fig.width = 10}
 Majority.ssGSEA = ssGSEA_pivot %>% 
     ggplot(aes(x = Majority, y = ssGSEA, fill = Majority)) + 
-    geom_boxplot() + 
+    geom_boxplot() +
     facet_wrap(~pathway, scales = "free_y") + 
     scale_fill_discrete() + ggtitle("Majority predictions")
 print(Majority.ssGSEA)

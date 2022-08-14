@@ -10,9 +10,14 @@ knitr::opts_chunk$set(comment = '', fig.width = 6,
 
 
 ```{r load-packages}
+library(here)
+source(here("R/load_packages.R"))
+
 fig.dir = here("figures/figure0")
 
-source(here("R/load_packages.R"))
+if (!file.exists(fig.dir)) {
+    dir.create(fig.dir)
+}
 ```
 
 
@@ -38,7 +43,7 @@ plot_tissue_abundance = function(tissue_counts, title, bar_height_factor = 2,
                            filter(n < MIN.TISSUE.SIZE) %>% nrow() )  ) 
         ) +
     geom_hline(yintercept = MIN.TISSUE.SIZE, size = 0.5) +
-    ylab("Counts") +
+    ylab("Samples") +
     # scale_fill_manual(values = scales::muted(
     #     rainbow(pcawg.active.sig.counts %>% pull(Tissues) %>% 
     #                 n_distinct()), l = 50, c = 90 ), guide = "none" ) + 
@@ -129,7 +134,7 @@ ggsave(pcawg.active.signatures.hist,
 ```
 
 
-```{r tcga-combined}
+```{r pcawg-combined}
 pcawg_combined = egg::ggarrange(pcawg_tissue_counts_plot, 
                               pcawg.active.signatures.hist, 
                           widths = c(5, 2.5),
@@ -141,7 +146,7 @@ ggsave(pcawg_combined,
 
 
 
-```{r pcawg-active-hists}
+```{r tcga-active-hists}
 tcga.active.signatures.hist = plot_active_signatures(TCGA.full.subset) + 
     ggtitle("TCGA") + theme(plot.margin = unit(c(2,2,2,2), "mm"))
 
