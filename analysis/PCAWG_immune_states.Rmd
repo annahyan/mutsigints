@@ -129,7 +129,67 @@ Majority.ssGSEA = ssGSEA_pivot %>%
     ggplot(aes(x = Majority, y = ssGSEA, fill = Majority)) + 
     geom_boxplot() +
     facet_wrap(~pathway, scales = "free_y") + 
+    theme_bw(base_size = 13) + 
     scale_fill_discrete() + ggtitle("Majority predictions")
 print(Majority.ssGSEA)
+ggsave(plot = Majority.ssGSEA, 
+       file = file.path(fig.dir, "Majority_vote_ssGSEA_boxplots.png"),
+       width = 11, height = 5.5)
+```
+
+### Immune states across cancer types
+
+```{r}
+pcawg.immune.summaries.gg = immune.states %>% 
+    group_by(Cancer.Types, Majority) %>% 
+    count( Cancer.Types, Majority, name = "total") %>% ungroup() %>% 
+    tidyr::complete(Cancer.Types, Majority, fill = list(total = 0))
+
+immune.class.mapping = c("C1" = "Wound healing",
+                         "C2" = "INF-\u03B3 dominant",
+                         "C3" = "Inflammatory",
+                         "C4" = "Lymphocyte depleted",
+                         "C5" = "Immunologically quiet",
+                         "C6" = "TGF-\u03B2 dominant",
+                         "CNA" = "CNA")
+
+pcawg.immune.summaries.gg$Immune.type = immune.class.mapping[pcawg.immune.summaries.gg$Majority]
+pcawg.immune.summaries.gg$Immune.type = factor(pcawg.immune.summaries.gg$Immune.type,
+                                               # levels = c("CNA", "TGF-β dominant",
+                                               #            "Immunologically quiet",
+                                               #            "Lymphocyte depleted",
+                                               #            "Inflammatory",
+                                               #            "INF-γ dominant",
+                                               #            "Wound healing")
+                                               levels = c("Wound healing", "INF-γ dominant",
+                                                          "Inflammatory", "Lymphocyte depleted",
+                                                          "Immunologically quiet", "TGF-β dominant",
+                                                          "CNA"))
+
+pcawg.immune.states.plot = pcawg.immune.summaries.gg %>% 
+    rename(Counts = total) %>% 
+    # mutate(Pathway = factor(Pathway, levels = path.order)) %>% 
+    
+    ggplot(aes(x = Immune.type, y = Cancer.Types) ) + 
+        geom_tile(aes(fill = Counts), color = "gray80") +
+        geom_text(aes(label = Counts), size = 3.4) + 
+    #scale_fill_viridis(option = "plasma")
+    scale_fill_gradient(low = "aliceblue", high = "orange") + 
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+    theme_minimal(base_size = 14) + 
+    xlab("") + ylab("") + 
+    ggtitle("Immune classes across cancer types",) +
+    theme(panel.grid = element_blank(),
+          axis.text.x = element_text(angle = 90, hjust = 1, vjust = 1),
+          legend.position = "none",
+          plot.title = element_text(size = 12),
+          plot.margin = margin(t = 0,  # Top margin
+                             r = 0,  # Right margin
+                             b = 0,  # Bottom margin
+                             l = 0)) # Left margin)
+
+ggsave(plot = pcawg.immune.states.plot, 
+     file = file.path(fig.dir, "pcawg.immune.states.heatmap.png"),
+                      width = 5, height = 5, bg = "white")
 ```
 

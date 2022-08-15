@@ -61,7 +61,7 @@ pcawg.pathways.plot = pcawg.pathway.summaries.gg %>% rename(Counts = total) %>%
     scale_fill_gradient(low = "aliceblue", high = "orange") + 
     theme_minimal(base_size = 14) + 
     xlab("") + ylab("") + 
-    ggtitle("Pathway alterations across tissues",) +
+    ggtitle("Pathway alterations across cancer types",) +
     theme(panel.grid = element_blank(),
           axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
           legend.position = "none",
