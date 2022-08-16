@@ -300,12 +300,14 @@ get_tissue_pathway_activities = function(tissue,
                                          sigs.input, 
                                          pathways.input) {
     
-    tissue.sig.subset = subset_tissue(sigs.input, tissue = tissue) %>% 
-        select(4:ncol(.))
+    tissue.sig.subset = subset_tissue(sigs.input, tissue = tissue)
     
-    tissue.rownames = rownames(tissue.sig.subset)  
+    donor.ids = tissue.sig.subset$Sample.Names  
     
-    tissue.path.subset = pathways.input[ tissue.rownames, ] 
+    tissue.sig.subset = tissue.sig.subset %>% select(4:ncol(.))
+    
+    tissue.path.subset = pathways.input[ match(donor.ids, 
+                                               pathways.input$donor_id), ] 
     tissue.path.subset = tissue.path.subset %>% 
         select(4:ncol(.)) %>% 
         select_if(colSums(., na.rm = TRUE) != 0)
@@ -317,9 +319,13 @@ get_tissue_pathway_activities = function(tissue,
 
 #' Assess signature-pathway interactions across tissues for PCAWG with a custom
 #' function
-#' @param sigs.input Signature activities
+#' @param sigs.input Signature activities. The rows correspond to samples, the 
+#' first three columns are Cancer.Types, Sample.Names, Accuracy, all the other 
+#' columns correspond to signature names. The values are signature activities.
 #' @param pathways.input Pathway status - formatted like mutated.pathways.tissues
-#' Pathway activities start at column 4.
+#' Pathway activities start at column 4. The first three columns are sample_id,
+#' donor_id, Cancer.Types. Other columns correspond to pathway names. The values 
+#' correspond to number of mutations in the pathway.
 #' @param interaction_function The function defining the metric. E.g. get_sig_path_assocs
 #' @param path.min.tissues Minimal number of samples in each tissue to be considered 
 #' @param p.val.threshold p-value threshold for BH correction. Default: 0.05
