@@ -1,0 +1,156 @@
+---
+title: "Summarizing all signature-signature interactions TCGA"
+output: 
+  html_document:
+    df_print: paged
+---
+
+```{r}
+knitr::opts_chunk$set(comment = '', fig.width = 6, 
+                      fig.height = 6, echo = FALSE, 
+                      warning = FALSE)
+```
+
+```{r load-packages}
+library(here)
+fig.dir = here("figures/sig_sig_interactions")
+
+if(! file.exists(fig.dir)){
+    dir.create(fig.dir, recursive = TRUE)
+}
+
+source(here("R/load_packages.R"))
+library(igraph)
+library(tidygraph)
+library(pheatmap)
+library(viridis)
+
+data.out.dir = here("data/RDS/TCGA", "sig_sig_ints")
+
+output.dir = here("output/sig_sig_int_motifs")
+```
+
+```{r loading-precalc-interactions}
+TCGA.cooccurrence.summary.nets = readRDS(file = file.path(data.out.dir, "TCGA.cooccurrence.summary.nets.RDS") )
+TCGA.bcmi.summary.nets = readRDS(file = file.path(data.out.dir, "TCGA.bcmi.summary.nets.RDS") )
+TCGA.pearson.summary.nets = readRDS(file = file.path(data.out.dir, "TCGA.pearson.summary.nets.RDS") )
+TCGA.spearman.summary.nets = readRDS(file = file.path(data.out.dir, "TCGA.spearman.summary.nets.RDS") )
+TCGA.coda.summary.nets = readRDS(file = file.path(data.out.dir, "TCGA.coda.summary.nets.RDS") )
+
+TCGA.full.subset.ann = readRDS(here("data", "RDS", "TCGA", "signatures",
+                                     "TCGA.full.subset.ann.RDS"))
+
+```
+
+```{r }
+all.interactions = list(MI = TCGA.bcmi.summary.nets,
+                        cooccurrence = TCGA.cooccurrence.summary.nets,
+                        CoDa = TCGA.coda.summary.nets,
+                        Spearman = TCGA.spearman.summary.nets)
+```
+
+```{r tissue-interaction-network}
+tissue = "Panc_AdenoCA"
+tissue.nets = get_tissue_dataset_networks(tissue, all.interactions, 
+                                          filter.list = list(MI = 0.2) )
+tissue.multi.graph = tissue_multi_graph(tissue.nets)
+
+pp = print_multi_graphs(tissue.multi.graph, 
+                   layout = "stress")
+
+pout = minor_plot(pp, expand.factor = 0.05, expand.factor.y = 0)
+print(pout)
+
+ggsave(filename = file.path(fig.dir, paste0(tissue, "_sig_sig_network.png") ),
+       plot = pout,
+       width = 6, height = 4)
+
+# layouts = c("fr", "stress", "dh", "drl")
+# 
+# layout_plots = lapply(layouts, function(x) 
+#     print_multi_graphs(tissue.multi.graph, layout = x) + ggtitle(x))
+# 
+# pp = ggarrange(plotlist = layout_plots, nrow = 2, ncol = 2)
+```
+
+```{r tissue-signatures-heatmap}
+tissue.heatmap = subset_tissue(TCGA.full.subset.ann, tissue = tissue) %>% 
+    plot_tissue_heatmap(main = tissue) %>% add_pheatmap_legend_title()
+
+print(tissue.heatmap)
+
+ggsave(filename = file.path(fig.dir, paste0(tissue, "_sig_heatmap.png") ), 
+       plot = tissue.heatmap, width = 4, height = 5)
+```
+
+
+```{r all-tissue-heatmap-networks, include = FALSE}
+plotlist = list()
+i = 1
+tissues = unique(TCGA.full.subset.ann$Cancer.Types)
+for (tissue in tissues) {
+    cat(tissue, " ")
+
+    try({
+        tissue.heatmap = subset_tissue(TCGA.full.subset.ann, tissue = tissue) %>% 
+            plot_tissue_heatmap(main = tissue)
+        # print(pp)
+        
+        pp = plot_multi_network(network.lists = all.interactions, 
+                                tissue = tissue, filter.list = list(MI = 0.2),
+                                layout = "stress")
+        
+        
+        pp = minor_plot(pp, title = tissue, expand.factor = 0.1)
+        
+        out.plot = ggarrange(tissue.heatmap[[4]], pp, nrow = 1)
+        i = i + 1
+        plotlist[[i]] = out.plot
+    })
+}
+```
+
+```{r}
+pdf(file.path(fig.dir, "heatmaps_multiple_networks_4types_SigProfiler_stress_TCGA.pdf"),
+    width = 10, height = 4)
+
+for (i in 1:length(plotlist) ) {
+    try({print(plotlist[[i]] ) })
+}
+dev.off()
+```
+
+```{r}
+for (metric in names(all.interactions)) {
+    
+    cat("\t metric = ", metric, "\n")
+    metric.dir = file.path(output.dir, metric)
+    dir.create(metric.dir, showWarnings = FALSE)
+    
+    get_common_sigs(metric.list = all.interactions, 
+                    metric = metric, outdir = metric.dir, threshold = 0.2)
+}
+```
+
+```{r concat-interactions}
+networks.concat = list()
+
+for (tissue in tissues) {
+    cat(tissue, " ")
+    
+    try({
+        networks.concat[[tissue]] = concat_networks(
+            all.interactions, tissue = tissue, filter.list = list(MI = 0.2))
+    })
+}
+
+sig.sig.ints.summary.plot = plot_all_counts(networks.concat, min.abssum = 3,
+                                            psize = 4.5, lsize = 1.7, 
+                                            expand.mult = c(0.02, 0.02)) + 
+    coord_cartesian(x = c(1, 20), clip = "off")
+
+ggsave(filename = file.path(fig.dir, paste0("sig_sig_ints_summary_plot_TCGA.png") ),
+       plot = sig.sig.ints.summary.plot,
+       width = 3.7, height = 3.5)
+# concat.summaries = summarize_by_tissues(networks.concat)
+```
