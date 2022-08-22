@@ -56,12 +56,16 @@ tissue.nets = get_tissue_dataset_networks(tissue, all.interactions,
 tissue.multi.graph = tissue_multi_graph(tissue.nets)
 
 pp = print_multi_graphs(tissue.multi.graph, 
-                   layout = "stress")
+                   layout = "dh")
 
 pout = minor_plot(pp, expand.factor = 0.05, expand.factor.y = 0)
 print(pout)
 
 ggsave(filename = file.path(fig.dir, paste0(tissue, "_sig_sig_network.png") ),
+       plot = pout,
+       width = 6, height = 4)
+
+ggsave(filename = file.path(fig.dir, paste0(tissue, "_sig_sig_network.pdf") ),
        plot = pout,
        width = 6, height = 4)
 
@@ -75,11 +79,13 @@ ggsave(filename = file.path(fig.dir, paste0(tissue, "_sig_sig_network.png") ),
 
 ```{r tissue-signatures-heatmap}
 tissue.heatmap = subset_tissue(PCAWG.full.subset.ann, tissue = tissue) %>% 
-    plot_tissue_heatmap(main = tissue) %>% add_pheatmap_legend_title()
+    plot_tissue_heatmap(main = tissue, border_color = NA) %>% add_pheatmap_legend_title()
 
 print(tissue.heatmap)
 
 ggsave(filename = file.path(fig.dir, paste0(tissue, "_sig_heatmap.png") ), 
+       plot = tissue.heatmap, width = 4, height = 5)
+ggsave(filename = file.path(fig.dir, paste0(tissue, "_sig_heatmap.pdf") ), 
        plot = tissue.heatmap, width = 4, height = 5)
 ```
 
@@ -149,8 +155,23 @@ sig.sig.ints.summary.plot = plot_all_counts(networks.concat, min.abssum = 3,
                                             expand.mult = c(0.02, 0.02)) + 
     coord_cartesian(x = c(1, 20), clip = "off")
 
-ggsave(filename = file.path(fig.dir, paste0("sig_sig_ints_summary_plot.png") ),
+ggsave(filename = file.path(fig.dir, paste0("sig_sig_ints_summary_plot_lim3.png") ),
        plot = sig.sig.ints.summary.plot,
        width = 3.7, height = 3.5)
+
+
+sig.sig.ints.summary.plot = plot_all_counts(networks.concat, min.abssum = 5,
+                                            psize = 5, lsize = 1.8, 
+                                            expand.mult = c(0.02, 0.02)) + 
+    coord_cartesian(x = c(1, 12), clip = "off")
+
+ggsave(filename = file.path(fig.dir, paste0("sig_sig_ints_summary_plot_lim5.png") ),
+       plot = sig.sig.ints.summary.plot,
+       width = 3.7, height = 3.5)
+
+ggsave(filename = file.path(fig.dir, paste0("sig_sig_ints_summary_plot_lim5.pdf") ),
+       plot = sig.sig.ints.summary.plot,
+       width = 3.7, height = 3.5)
+
 # concat.summaries = summarize_by_tissues(networks.concat)
 ```

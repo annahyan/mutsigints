@@ -807,11 +807,16 @@ get_tissue_dataset_networks = function(tissue,
 #' @param filename If provided the pheatmap will be save with this filename.
 #' Default: NULL
 #' @param main Title of the heatmap
+#' @param border_color Border color of cells. This parameter is ther to control 
+#' removing border color with NA. Pheatmap doesn't properly remove it
+#' and the border is still present when saving the plot. Default: gray60. 
+#' Should be NA to remove the border_color.
 #' @param ... Parameters will be passed to pheatmap function.
 #' 
 #' 
 
-plot_tissue_heatmap = function(.dataset, filename = NULL, main = NULL, ...) {
+plot_tissue_heatmap = function(.dataset, filename = NULL, 
+                               main = NULL, border_color = "grey60", ...) {
     
     classes = sapply(.dataset, class)
     if (! all(sapply(.dataset, class)[1:3] %in% c("numeric", "integer")))  {
@@ -830,27 +835,35 @@ plot_tissue_heatmap = function(.dataset, filename = NULL, main = NULL, ...) {
     }
     
     if (is.null(filename) ) {
-        pheatmap(log(dt.plot + 1), 
+        pp = pheatmap(log(dt.plot + 1), 
                  color = viridis(15),
                  show_rownames = FALSE,
                  main = main, 
                  width = 7.1, height = 6.83,
-                 # filename = here("figures/signature_heatmaps/", "TCGA.annotated.tissues.png"),
-                 # annotation_row = tcga.annotation.row,
-                 # annotation_colors = tcga.mycolors
-                 # # annotation_legend = FALSE
+                 border_color = border_color,
                  ...)
     } else {
-        pheatmap(log(dt.plot + 1), 
+        pp = pheatmap(log(dt.plot + 1), 
                  color = viridis(15),
                  show_rownames = FALSE,
                  width = 7.1, height = 6.83,
                  main = main,
                  filename = filename,
-                 # annotation_row = tcga.annotation.row,
-                 # annotation_colors = tcga.mycolors
-                 # # annotation_legend = FALSE
+                 border_color = border_color,
                  ...)   
+    }
+    
+    if (is.na(border_color)) {
+        # https://stackoverflow.com/questions/44318690/no-border-color-in-pheatmap-in-r
+        grob_classes <- purrr::map(pp$gtable$grobs, class)
+        idx_grob <- which(purrr::map_lgl(grob_classes, function(cl) 'gTree' %in% cl))[1]
+        grob_names <- names(pp$gtable$grobs[[idx_grob]]$children)
+        idx_rect <- grob_names[grep('rect', grob_names)][1]
+        
+        ## Remove borders around cells
+        pp$gtable$grobs[[idx_grob]]$children[[idx_rect]]$gp$col <- pp$gtable$grobs[[idx_grob]]$children[[idx_rect]]$gp$fill
+        pp$gtable$grobs[[idx_grob]]$children[[idx_rect]]$gp$lwd <- 0
+        return(pp)
     }
 }
 
