@@ -34,7 +34,11 @@ vignettes/*.pdf
 
 
 # output figures
-/figures
+/figures/figure0
+/figures/immune_analysis
+/figures/pathways_analysis
+/figures/sig_sig_analysis
+/figures/sig_sig_interactions
 
 # Temporary files created by R markdown
 *.utf8.md
