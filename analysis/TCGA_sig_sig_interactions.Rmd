@@ -50,7 +50,7 @@ all.interactions = list(MI = TCGA.bcmi.summary.nets,
 ```
 
 ```{r tissue-interaction-network}
-tissue = "Panc_AdenoCA"
+tissue = "Breast_cancer"
 tissue.nets = get_tissue_dataset_networks(tissue, all.interactions, 
                                           filter.list = list(MI = 0.2) )
 tissue.multi.graph = tissue_multi_graph(tissue.nets)
@@ -111,7 +111,7 @@ for (tissue in tissues) {
 ```
 
 ```{r}
-pdf(file.path(fig.dir, "heatmaps_multiple_networks_4types_SigProfiler_stress_TCGA.pdf"),
+pdf(file.path(fig.dir, "TCGA_heatmaps_multiple_networks_4types_SigProfiler_stress.pdf"),
     width = 10, height = 4)
 
 for (i in 1:length(plotlist) ) {
@@ -145,12 +145,29 @@ for (tissue in tissues) {
 }
 
 sig.sig.ints.summary.plot = plot_all_counts(networks.concat, min.abssum = 3,
-                                            psize = 4.5, lsize = 1.7, 
-                                            expand.mult = c(0.02, 0.02)) + 
-    coord_cartesian(x = c(1, 20), clip = "off")
+                                            psize = 6, lsize = 2, 
+                                            expand.mult = c(0.04, 0.02)) + 
+    coord_cartesian(x = c(1, 13), clip = "off")
 
-ggsave(filename = file.path(fig.dir, paste0("sig_sig_ints_summary_plot_TCGA.png") ),
+ggsave(filename = file.path(fig.dir, paste0("TCGA_sig_sig_ints_summary_plot.png") ),
        plot = sig.sig.ints.summary.plot,
        width = 3.7, height = 3.5)
+
+cairo_pdf(filename = file.path(fig.dir, paste0("TCGA_sig_sig_ints_summary_plot.pdf") ),
+       width = 3.7, height = 3.5)
+print(sig.sig.ints.summary.plot)
+dev.off()
+
 # concat.summaries = summarize_by_tissues(networks.concat)
+```
+
+### Getting and writing cancer types where individual interactions are active
+
+```{r tissues-with-interactions}
+TCGA.int.tissues = get_interaction_tissues(networks.concat)
+
+write_tsv(as.data.frame(TCGA.int.tissues$pos.tissues), 
+          file = here("supp_data", "TCGA_positive_interaction_tissue_summaries.tsv"))
+write_tsv(as.data.frame(TCGA.int.tissues$neg.tissues), 
+          file = here("supp_data", "TCGA_negative_interaction_tissue_summaries.tsv"))
 ```

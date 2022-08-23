@@ -863,8 +863,8 @@ plot_tissue_heatmap = function(.dataset, filename = NULL,
         ## Remove borders around cells
         pp$gtable$grobs[[idx_grob]]$children[[idx_rect]]$gp$col <- pp$gtable$grobs[[idx_grob]]$children[[idx_rect]]$gp$fill
         pp$gtable$grobs[[idx_grob]]$children[[idx_rect]]$gp$lwd <- 0
-        return(pp)
     }
+    return(pp)
 }
 
 
@@ -1087,4 +1087,59 @@ summarize_by_tissues = function(summary.list, tissue.names = FALSE) {
     }
 
     return(all.mat)
+}
+
+
+#' For a list of interaction metrics this function summarizes the positive and
+#' negative interactions in a matrix, where for each interaction the cell 
+#' contains a comma-separated tissue  names where this interaction was observed.
+#' 
+#' @param list.of.int.elems A list with matrix elements.
+#' @param threshold All the values below the threshold are discarded.
+#' 
+#' @details The input is a list of matrices corresponding to e.g. interactions
+#' in different tissues. The output plot summarizes the number of list elements
+#' in which this interaction happens either in positive or negative direction.
+#' The positive and negative interactions are summarized separately.
+#' 
+#' @return ggplot object
+
+get_interaction_tissues = function(list.of.int.elems, threshold = 0.1) {
+    
+    # all.sigs = do.call(c, lapply(summary.matrix, function(x) colnames(x)) ) %>%
+    #     unique()
+    
+    all.rows = do.call(c, lapply(list.of.int.elems, function(x) rownames(x))) %>% 
+        unique()
+    
+    all.cols = do.call(c, lapply(list.of.int.elems, function(x) colnames(x))) %>% 
+        unique()
+    
+    pos.ints.tissues = matrix(0, nrow = length(all.rows), ncol = length(all.cols),
+                          dimnames = list(all.rows, all.cols))
+    
+    neg.ints.tissues = matrix(0, nrow = length(all.rows), ncol = length(all.cols),
+                          dimnames = list(all.rows, all.cols))
+    
+    for (rowelem in all.rows) {
+        for (colelem in all.cols) {
+            point.ints = unlist(sapply(list.of.int.elems, 
+                                       function(x) as.data.frame(x)[rowelem, colelem]))
+            
+            point.ints[abs(point.ints) < threshold] = 0
+            
+            pos.ints = sum(point.ints > 0, na.rm = TRUE)
+            neg.ints = -sum(point.ints < 0, na.rm = TRUE)
+            
+            pos.tissues = paste(names(which(point.ints > 0)), collapse = ", ")
+            neg.tissues = paste(names(which(point.ints < 0)), collapse = ", ")
+            
+            
+            pos.ints.tissues[rowelem, colelem] = pos.tissues
+            neg.ints.tissues[rowelem, colelem] = neg.tissues
+        }
+    }
+    
+    return(list(pos.tissues = pos.ints.tissues,
+                neg.tissues = neg.ints.tissues))
 }

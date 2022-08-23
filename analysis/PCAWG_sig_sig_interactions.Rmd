@@ -117,7 +117,7 @@ for (tissue in tissues) {
 ```
 
 ```{r}
-pdf(file.path(fig.dir, "heatmaps_multiple_networks_4types_SigProfiler_stress.pdf"),
+pdf(file.path(fig.dir, "PCAWG_heatmaps_multiple_networks_4types_SigProfiler_stress.pdf"),
     width = 10, height = 4)
 
 for (i in 1:length(plotlist) ) {
@@ -138,6 +138,8 @@ for (metric in names(all.interactions)) {
 }
 ```
 
+### Plotting the summaries of interactions across cancer types
+
 ```{r concat-interactions}
 networks.concat = list()
 
@@ -155,15 +157,15 @@ sig.sig.ints.summary.plot = plot_all_counts(networks.concat, min.abssum = 3,
                                             expand.mult = c(0.02, 0.02)) + 
     coord_cartesian(x = c(1, 20), clip = "off")
 
-ggsave(filename = file.path(fig.dir, paste0("sig_sig_ints_summary_plot_lim3.png") ),
+ggsave(filename = file.path(fig.dir, paste0("PCAWG_sig_sig_ints_summary_plot_lim3.png") ),
        plot = sig.sig.ints.summary.plot,
        width = 3.7, height = 3.5)
 
 
 sig.sig.ints.summary.plot = plot_all_counts(networks.concat, min.abssum = 5,
-                                            psize = 5, lsize = 1.8, 
+                                            psize = 6, lsize = 2, 
                                             expand.mult = c(0.02, 0.02)) + 
-    coord_cartesian(x = c(1, 12), clip = "off")
+    coord_cartesian(x = c(1, 13), clip = "off")
 
 ggsave(filename = file.path(fig.dir, paste0("sig_sig_ints_summary_plot_lim5.png") ),
        plot = sig.sig.ints.summary.plot,
@@ -173,5 +175,22 @@ ggsave(filename = file.path(fig.dir, paste0("sig_sig_ints_summary_plot_lim5.pdf"
        plot = sig.sig.ints.summary.plot,
        width = 3.7, height = 3.5)
 
+cairo_pdf(filename = file.path(fig.dir, paste0("PCAWG_sig_sig_ints_summary_plot_lim5_cairo.pdf") ),
+          width = 3.7, height = 3.5)
+print(sig.sig.ints.summary.plot)
+dev.off()
 # concat.summaries = summarize_by_tissues(networks.concat)
 ```
+
+
+### Getting and writing cancer types where individual interactions are active
+
+```{r tissues-with-interactions}
+PCAWG.int.tissues = get_interaction_tissues(networks.concat)
+
+write_tsv(as.data.frame(PCAWG.int.tissues$pos.tissues), 
+          file = here("supp_data", "PCAWG_positive_interaction_tissue_summaries.tsv"))
+write_tsv(as.data.frame(PCAWG.int.tissues$neg.tissues), 
+          file = here("supp_data", "PCAWG_negative_interaction_tissue_summaries.tsv"))
+```
+
