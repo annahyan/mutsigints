@@ -1,0 +1,24 @@
+APOBEC	SBS40	Ageing	HR	ROS	SBS5	SBS39	SBS19	SBS23	MMR	PolE	SBS28	SBS17	Tobacco	SBS12	SBS29	PolH	SBS34	SBS37	Technical	SBS30	SBS38	UV
+	Eso_AdenoCA, Ovary_AdenoCA, Thy_AdenoCA	Breast_AdenoCA		Breast_AdenoCA, Head_SCC								Eso_AdenoCA										Skin_Melanoma
+Eso_AdenoCA, Ovary_AdenoCA, Thy_AdenoCA			Eso_AdenoCA, Lymph_BNHL, Panc_AdenoCA	CNS_Medullo, Ovary_AdenoCA, Panc_AdenoCA, Prost_AdenoCA	CNS_GBM, ColoRect_AdenoCA, Eso_AdenoCA, Lung_AdenoCA, Lymph_CLL, Ovary_AdenoCA, Panc_AdenoCA, Skin_Melanoma, Stomach_AdenoCA, Uterus_AdenoCA	CNS_Medullo			Uterus_AdenoCA	ColoRect_AdenoCA					Liver_HCC		Lymph_BNHL					Skin_Melanoma
+Breast_AdenoCA					Liver_HCC, Lung_AdenoCA, Lung_SCC						ColoRect_AdenoCA	Stomach_AdenoCA	Liver_HCC, Lung_SCC	Liver_HCC	Liver_HCC	Lymph_BNHL, Lymph_CLL						Skin_Melanoma
+	Eso_AdenoCA, Lymph_BNHL, Panc_AdenoCA				Breast_AdenoCA																	
+Breast_AdenoCA, Head_SCC	CNS_Medullo, Ovary_AdenoCA, Panc_AdenoCA, Prost_AdenoCA								ColoRect_AdenoCA	ColoRect_AdenoCA		Eso_AdenoCA										
+	CNS_GBM, ColoRect_AdenoCA, Eso_AdenoCA, Lung_AdenoCA, Lymph_CLL, Ovary_AdenoCA, Panc_AdenoCA, Skin_Melanoma, Stomach_AdenoCA, Uterus_AdenoCA	Liver_HCC, Lung_AdenoCA, Lung_SCC	Breast_AdenoCA																			
+	CNS_Medullo																					
+																						
+																						
+	Uterus_AdenoCA			ColoRect_AdenoCA																		
+	ColoRect_AdenoCA			ColoRect_AdenoCA																		
+		ColoRect_AdenoCA																				
+Eso_AdenoCA		Stomach_AdenoCA		Eso_AdenoCA																		
+		Liver_HCC, Lung_SCC													Liver_HCC							
+		Liver_HCC																				
+	Liver_HCC	Liver_HCC											Liver_HCC									
+		Lymph_BNHL, Lymph_CLL																				
+	Lymph_BNHL																					
+																						
+																						
+																						
+																						Skin_Melanoma
+Skin_Melanoma	Skin_Melanoma	Skin_Melanoma																			Skin_Melanoma	
