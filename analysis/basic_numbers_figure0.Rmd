@@ -22,8 +22,8 @@ if (!file.exists(fig.dir)) {
 
 
 ```{r loading-the-input}
-source(here("R/process_TCGA.R"))
-source(here("R/process_PCAWG.R"))
+source(here("R/process_sigs_TCGA.R"))
+source(here("R/process_sigs_PCAWG.R"))
 ```
 
 

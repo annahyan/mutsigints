@@ -166,8 +166,10 @@ dev.off()
 ```{r tissues-with-interactions}
 TCGA.int.tissues = get_interaction_tissues(networks.concat)
 
-write_tsv(as.data.frame(TCGA.int.tissues$pos.tissues), 
-          file = here("supp_data", "TCGA_positive_interaction_tissue_summaries.tsv"))
-write_tsv(as.data.frame(TCGA.int.tissues$neg.tissues), 
-          file = here("supp_data", "TCGA_negative_interaction_tissue_summaries.tsv"))
+write.table(as.data.frame(TCGA.int.tissues$pos.tissues), 
+          file = here("supp_data", "TCGA_positive_interaction_tissue_summaries.tsv"),
+          row.names = TRUE, col.names = NA, sep = "\t", quote = FALSE)
+write.table(as.data.frame(TCGA.int.tissues$neg.tissues), 
+          file = here("supp_data", "TCGA_negative_interaction_tissue_summaries.tsv"),
+          row.names = TRUE, col.names = NA, sep = "\t", quote = FALSE)
 ```

@@ -73,6 +73,11 @@ print(pcawg.pathways.plot)
 ggsave(plot = pcawg.pathways.plot, 
        filename = file.path(fig.dir, "pcawg_pathways_summary.png"),
       width = 5, height = 6.2) 
+
+ggsave(plot = pcawg.pathways.plot, 
+       filename = file.path(fig.dir, "pcawg_pathways_summary.pdf"),
+      width = 5, height = 6.2) 
+
 ```
 
 ### Interactions between PCAWG signatures and 10 pathway alterations
@@ -208,7 +213,7 @@ ggsave(plot = pp.logged,
 
 ggsave(plot = pp.logged,
                filename = file.path(fig.dir, "pathway_to_signature", 
-                                    "by_tissues", "lm_log", "logged_summarized_OLS.pdf"),
+                                    "by_tissues", "lm_log", "logged_summarized_OLS_path_to_sigs.pdf"),
                height = 6, width = 8, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
 
 ```
@@ -223,12 +228,12 @@ print(pp.logged.excl.melanoma)
 ggsave(plot = pp.logged.excl.melanoma,
                filename = file.path(fig.dir, "pathway_to_signature", 
                                     "by_tissues", "lm_log", 
-                                    "logged_summarized_OLS_excl_melanoma.png"),
+                                    "logged_summarized_OLS_excl_melanoma_path_to_sigs.png"),
                height = 2, width = 2.4, bg = "white")
 
 ggsave(plot = pp.logged.excl.melanoma,
                filename = file.path(fig.dir, "pathway_to_signature", 
-                                    "by_tissues", "lm_log", "logged_summarized_OLS_excl_melanoma.pdf"),
+                                    "by_tissues", "lm_log", "logged_summarized_OLS_excl_melanoma_path_to_sigs.pdf"),
                height = 6, width = 8, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
 
 ```

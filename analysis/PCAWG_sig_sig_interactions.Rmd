@@ -56,7 +56,16 @@ tissue.nets = get_tissue_dataset_networks(tissue, all.interactions,
 tissue.multi.graph = tissue_multi_graph(tissue.nets)
 
 pp = print_multi_graphs(tissue.multi.graph, 
-                   layout = "dh")
+                   layout = "mds")
+
+# max.degree.node = tissue.multi.graph %>% 
+#     activate(nodes) %>% 
+#     mutate(degree = centrality_degree(mode = "all")) %>% 
+#     filter(degree == max(degree)) %>% 
+#     pull(name)
+# 
+# pp = print_multi_graphs(tissue.multi.graph, 
+#                    layout = "star", center = max.degree.node)
 
 pout = minor_plot(pp, expand.factor = 0.05, expand.factor.y = 0)
 print(pout)
@@ -69,12 +78,20 @@ ggsave(filename = file.path(fig.dir, paste0(tissue, "_sig_sig_network.pdf") ),
        plot = pout,
        width = 6, height = 4)
 
-# layouts = c("fr", "stress", "dh", "drl")
+# igraph_layouts <- c('star', 'circle', 'gem', 'dh', 'graphopt', 'grid', 'mds', 
+#                     'randomly', 'fr', 'kk', 'drl', 'lgl')
 # 
-# layout_plots = lapply(layouts, function(x) 
-#     print_multi_graphs(tissue.multi.graph, layout = x) + ggtitle(x))
+# pp.list = lapply(igraph_layouts, function(layout.name){
+#     print_multi_graphs(tissue.multi.graph, 
+#                    layout = layout.name) + ggtitle(layout.name)
+# })
 # 
-# pp = ggarrange(plotlist = layout_plots, nrow = 2, ncol = 2)
+# layouts.test = ggarrange(plotlist = pp.list, nrow = 2, ncol = 6)
+# 
+# ggsave(layouts.test, filename = file.path(fig.dir, "layouts.test.pdf" ),
+#        width = 30, height = 8)
+# 
+
 ```
 
 ```{r tissue-signatures-heatmap}
@@ -131,8 +148,10 @@ for (metric in names(all.interactions)) {
     
     cat("\t metric = ", metric, "\n")
     metric.dir = file.path(output.dir, metric)
-    dir.create(metric.dir, showWarnings = FALSE)
-    
+    if (!file.exists(metric.dir) ) {
+        dir.create(metric.dir, showWarnings = FALSE, recursive = TRUE)
+    }
+        
     get_common_sigs(metric.list = all.interactions, 
                     metric = metric, outdir = metric.dir, threshold = 0.2)
 }
@@ -188,9 +207,11 @@ dev.off()
 ```{r tissues-with-interactions}
 PCAWG.int.tissues = get_interaction_tissues(networks.concat)
 
-write_tsv(as.data.frame(PCAWG.int.tissues$pos.tissues), 
-          file = here("supp_data", "PCAWG_positive_interaction_tissue_summaries.tsv"))
-write_tsv(as.data.frame(PCAWG.int.tissues$neg.tissues), 
-          file = here("supp_data", "PCAWG_negative_interaction_tissue_summaries.tsv"))
+write.table(as.data.frame(PCAWG.int.tissues$pos.tissues), 
+          file = here("supp_data", "PCAWG_positive_interaction_tissue_summaries.tsv"),
+          row.names = TRUE, col.names = NA, sep = "\t", quote = FALSE)
+write.table(as.data.frame(PCAWG.int.tissues$neg.tissues), 
+          file = here("supp_data", "PCAWG_negative_interaction_tissue_summaries.tsv"),
+          row.names = TRUE, col.names = NA, sep = "\t", quote = FALSE)
 ```
 

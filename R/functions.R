@@ -526,8 +526,8 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.1, min.abssum = 1,
     print(head(gg.final.dt))    
     ### If the matrices are symmetric, then only upper triangle is plotted.
 
-    if (all.equal(neg.ints.mat, t(neg.ints.mat)) &
-            all.equal(pos.ints.mat, t(pos.ints.mat)) & diag.only) {
+    if (isTRUE(all.equal(neg.ints.mat, t(neg.ints.mat))) &
+            isTRUE(all.equal(pos.ints.mat, t(pos.ints.mat))) & diag.only) {
         gg.final.dt = gg.final.dt %>% filter(x < y)
         
         row.indices = row.indices[ which(row.indices %in% gg.final.dt$x)]
@@ -1142,4 +1142,242 @@ get_interaction_tissues = function(list.of.int.elems, threshold = 0.1) {
     
     return(list(pos.tissues = pos.ints.tissues,
                 neg.tissues = neg.ints.tissues))
+}
+
+
+
+#' Survival analysis for signature-signature interactions with Cox proportional
+#' hazards regression model. 
+#' 
+#' @param dataset Signature-activities for samples. E.g.PCAWG.full.subset.ann. 
+#' The first three columns are Cancer.Types, Sample.Names, Accuracy and fourth on 
+#' signature activities.
+#' @param clin.df Clinical data for samples. E.g. PCAWG.clin.df.
+#' @param signatures A vector of two signatures which should be considered for
+#' survival analysis.
+#' @param tissues A vector of tissues where the interaction of signatures should 
+#' be assessed.
+#' @param legend_pos Legend position. Default: c(0.8, 0.8).
+#' @param with.total.muts If TRUE the total number of mutations in the samples will
+#' be provided as a confounder to the model. Default: TRUE
+#' @param binary.status If TRUE, the model will compare samples with both signatures
+#' with all the other samples having either of the signatures or none. Default:
+#' FALSE
+#' @param get_df If true, the function returns the constructed model dataframe
+#' (for debugging). Default:FALSE.
+
+survival_for_interactions = function(dataset, clin.df, signatures, 
+                                     tissues, legend_pos = c(0.8, 0.8),
+                                     with.total.muts = TRUE,
+                                     binary.status = FALSE,
+                                     get_df = FALSE) {
+    
+    # SBS40_APOBEC = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+    #                                          signatures = c("SBS40", "APOBEC"), 
+    #                                          tissues = c("Ovary-AdenoCA", "Thy-AdenoCA"), 
+    #                                          clin.df = PCAWG.clin.df)    
+    
+    #### checking if TCGA 
+    TCGA = FALSE
+    if ( substr(dataset$Sample.Names[1], 1, 4) == "TCGA") {
+        TCGA = TRUE
+    }
+    
+    if (length(signatures) != 2) {
+        stop(paste(c("2 signatures are required for this function:", signatures) ),
+             collapse = " ")
+        return(NULL)
+    }
+    
+    tissues.subset = dataset %>% filter(Cancer.Types %in% tissues)
+    
+    tissues.subset = tissues.subset[ ! duplicated(tissues.subset$Sample.Names), ]
+    
+    if ( ! TCGA ) { ### for PCAWG
+        adjusted.clin.df = clin.df[ match(tissues.subset$Sample.Names, 
+                                          clin.df$icgc_donor_id), ]
+        
+        non_na.indeces = which(!is.na(adjusted.clin.df$icgc_specimen_id))
+        
+        tissues.subset = tissues.subset[non_na.indeces, ]
+        adjusted.clin.df = adjusted.clin.df[ non_na.indeces, ]
+        
+    } else { ### for TCGA
+        
+        tissues.subset$Sample.Names = substr(tissues.subset$Sample.Names, 1, 12)
+        valid.indeces = which(tissues.subset$Sample.Names %in% TCGA.all.survivals$bcr_patient_barcode)
+        tissues.subset = tissues.subset[valid.indeces, ]
+        
+        adjusted.clin.df = clin.df[ match(tissues.subset$Sample.Names, 
+                                          clin.df$bcr_patient_barcode), ]
+        
+        adjusted.clin.df = as_tibble(adjusted.clin.df)
+        
+        adjusted.clin.df = rename(adjusted.clin.df, survival_time = times)
+        adjusted.clin.df = rename(adjusted.clin.df, vital_status = patient.vital_status)
+        
+    }
+    
+    survival.df = cbind(tissues.subset[, 1:3], tissues.subset[, signatures], 
+                        adjusted.clin.df[, c("survival_time", "vital_status", 
+                                             "age_at_diagnosis"#, "sex"
+                        ) ] )
+    
+    survival.df = cbind(survival.df, total_muts = 
+                            rowSums(tissues.subset[, 4:ncol(tissues.subset)]))
+    
+    
+    
+    sbs1 = signatures[1]
+    sbs2 = signatures[2]
+    
+    colnames(survival.df)[ which(colnames(survival.df) == sbs1)] = "SBS__1"
+    colnames(survival.df)[ which(colnames(survival.df) == sbs2)] = "SBS__2"
+    
+    survival.df$exists__1 = as.numeric(survival.df$SBS__1 > 0)
+    survival.df$exists__2 = as.numeric(survival.df$SBS__2 > 0)
+    survival.df$exists__12 = as.numeric(survival.df$SBS__1 > 0 & survival.df$SBS__2 > 0)
+    survival.df$exists__None = as.numeric(survival.df$SBS__1 == 0 & survival.df$SBS__2 == 0)
+    
+    sig.comb.status = apply(survival.df[, c("exists__1", "exists__2")], MARGIN = 1, 
+                            function(x) {
+                                if(x[1] == 1 & x[2] == 1) return(paste0(sbs1, "+", sbs2))
+                                if(x[1] == 0 & x[2] == 1) return(paste0( sbs2))
+                                if(x[1] == 1 & x[2] == 0) return(paste0( sbs1))
+                                if(x[1] == 0 & x[2] == 0) return(paste0("None"))
+                            } )
+    
+    survival.df$status = sig.comb.status
+    survival.df$status = factor(survival.df$status, levels = c("None", sbs1,
+                                                               sbs2, paste0(sbs1, "+", sbs2)))
+    
+    
+    if (binary.status) {
+        survival.df$status = ifelse(survival.df$status == paste0(sbs1, "+", sbs2),
+                                    paste0(sbs1, "+", sbs2), "Others")
+        survival.df$status = factor(survival.df$status, 
+                                    levels = c("Others", paste0(sbs1, "+", sbs2)))
+        
+    }
+    if(get_df) {
+        return(survival.df)
+    }
+    
+    if (length(tissues) >1 ) {    
+        if (with.total.muts) {
+            cox <- coxph(Surv(survival_time, vital_status) ~ age_at_diagnosis + 
+                             Cancer.Types + status + total_muts, 
+                         data = survival.df, na.action = na.omit)
+        }else {
+            cox <- coxph(Surv(survival_time, vital_status) ~ age_at_diagnosis + 
+                             Cancer.Types + status, 
+                         data = survival.df, na.action = na.omit)
+        }
+    } else {
+        if (with.total.muts) {
+            cox <- coxph(Surv(survival_time, vital_status) ~ age_at_diagnosis + 
+                             status + total_muts, 
+                         data = survival.df, na.action = na.omit)
+        }else {
+            cox <- coxph(Surv(survival_time, vital_status) ~ age_at_diagnosis + 
+                             status, 
+                         data = survival.df, na.action = na.omit)
+        }
+    }
+    temp <- cox.zph(cox) 
+    
+    summary(cox) 
+    
+    objsurv = survfit(Surv(survival_time, vital_status) ~ status, data = survival.df)
+    
+    
+    P = ggsurvplot(objsurv, data = survival.df,
+                   font.legend = c(14, "plain", "black"),
+                   legend.title = element_blank(),
+                   legend.labs = gsub("status=", "", names(objsurv$strata)),
+                   # palette = "jco",
+                   xlab = "Days",
+                   legend = legend_pos) + 
+        guides(colour = guide_legend(nrow = length(objsurv$strata)))
+    
+    P$plot = P$plot + theme(legend.background = element_rect(fill='transparent'),
+                            legend.box.background = 
+                                element_rect(fill='transparent', size = 0))
+    
+    return(list(survival.df = survival.df, coxout = cox, survP = P))
+}
+
+#' Running batch survival analysis tests for a set of interactions. Returns a
+#' plotlist for all the interaction test which didn't fail.
+#' @param sig.sig.tissues.matrix A matrix with rows and columns with signatures,
+#'  and the elements are comma-separated tissue names where that interaction is 
+#'  observed.
+#'  @param dataset The signature values for all samples. E.g. PCAWG.full.subset.ann
+#'  @param clin.df The dataframe with clinical info.
+#'  @param with.total.muts If TRUE the total number of mutations in the samples will
+#'  be provided as a confounder to the model. Default: TRUE
+#'  @param binary.status If TRUE, the model will compare samples with both signatures
+#'  with all the other samples having either of the signatures or none. Default:
+#'  FALSE
+
+get_surv_plotlist = function(sig.sig.tissues.matrix,
+                             dataset,
+                             clin.df,
+                             with.total.muts = TRUE, 
+                             binary.status = FALSE ) { 
+    
+    tt <- ttheme_default(colhead=list(fg_params = list(parse=TRUE)),
+                         base_size = 10,
+                         padding = unit(c(2, 4), "mm"))
+    
+    sig.sig.tissues.matrix[lower.tri(sig.sig.tissues.matrix, diag = TRUE)] = NA
+    ints.indeces = which(! is.na(sig.sig.tissues.matrix), arr.ind = T)
+
+    
+    out_plotlist = list()
+    j = 0
+    for (i in 1:nrow(ints.indeces)) {
+        
+        indeces = ints.indeces[i, ]
+        sig1 = colnames(sig.sig.tissues.matrix)[indeces[1]]
+        sig2 = colnames(sig.sig.tissues.matrix)[indeces[2]]
+        
+        tissues = strsplit(sig.sig.tissues.matrix[indeces[1], indeces[2]], split = ",")[[1]]
+        for (tissue in tissues) {
+            cat("Attempting cox survival for:", tissue, "::", sig1, "+", sig2, "j = ", j, "\n")
+            try({surv.out = survival_for_interactions(dataset = dataset, 
+                                                      signatures = c(sig1, sig2), 
+                                                      tissues = tissue, 
+                                                      clin.df = clin.df,
+                                                      legend_pos = c(0.3, 0.3),
+                                                      with.total.muts = with.total.muts,
+                                                      binary.status = binary.status)
+            
+            cox.coefs = round(summary(surv.out$coxout)$coefficients, 2)
+            nosig = all(summary(surv.out$coxout)$coefficients[, "Pr(>|z|)"] > 0.05, na.rm = TRUE)
+            
+            if ( nosig ) {
+                cat("\tNone of the covariates are significant. Skipping.\n")
+                next
+            }
+            
+            tblgrob = tableGrob(cox.coefs, theme=tt)
+            
+            survp = surv.out$survP
+            survp$plot = survp$plot + ggtitle(paste(tissue, "::", sig1, "+", sig2))
+            p = ggarrange(survp$plot, tblgrob, nrow = 2)
+            j = j + 1
+            out_plotlist[[j]] = p} )
+        }
+    }
+    return(out_plotlist)
+}
+
+
+#' A function to generate default colors in ggplots.
+#' @param n number of colors.
+#' 
+gg_color_hue <- function(n) {
+    hues = seq(15, 375, length = n + 1)
+    hcl(h = hues, l = 65, c = 100)[1:n]
 }
