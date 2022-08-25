@@ -1,0 +1,112 @@
+---
+title: "Inspecting mutational profiles of genes from individual pathways"
+output: 
+  html_document:
+    df_print: paged
+---
+
+```{r}
+knitr::opts_chunk$set(comment = '', fig.width = 6, 
+                      fig.height = 6, echo = FALSE, 
+                      warning = FALSE)
+
+fig.dir = here("figures/pathways_analysis")
+
+```
+
+
+```{r loading}
+# library(BSgenome.Hsapiens.UCSC.hg38)
+library(BSgenome.Hsapiens.UCSC.hg19)
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+library(org.Hs.eg.db)
+library(tidyverse)
+library(ggplot2)
+library(MutationalPatterns)
+library(here)
+
+ref.genome = "BSgenome.Hsapiens.UCSC.hg19"
+
+mutated.pathways.tissues = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways",
+                                               "pcawg_pathways.RDS"))
+
+all.gene.path <- Reduce(rbind, lapply(1:10, function(x) {
+    readxl::read_excel(here("data/raw/PCAWG/10_onco_pathways/genes-pathways.xlsx"), sheet = x)
+}))
+```
+ 
+ 
+``` {r}
+
+tissue = "Panc_AdenoCA"
+pathway = "TP53"
+
+tic("profile extraction")
+panc.tp53.mut.profiles = pcawg_pathway_profiles(pathway = "TP53",
+                                                tissue = "Panc_AdenoCA",
+                                                pathways.df = mutated.pathways.tissues)
+toc()
+
+
+total.spectrum = plot_spectrum(panc.tp53.mut.profiles$all.profiles, CT = TRUE,condensed = FALSE, 
+                           indv_points = FALSE, legend = TRUE)
+
+pathway.spectrum = plot_spectrum(panc.tp53.mut.profiles$path.profiles, CT = TRUE,condensed = FALSE, 
+                                 indv_points = TRUE, legend = TRUE, error_bars = 'none')
+
+
+path.total.type.occurrences = colSums(panc.tp53.mut.profiles$path.profiles)
+
+all.total.type.occurrences = colSums(panc.tp53.mut.profiles$all.profiles)
+
+
+to_tp53_p = total.type.occurrences[1:6] %>% enframe() %>% 
+    ggplot(aes(x = name, y = value, fill = name)) + 
+    geom_bar(stat = "identity") + 
+    scale_fill_manual( values = MutationalPatterns:::COLORS6) +
+    theme_bw() + xlab("") + ylab("Relative contribution") + 
+    theme(axis.ticks = element_blank(), axis.text.x = element_blank(), 
+          panel.grid.major.x = element_blank(),
+          legend.position = "none")
+
+
+panc_tp53_counts = ggarrange(to_tp53_p, to_p, widths = c(2,4))
+ggsave(plot = panc_tp53_counts, file = file.path(pub.fig.dir, 
+                                                 "panc_tp53_counts_mut_types.png"),
+       width = 6, height = 3)
+
+gg.tp53 = path.total.type.occurrences %>% enframe(name = "mut.type", value = "count") %>%
+    mutate(location = "TP53 pathway") %>% mutate(fraction = count / sum(count))
+
+gg.all = all.total.type.occurrences %>% enframe(name = "mut.type", value = "count") %>%
+    mutate(location = "all mutations") %>% mutate(fraction = count / sum(count))
+
+gg.pathplot = rbind(gg.tp53, gg.all)
+
+
+CpG.hyper.p.value = test_CpG(path.total.type.occurrences, all.total.type.occurrences, 
+                             lower.tail = FALSE)
+
+pp = gg.pathplot %>% filter(mut.type != "C>T") %>% 
+    ggplot(aes(x = mut.type, y = fraction, fill = mut.type, 
+               alpha = location, color = mut.type)) + 
+    geom_bar(stat = "identity", position = "dodge") + 
+    scale_fill_manual(values = setNames(MutationalPatterns:::COLORS7, 
+                               c("C>A", "C>G", "C>T at CpG",
+                                 "C>T other", "T>C", "T>G"))) +
+    scale_color_manual(values = setNames(MutationalPatterns:::COLORS7, 
+                               c("C>A", "C>G", "C>T at CpG",
+                                 "C>T other", "T>C", "T>G"))) +
+    guides(fill="none", color = "none") + 
+    theme_classic(base_size = 13) + 
+    theme(axis.title.x = element_blank(),
+          axis.text.x = element_text(angle = 45, h = 1))+
+    # scale_color_manual(values = setNames(c("white", "black"), c("all", "TP53"))))
+    annotate("text", x = 3.3, y = 0.22, label = paste0("* p = ",round(CpG.hyper.p.value, 3))) +
+    annotate("segment", x = 2.5, xend = 3.5, y = 0.21, yend = 0.21) +
+    coord_cartesian(ylim = c(0, 0.23))
+
+ggsave(pp, filename = file.path(fig.dir, "TP53_path_mutations_pancAdenoCA.pdf"),
+       width = 5, height = 4)
+```
+

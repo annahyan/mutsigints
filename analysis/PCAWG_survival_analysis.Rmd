@@ -1,0 +1,31 @@
+---
+title: "Sig-Sig interaction effect on survival for PCAWG"
+output: 
+  html_document:
+    df_print: paged
+---
+
+```{r}
+knitr::opts_chunk$set(comment = '', fig.width = 6, 
+                      fig.height = 6, echo = FALSE, 
+                      warning = FALSE)
+```
+
+```{r load-packages}
+library(here)
+fig.dir = here("figures/sig_sig_interactions")
+
+if(! file.exists(fig.dir)){
+    dir.create(fig.dir, recursive = TRUE)
+}
+
+source(here("R/load_packages.R"))
+library(igraph)
+library(tidygraph)
+library(pheatmap)
+library(viridis)
+
+data.out.dir = here("data/RDS/PCAWG", "sig_sig_ints")
+
+output.dir = here("output/sig_sig_int_motifs")
+```
