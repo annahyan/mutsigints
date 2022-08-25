@@ -93,8 +93,8 @@ abundant.tissues = which(PCAWG.full.subset.ann.pathways$Cancer.Types %>%
 
 ```{r}
 all.path.sig.assocs = get_sig_path_assocs(
-    PCAWG.full.subset.ann.pathways %>% select(4:ncol(.)),
-    mutated.pathways.tissues %>% select(4:ncol(.)),
+    PCAWG.full.subset.ann.pathways %>% dplyr::select(4:ncol(.)),
+    mutated.pathways.tissues %>% dplyr::select(4:ncol(.)),
     p.val.threshold = 0.05)
 
 all.path.sig.heatmap = myggheatmap(
@@ -214,7 +214,7 @@ ggsave(plot = pp.logged,
 ggsave(plot = pp.logged,
                filename = file.path(fig.dir, "pathway_to_signature", 
                                     "by_tissues", "lm_log", "logged_summarized_OLS_path_to_sigs.pdf"),
-               height = 6, width = 8, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
+               height = 2.3, width = 2.9, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
 
 ```
 

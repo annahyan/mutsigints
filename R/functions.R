@@ -304,13 +304,13 @@ get_tissue_pathway_activities = function(tissue,
     
     donor.ids = tissue.sig.subset$Sample.Names  
     
-    tissue.sig.subset = tissue.sig.subset %>% select(4:ncol(.))
+    tissue.sig.subset = tissue.sig.subset %>% dplyr::select(4:ncol(.))
     
     tissue.path.subset = pathways.input[ match(donor.ids, 
                                                pathways.input$donor_id), ] 
     tissue.path.subset = tissue.path.subset %>% 
-        select(4:ncol(.)) %>% 
-        select_if(colSums(., na.rm = TRUE) != 0)
+        dplyr::select(4:ncol(.)) %>% 
+        dplyr::select_if(colSums(., na.rm = TRUE) != 0)
     
     return(list(sigs = tissue.sig.subset, paths = tissue.path.subset))
 }
@@ -689,7 +689,7 @@ get_metrics_list = function(data.input, metric_func,
             
         dt = data.input
         tissue.sig = dt %>% filter(Cancer.Types == tissue) %>%
-            select(4:ncol(dt))
+            dplyr::select(4:ncol(dt))
         # tissue.sig = tissue.sig %>% filter(MMR == 0)
         tissue.sig = tissue.sig[, colSums(tissue.sig) > 10,
                                 drop = FALSE]
@@ -1380,4 +1380,111 @@ get_surv_plotlist = function(sig.sig.tissues.matrix,
 gg_color_hue <- function(n) {
     hues = seq(15, 375, length = n + 1)
     hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+#' The function outputs mutational profiles for mutations in genes 
+#' in the pathway of interest and for all other mutations. 
+#' @param pathway One of the 10 oncogenic pathway names.
+#' @param tissue The tissues where the profiles have to be assessed.
+#' @param pathways.df The data.frame with sample names and pathway alterations.
+#' @param vcf.dir Directory to vcf files
+#' @return A list with mutational profiles for all mutations and for those in 
+#' the pathway of interest.
+
+pcawg_pathway_profiles = function(pathway, tissue, pathways.df, vcf.dir =
+                                      here("data/raw/PCAWG/vcfs/consensus_snv_indel/snv_mnv/")) {
+    path.genes = all.gene.path %>% filter(Pathway == pathway) %>% pull(Gene)
+    
+    path.gene.symbols <- biomaRt::select(org.Hs.eg.db,
+                                         keys = path.genes,
+                                         columns = c("SYMBOL","ENTREZID"),
+                                         keytype = "SYMBOL")
+    
+    path.gene.coords <- biomaRt::select(TxDb.Hsapiens.UCSC.hg19.knownGene,
+                                        keys = path.gene.symbols$ENTREZID,
+                                        columns = c("GENEID", "TXID", "TXCHROM", "TXSTART", "TXEND"),
+                                        keytype = "GENEID")
+    
+    path_gene_granges = GRanges(seqnames = path.gene.coords$TXCHROM,
+                                IRanges(start = path.gene.coords$TXSTART, 
+                                        end = path.gene.coords$TXEND)) %>% 
+        disjoin()
+    
+    tissue.samples = pathways.df %>% filter(Cancer.Types == tissue) %>% 
+        pull(sample_id)
+    
+    vcf.files <- list.files(vcf.dir,
+                            pattern = paste(tissue.samples, collapse = "|"), full.names = TRUE
+    )
+    vcf.files = vcf.files[!grepl("tbi", vcf.files)]
+    
+    vcf.file.order = gsub(".consensus.*$", "", basename(vcf.files))
+    vcf.samples = pathways.df[match(vcf.file.order, pathways.df$sample_id),] %>% 
+        pull(donor_id)
+    
+    cat("Reading vcf files... This may take a while.\n")
+    grl <- MutationalPatterns::read_vcfs_as_granges(vcf.files, vcf.samples, "BSgenome.Hsapiens.UCSC.hg19")
+    cat("Done.\n")
+    
+    grl.path = lapply(grl, function(x)
+        subsetByOverlaps(x, path_gene_granges) ) 
+    
+    type.occurrences.path <- mut_type_occurrences(grl.path, ref.genome)
+    
+    # total.type.occurrences = colSums(type.occurrences.path)
+    
+    
+    type.occurrences <- mut_type_occurrences(grl, ref.genome)
+    return(list(path.profiles = type.occurrences.path, 
+                all.profiles = type.occurrences))
+}
+
+#' Hypergeometric test for C>T mutations at CpG sites between two profiles.
+#' @param seven_channel_profile1 First profile
+#' @param seven_channel_profile2 Second profile
+#' @param lower.tail Parameter will be passed to phyper
+#' @return P value or 1-P of a hypergeometric test.
+
+test_CpG = function(seven_channel_profile1, seven_channel_profile2, lower.tail = TRUE) {
+    
+    ### Following the logic of the answer
+    ### https://stackoverflow.com/questions/8382806/hypergeometric-test-phyper
+    
+    p1 = seven_channel_profile1
+    p2 = seven_channel_profile2
+    
+    q = p1["C>T at CpG"]
+    m = p1["C>T at CpG"] + p2["C>T at CpG"]
+    n = p1["C>T"] + p2["C>T"] - m
+    k = p1["C>T"]
+    
+    return(phyper(q, m, n, k, lower.tail))
+}
+
+
+
+#' Hypergeometric test for C>T mutations at CpG sites between two profiles.
+#' @param seven_channel_profile1 First profile
+#' @param seven_channel_profile2 Second profile
+#' @param lower.tail Parameter will be passed to phyper
+#' @return P value or 1-P of a hypergeometric test.
+
+test_mutation = function(mutation, seven_channel_profile1, seven_channel_profile2, lower.tail = TRUE) {
+    
+    ### Following the logic of the answer
+    ### https://stackoverflow.com/questions/8382806/hypergeometric-test-phyper
+    
+    p1 = seven_channel_profile1
+    p2 = seven_channel_profile2
+    
+    total.p1 = p1["C>A"] + p1["C>G"] + p1["C>T"] + p1["T>A"] + p1["T>C"] + p1["T>G"] 
+    total.p2 = p2["C>A"] + p2["C>G"] + p2["C>T"] + p2["T>A"] + p2["T>C"] + p2["T>G"] 
+    
+    
+    q = p1[mutation]
+    m = p1[mutation] + p2[mutation]
+    n = p1[total.p1] + p2[total.p2] - m
+    k = total.p1
+    
+    return(phyper(q, m, n, k, lower.tail))
 }

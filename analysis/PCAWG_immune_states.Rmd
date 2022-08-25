@@ -196,6 +196,15 @@ pcawg.immune.states.plot = pcawg.immune.summaries.gg %>%
 ggsave(plot = pcawg.immune.states.plot, 
      file = file.path(fig.dir, "pcawg.immune.states.heatmap.png"),
                       width = 5, height = 5, bg = "white")
+
+cairo_pdf(filename = file.path(fig.dir, "pcawg.immune.states.heatmap.pdf"),
+        width = 5, height = 5)
+print(pcawg.immune.states.plot)
+dev.off()
+
+# ggsave(plot = pcawg.immune.states.plot, 
+#      file = file.path(fig.dir, "pcawg.immune.states.heatmap.pdf"),
+#                       width = 5, height = 5)
 ```
 
 ### Immune states and pathway interactions

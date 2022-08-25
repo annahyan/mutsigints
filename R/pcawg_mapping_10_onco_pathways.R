@@ -72,6 +72,9 @@ mutated.pathways.tissues = mutated_pathways
 mutated.pathways.tissues$Cancer.Types = pcawg_path_mapping[ 
     match(mutated_pathways$donor_id, pcawg_path_mapping$icgc_donor_id), ]$histology_abbreviation
 
+mutated.pathways.tissues$Cancer.Types = gsub("-", "_",
+                                             mutated.pathways.tissues$Cancer.Types)
+
 new_col_order = c("sample_id", "donor_id", "Cancer.Types") # bringing these columns first
 new_col_order = c(new_col_order, setdiff(colnames(mutated.pathways.tissues), new_col_order))
 mutated.pathways.tissues = mutated.pathways.tissues[, new_col_order]
