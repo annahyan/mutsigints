@@ -244,3 +244,24 @@ for (tissue in names(immune.tissue.odds.ratio)) {
 }
 ```
 
+```{r}
+tissue = "ColoRect_AdenoCA" 
+
+colnames(immune.tissue.odds.ratio[[tissue]]) = c("Wound\nhealing", "INF-\u03B3\ndominant")
+
+colorectal.heatmap = ggheatmap_wrapper(immune.tissue.odds.ratio[[tissue]], 
+                                        title = tissue)
+
+ggsave(plot = colorectal.heatmap,
+       filename = file.path(fig.dir, "immune_to_signature", "by_tissues", "oddsratio",  
+                            paste0(tissue, "_sig_pathway.dotplot.pdf")),
+       height = 4, width = 4, bg = "white")
+
+
+cairo_pdf(filename = file.path(fig.dir, "immune_to_signature", "by_tissues", "oddsratio",  
+                            paste0(tissue, "_sig_pathway.dotplot.pdf")),
+          height = 4, width = 4)
+print(colorectal.heatmap)
+dev.off()
+```
+

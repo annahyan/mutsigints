@@ -1,0 +1,132 @@
+---
+title: "Immune states in TCGA"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r}
+knitr::opts_chunk$set(comment = '', fig.width = 6, 
+                      fig.height = 5, echo = FALSE, 
+                      warning = FALSE, message = FALSE)
+```
+
+
+```{r load-packages}
+library(here)
+fig.dir = here("figures/immune_analysis")
+
+
+for (dir.path in c(fig.dir, file.path( fig.dir, 
+                                  "immune_to_signature", "by_tissues", "oddsratio"))) {
+    if(! file.exists(dir.path)){
+        dir.create(dir.path, recursive = TRUE)
+    }   
+}
+
+
+source(here("R/load_packages.R"))
+
+out.dir = here("data/RDS/TCGA/immune_states")
+```
+
+
+```{r}
+TCGA.full.subset.ann = readRDS(here("data", "RDS", "TCGA", "signatures",
+                                     "TCGA.full.subset.ann.RDS"))
+
+immune.subtypes.all = readxl::read_excel(here("data/raw/TCGA/immune_states/1-s2.0-S1074761318301213-mmc2.xlsx"))
+
+
+TCGA.samplenames = gsub("(TCGA-..-....)-.*$", "\\1", TCGA.full.subset.ann$Sample.Names)
+
+matches = match(TCGA.samplenames, immune.subtypes.all$`TCGA Participant Barcode`)
+
+immune.subtypes = immune.subtypes.all[ matches, ]
+
+
+mapping.immune.subtypes = setNames(c("Wound healing", 
+                              expression(paste("IFN-", gamma, " dominant")),
+                              "Inflammatory",
+                              "Lymphocyte depleted",
+                              "Imm. quiet",
+                              expression(paste("TGF-", beta, " dominant"))), paste0("C", 1:6))
+
+mapping.immune.subtypes = setNames(c("Wound healing", 
+                                     'IFN-\u03B3 dominant',
+                                     "Inflammatory",
+                                     "Lymph. depleted",
+                                     "Imm. quiet",
+                                     'TGF-\u03B2 dominant'), paste0("C", 1:6))
+
+tcga.immune.states = cbind(TCGA.full.subset.ann,
+                              immune.subtypes$`Immune Subtype`)
+
+colnames(tcga.immune.states)[ncol(tcga.immune.states)] = "Immune.Subtype"
+```
+
+
+
+```{r}
+tcga.immune.summaries.gg = tcga.immune.states %>% 
+    group_by(Cancer.Types, Immune.Subtype) %>% 
+    count( Cancer.Types, Immune.Subtype, name = "total") %>% ungroup() %>% 
+    tidyr::complete(Cancer.Types, Immune.Subtype, fill = list(total = 0))
+
+immune.class.mapping = c("C1" = "Wound healing",
+                         "C2" = "INF-\u03B3 dominant",
+                         "C3" = "Inflammatory",
+                         "C4" = "Lymphocyte depleted",
+                         "C5" = "Immunologically quiet",
+                         "C6" = "TGF-\u03B2 dominant",
+                         "CNA" = "CNA")
+
+tcga.immune.summaries.gg$Immune.type = immune.class.mapping[tcga.immune.summaries.gg$Immune.Subtype]
+tcga.immune.summaries.gg$Immune.type = factor(tcga.immune.summaries.gg$Immune.type,
+                                               # levels = c("CNA", "TGF-β dominant",
+                                               #            "Immunologically quiet",
+                                               #            "Lymphocyte depleted",
+                                               #            "Inflammatory",
+                                               #            "INF-γ dominant",
+                                               #            "Wound healing")
+                                               levels = c("Wound healing", "INF-γ dominant",
+                                                          "Inflammatory", "Lymphocyte depleted",
+                                                          "Immunologically quiet", "TGF-β dominant",
+                                                          "CNA"))
+
+tcga.immune.states.plot = tcga.immune.summaries.gg %>% 
+    rename(Counts = total) %>% 
+    # mutate(Pathway = factor(Pathway, levels = path.order)) %>% 
+    
+    ggplot(aes(x = Immune.type, y = Cancer.Types) ) + 
+        geom_tile(aes(fill = Counts), color = "gray80") +
+        geom_text(aes(label = Counts), size = 3.4) + 
+    #scale_fill_viridis(option = "plasma")
+    scale_fill_gradient(low = "aliceblue", high = "orange") + 
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+    theme_minimal(base_size = 14) + 
+    xlab("") + ylab("") + 
+    ggtitle("Immune classes across cancer types",) +
+    theme(panel.grid = element_blank(),
+          axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+          legend.position = "none",
+          plot.title = element_text(size = 12),
+          plot.margin = margin(t = 0,  # Top margin
+                             r = 0,  # Right margin
+                             b = 0,  # Bottom margin
+                             l = 0)) # Left margin)
+
+ggsave(plot = tcga.immune.states.plot, 
+     file = file.path(fig.dir, "tcga.immune.states.heatmap.png"),
+                      width = 5, height = 5, bg = "white")
+
+cairo_pdf(filename = file.path(fig.dir, "tcga.immune.states.heatmap.pdf"),
+        width = 4.5, height = 4.5)
+print(tcga.immune.states.plot)
+dev.off()
+
+# ggsave(plot = tcga.immune.states.plot, 
+#      file = file.path(fig.dir, "tcga.immune.states.heatmap.pdf"),
+#                       width = 5, height = 5)
+```
+
