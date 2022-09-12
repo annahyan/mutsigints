@@ -11,7 +11,7 @@ knitr::opts_chunk$set(comment = '', fig.width = 6,
                       warning = FALSE)
 ```
 
-```{r load-packages}
+```{r load-packages, message=FALSE}
 library(here)
 fig.dir = here("figures/sig_sig_interactions")
 
@@ -160,18 +160,18 @@ for (metric in names(all.interactions)) {
 ### Plotting the summaries of interactions across cancer types
 
 ```{r concat-interactions}
-networks.concat = list()
+PCAWG.networks.concat = list()
 
 for (tissue in tissues) {
     cat(tissue, " ")
     
     try({
-        networks.concat[[tissue]] = concat_networks(
+        PCAWG.networks.concat[[tissue]] = concat_networks(
             all.interactions, tissue = tissue, filter.list = list(MI = 0.2))
     })
 }
 
-sig.sig.ints.summary.plot = plot_all_counts(networks.concat, min.abssum = 3,
+sig.sig.ints.summary.plot = plot_all_counts(PCAWG.networks.concat, min.abssum = 3,
                                             psize = 4.5, lsize = 1.7, 
                                             expand.mult = c(0.02, 0.02)) + 
     coord_cartesian(x = c(1, 20), clip = "off")
@@ -181,7 +181,7 @@ ggsave(filename = file.path(fig.dir, paste0("PCAWG_sig_sig_ints_summary_plot_lim
        width = 3.7, height = 3.5)
 
 
-sig.sig.ints.summary.plot = plot_all_counts(networks.concat, min.abssum = 5,
+sig.sig.ints.summary.plot = plot_all_counts(PCAWG.networks.concat, min.abssum = 5,
                                             psize = 6, lsize = 2, 
                                             expand.mult = c(0.02, 0.02)) + 
     coord_cartesian(x = c(1, 13), clip = "off")
@@ -198,14 +198,15 @@ cairo_pdf(filename = file.path(fig.dir, paste0("PCAWG_sig_sig_ints_summary_plot_
           width = 3.7, height = 3.5)
 print(sig.sig.ints.summary.plot)
 dev.off()
-# concat.summaries = summarize_by_tissues(networks.concat)
+# concat.summaries = summarize_by_tissues(PCAWG.networks.concat)
 ```
 
 
 ### Getting and writing cancer types where individual interactions are active
 
 ```{r tissues-with-interactions}
-PCAWG.int.tissues = get_interaction_tissues(networks.concat)
+PCAWG.int.tissues = get_interaction_tissues(PCAWG.networks.concat)
+
 
 write.table(as.data.frame(PCAWG.int.tissues$pos.tissues), 
           file = here("supp_data", "PCAWG_positive_interaction_tissue_summaries.tsv"),

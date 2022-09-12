@@ -1,4 +1,4 @@
-	common.tissues.Ageing	common.tissues.SBS5	common.tissues.MMR	common.tissues.SBS17	common.tissues.Tobacco	common.tissues.UV	total.counts
-SBS40	lung_adenoca						16
-Ageing		breast_adenoca, colorect_adenoca, skin_melanoma, stomach_adenoca, uterus_adenoca	colorect_adenoca, stomach_adenoca				16
-SBS5			colorect_adenoca, stomach_adenoca, uterus_adenoca	eso_adenoca	head_scc, lung_adenoca, lung_scc	skin_melanoma	16
+	Ageing	SBS5	MMR	SBS17	Tobacco	UV
+SBS40	lung_adenoca					
+Ageing		breast_adenoca, colorect_adenoca, skin_melanoma, stomach_adenoca, uterus_adenoca	colorect_adenoca, stomach_adenoca			
+SBS5			colorect_adenoca, stomach_adenoca, uterus_adenoca	eso_adenoca	head_scc, lung_adenoca, lung_scc	skin_melanoma

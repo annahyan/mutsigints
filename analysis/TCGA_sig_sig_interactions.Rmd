@@ -133,18 +133,18 @@ for (metric in names(all.interactions)) {
 ```
 
 ```{r concat-interactions}
-networks.concat = list()
+TCGA.networks.concat = list()
 
 for (tissue in tissues) {
     cat(tissue, " ")
     
     try({
-        networks.concat[[tissue]] = concat_networks(
+        TCGA.networks.concat[[tissue]] = concat_networks(
             all.interactions, tissue = tissue, filter.list = list(MI = 0.2))
     })
 }
 
-sig.sig.ints.summary.plot = plot_all_counts(networks.concat, min.abssum = 3,
+sig.sig.ints.summary.plot = plot_all_counts(TCGA.networks.concat, min.abssum = 3,
                                             psize = 6, lsize = 2, 
                                             expand.mult = c(0.04, 0.02)) + 
     coord_cartesian(x = c(1, 13), clip = "off")
@@ -158,13 +158,13 @@ cairo_pdf(filename = file.path(fig.dir, paste0("TCGA_sig_sig_ints_summary_plot.p
 print(sig.sig.ints.summary.plot)
 dev.off()
 
-# concat.summaries = summarize_by_tissues(networks.concat)
+# concat.summaries = summarize_by_tissues(TCGA.networks.concat)
 ```
 
 ### Getting and writing cancer types where individual interactions are active
 
 ```{r tissues-with-interactions}
-TCGA.int.tissues = get_interaction_tissues(networks.concat)
+TCGA.int.tissues = get_interaction_tissues(TCGA.networks.concat)
 
 write.table(as.data.frame(TCGA.int.tissues$pos.tissues), 
           file = here("supp_data", "TCGA_positive_interaction_tissue_summaries.tsv"),
