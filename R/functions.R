@@ -1140,6 +1140,12 @@ get_interaction_tissues = function(list.of.int.elems, threshold = 0.1) {
         }
     }
     
+    pos.ints.tissues = pos.ints.tissues[rowSums(pos.ints.tissues > "") > 0, 
+                                        colSums(pos.ints.tissues > "") > 0 ]
+    
+    neg.ints.tissues = neg.ints.tissues[rowSums(neg.ints.tissues > "") > 0, 
+                                        colSums(neg.ints.tissues > "") > 0 ]
+    
     return(list(pos.tissues = pos.ints.tissues,
                 neg.tissues = neg.ints.tissues))
 }

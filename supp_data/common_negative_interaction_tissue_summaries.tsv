@@ -1,0 +1,6 @@
+	common.tissues.Ageing	common.tissues.SBS5	common.tissues.MMR	common.tissues.SBS17	common.tissues.UV	total.counts
+APOBEC	breast_adenoca			eso_adenoca		11
+SBS40		colorect_adenoca, lung_adenoca, ovary_adenoca, stomach_adenoca, uterus_adenoca	uterus_adenoca			11
+Ageing				stomach_adenoca		11
+HR		breast_adenoca				11
+SBS38					skin_melanoma	11
