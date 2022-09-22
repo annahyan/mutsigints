@@ -122,8 +122,6 @@ ggsave(filename = file.path(fig.dir, "tcga_tissue_counts_plot.png"),
 
 ### Number of active signatures across samples
 
-
-
 ```{r pcawg-active-hists}
 pcawg.active.signatures.hist = plot_active_signatures(PCAWG.full.subset) + 
     ggtitle("PCAWG") + theme(plot.margin = unit(c(2,2,2,2), "mm"))
@@ -131,6 +129,29 @@ pcawg.active.signatures.hist = plot_active_signatures(PCAWG.full.subset) +
 ggsave(pcawg.active.signatures.hist, 
        filename = file.path(fig.dir, "PCAWG.active.signatures.histogram.png"),
        width = 3, height = 3.6)
+```
+
+### Most common signature counts
+
+```{r}
+pcawg.number.3.to.5.sigs = PCAWG.full.subset %>% 
+    select(4:ncol(.)) %>% 
+    mutate_all( ~ . > 0) %>% 
+    rowwise() %>% 
+    summarize(active_sigs = sum(c_across(everything()))) %>% 
+    summarize(x = sum(active_sigs >= 3 & active_sigs <= 5))
+
+pcawg.number.3.to.5.sigs / nrow(PCAWG.full.subset)
+# [1] 0.7838672
+
+tcga.number.3.to.5.sigs = TCGA.full.subset %>% 
+    select(4:ncol(.)) %>% 
+    mutate_all( ~ . > 0) %>% 
+    rowwise() %>% 
+    summarize(active_sigs = sum(c_across(everything()))) %>% 
+    summarize(x = sum(active_sigs >= 3 & active_sigs <= 5))
+tcga.number.3.to.5.sigs / nrow(TCGA.full.subset)
+# [1] 0.7789681
 ```
 
 

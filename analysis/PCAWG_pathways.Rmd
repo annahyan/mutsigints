@@ -29,7 +29,44 @@ mutated.pathways.tissues = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways"
 
 PCAWG.full.subset.ann.pathways = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways",
                                               "PCAWG.full.subset.ann.pathways.RDS"))
+
+PCAWG.full.subset.ann = readRDS(here("data", "RDS", "PCAWG", "signatures",
+                                     "PCAWG.full.subset.ann.RDS"))
+
+PCAWG.active.sig.counts = data.frame(Tissues = PCAWG.full.subset.ann$Cancer.Types,
+                                      active.sig.counts = rowSums(PCAWG.full.subset.ann[4:ncol(PCAWG.full.subset.ann)] > 0))
 ```
+
+
+### PCAWG summary statistics about available data
+
+In total we have `r nrow(mutated.pathways.tissues)` samples and 
+`r unique(mutated.pathways.tissues$Cancer.Types) %>% length()` tissues.
+
+```{r}
+# [1] 1552
+PCAWG.mutated.pathways.occ.plot = mutated.pathways.tissues %>% 
+    mutate(across (`Cell Cycle`:Telomeric, ~ . > 0)) %>% 
+    rowwise() %>% 
+    mutate(sum.mut.paths = sum(c_across(`Cell Cycle`:Telomeric))) %>% 
+    ggplot(aes(x = sum.mut.paths, fill = Cancer.Types) ) + 
+    geom_histogram(binwidth = 1, color = "gray90") +
+    facet_wrap(~Cancer.Types) +
+        theme_classic(base_size = 13) + 
+        scale_x_continuous(breaks = seq(1, 7)) + 
+        coord_cartesian(expand = FALSE) + 
+        scale_fill_manual(values = scales::muted(
+            rainbow(PCAWG.active.sig.counts %>% pull(Tissues) %>% 
+                        n_distinct()), l = 50, c = 90 ), guide = "none" ) +
+        xlab("Mutated pathways") + ylab("Number of samples") + 
+    theme(strip.text.x = element_text(size = 6))
+
+
+ggsave(file = file.path(fig.dir, "PCAWG.mutated.pathways.occurrence.pdf"),
+       plot = PCAWG.mutated.pathways.occ.plot, 
+       width = 5, height = 5)
+```
+
 
 ### Heatmap of cancer types and pathways
 
