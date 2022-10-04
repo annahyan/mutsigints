@@ -29,7 +29,44 @@ mutated.pathways.tissues = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways"
 
 PCAWG.full.subset.ann.pathways = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways",
                                               "PCAWG.full.subset.ann.pathways.RDS"))
+
+PCAWG.full.subset.ann = readRDS(here("data", "RDS", "PCAWG", "signatures",
+                                     "PCAWG.full.subset.ann.RDS"))
+
+PCAWG.active.sig.counts = data.frame(Tissues = PCAWG.full.subset.ann$Cancer.Types,
+                                      active.sig.counts = rowSums(PCAWG.full.subset.ann[4:ncol(PCAWG.full.subset.ann)] > 0))
 ```
+
+
+### PCAWG summary statistics about available data
+
+In total we have `r nrow(mutated.pathways.tissues)` samples and 
+`r unique(mutated.pathways.tissues$Cancer.Types) %>% length()` tissues.
+
+```{r}
+# [1] 1552
+PCAWG.mutated.pathways.occ.plot = mutated.pathways.tissues %>% 
+    mutate(across (`Cell Cycle`:Telomeric, ~ . > 0)) %>% 
+    rowwise() %>% 
+    mutate(sum.mut.paths = sum(c_across(`Cell Cycle`:Telomeric))) %>% 
+    ggplot(aes(x = sum.mut.paths, fill = Cancer.Types) ) + 
+    geom_histogram(binwidth = 1, color = "gray90") +
+    facet_wrap(~Cancer.Types) +
+        theme_classic(base_size = 13) + 
+        scale_x_continuous(breaks = seq(1, 7)) + 
+        coord_cartesian(expand = FALSE) + 
+        scale_fill_manual(values = scales::muted(
+            rainbow(PCAWG.active.sig.counts %>% pull(Tissues) %>% 
+                        n_distinct()), l = 50, c = 90 ), guide = "none" ) +
+        xlab("Mutated pathways") + ylab("Number of samples") + 
+    theme(strip.text.x = element_text(size = 6))
+
+
+ggsave(file = file.path(fig.dir, "PCAWG.mutated.pathways.occurrence.pdf"),
+       plot = PCAWG.mutated.pathways.occ.plot, 
+       width = 5, height = 5)
+```
+
 
 ### Heatmap of cancer types and pathways
 
@@ -200,13 +237,50 @@ for (tissue in names(tissue.odds.ratio)) {
         int.heatmap = ggheatmap_wrapper(tissue.odds.ratio[[tissue]], 
                                         title = tissue)
         
+        print(int.heatmap)
         ggsave(plot = int.heatmap,
-               filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",  
+               filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
                                     paste0(tissue, "_sig_pathway.dotplot.png")),
                height = 5, width = 6, bg = "white")
     }
 }
 ```
+
+
+```{r}
+tissue.odds.ratio.unadjusted = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
+                                 pathways.input = mutated.pathways.tissues,
+                                 interaction_function = get_sig_path_assocs, 
+                                 path.min.tissues = 30,
+                                 p.val.threshold = 0.05,
+                                 p.adjust = FALSE,
+                                 method = "BH")
+
+for (tissue in names(tissue.odds.ratio.unadjusted)) {
+   
+    if (any(abs(tissue.odds.ratio.unadjusted[[tissue]]) > 0) ) {
+        cat(tissue, "\n")
+        int.heatmap = ggheatmap_wrapper(tissue.odds.ratio.unadjusted[[tissue]], 
+                                        title = tissue)
+        
+        print(int.heatmap)
+        ggsave(plot = int.heatmap,
+               filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
+                                    paste0("PCAWG_", tissue, "_sig_pathway_unadjusted.dotplot.png")),
+               height = 5, width = 6, bg = "white")
+    }
+}
+```
+
+```{r}
+pp.odds.ratio.unadjusted = plot_all_counts(tissue.odds.ratio.unadjusted, threshold = 0.2, psize = 5)
+
+ggsave(plot = pp.odds.ratio.unadjusted,
+               filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
+                                    "PCAWG_summarized_sig_pathway_unadjusted.dotplot.pdf"),
+               height = 3, width = 5, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
+```
+
 
 ### Linear regression predicting signatures from pathways across tissues
 
@@ -235,7 +309,7 @@ for (tissue in abundant.tissues) {
         ggsave(plot = int.heatmap,
                filename = file.path(fig.dir, "pathway_to_signature",
                                     "by_tissues", "lm_log", 
-                                    paste0(tissue, "_sig_tilde_pathway.dotplot.png")),
+                                    paste0("PCAWG_", tissue, "_sig_tilde_pathway.dotplot.png")),
                height = 5, width = 6, bg = "white")
     }
 }
@@ -264,7 +338,7 @@ for (tissue in abundant.tissues) {
         
         ggsave(plot = int.heatmap,
                filename = file.path(fig.dir,"pathway_to_signature", "by_tissues", "lm_counts", 
-                                    paste0(tissue, "_sig_tilde_pathway.dotplot.png")),
+                                    paste0("PCAWG_", tissue, "_sig_tilde_pathway.dotplot.png")),
                height = 5, width = 6, bg = "white")
     }
 }
@@ -279,12 +353,12 @@ print(pp.logged)
 ggsave(plot = pp.logged,
                filename = file.path(fig.dir, "pathway_to_signature", 
                                     "by_tissues", "lm_log", 
-                                    "logged_summarized_OLS.png"),
+                                    "PCAWG_logged_summarized_OLS.png"),
                height = 2.3, width = 2.9, bg = "white")
 
 ggsave(plot = pp.logged,
                filename = file.path(fig.dir, "pathway_to_signature", 
-                                    "by_tissues", "lm_log", "logged_summarized_OLS_path_to_sigs.pdf"),
+                                    "by_tissues", "lm_log", "PCAWG_logged_summarized_OLS_path_to_sigs.pdf"),
                height = 2.3, width = 2.9, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
 
 ```
@@ -299,12 +373,12 @@ print(pp.logged.excl.melanoma)
 ggsave(plot = pp.logged.excl.melanoma,
                filename = file.path(fig.dir, "pathway_to_signature", 
                                     "by_tissues", "lm_log", 
-                                    "logged_summarized_OLS_excl_melanoma_path_to_sigs.png"),
+                                    "PCAWG_logged_summarized_OLS_excl_melanoma_path_to_sigs.png"),
                height = 2, width = 2.4, bg = "white")
 
 ggsave(plot = pp.logged.excl.melanoma,
                filename = file.path(fig.dir, "pathway_to_signature", 
-                                    "by_tissues", "lm_log", "logged_summarized_OLS_excl_melanoma_path_to_sigs.pdf"),
+                                    "by_tissues", "lm_log", "PCAWG_logged_summarized_OLS_excl_melanoma_path_to_sigs.pdf"),
                height = 6, width = 8, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
 
 ```
@@ -394,7 +468,7 @@ skin.hippo.apo = skin.concat %>%
     geom_smooth(aes(group = 1), 
                     data = skin.concat, method = lm, se = FALSE)
 
-ggsave(filename = file.path(fig.dir, paste0(tissue, "apobec_hippo_relationship.png")), 
+ggsave(filename = file.path(fig.dir, paste0(tissue, "_apobec_hippo_relationship.png")), 
        plot = skin.hippo.apo, width = 4, height = 3.2)
 ```
 
@@ -407,7 +481,7 @@ skin.hippo.apo.rev = skin.concat %>%
     method.args = list(family = "binomial"), 
     se = FALSE) + geom_jitter(aes(color = factor(HIPPO)), width = 0.1, height = 0.1)
 
-ggsave(filename = file.path(fig.dir, paste0(tissue, "apobec_hippo_rev_relationship_logistic.png")), 
+ggsave(filename = file.path(fig.dir, paste0(tissue, "_apobec_hippo_rev_relationship_logistic.png")), 
        plot = skin.hippo.apo.rev, width = 4, height = 3.2)
 ```
 
@@ -438,7 +512,7 @@ for (tissue in abundant.tissues) {
         ggsave(plot = int.heatmap,
                filename = file.path(fig.dir, "signature_to_pathway", 
                                     "by_tissues", "log_log", 
-                                    paste0(tissue, "_path_tilde_sig.dotplot.png")),
+                                    paste0("PCAWG_", tissue, "_path_tilde_sig.dotplot.png")),
                height = 5, width = 6, bg = "white")
     }
 }
@@ -455,11 +529,7 @@ print(pp.log.log)
 ggsave(plot = pp.log.log,
                filename = file.path(fig.dir, "signature_to_pathway", 
                                     "by_tissues", "log_log", 
-                                    "logged_summarized.png"),
+                                    "PCAWG_logged_summarized.png"),
                height = 1.15, width = 1.6, bg = "white")
-```
-
-```{r}
-
 ```
 
