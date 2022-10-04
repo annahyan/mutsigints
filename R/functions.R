@@ -1140,6 +1140,12 @@ get_interaction_tissues = function(list.of.int.elems, threshold = 0.1) {
         }
     }
     
+    pos.ints.tissues = pos.ints.tissues[rowSums(pos.ints.tissues > "") > 0, 
+                                        colSums(pos.ints.tissues > "") > 0 ]
+    
+    neg.ints.tissues = neg.ints.tissues[rowSums(neg.ints.tissues > "") > 0, 
+                                        colSums(neg.ints.tissues > "") > 0 ]
+    
     return(list(pos.tissues = pos.ints.tissues,
                 neg.tissues = neg.ints.tissues))
 }
@@ -1487,4 +1493,45 @@ test_mutation = function(mutation, seven_channel_profile1, seven_channel_profile
     k = total.p1
     
     return(phyper(q, m, n, k, lower.tail))
+}
+
+
+#' A wrapper to call GES scoring tool from within R.
+#' 
+#' @param mat Input matrix or a data frame - the feature matrix
+#' @param tmpdir Directory where the temporary files should be written.
+#' 
+#' @details Initial implementation in git repo:
+#' Biwei-Huang/Generalized-Score-Functions-for-Causal-Discovery/
+#' G(i,j) = 1: i->j (the edge is from i to j)
+#' G(i,j) = -1: i-j (the direction between i and j is not determined)
+#' G(i,j) = 0:  i j (no causal edge between i and j)
+#' 
+#' @return DAG adjancency matrix from GES method.
+#'
+
+run_GES_octave_wrapper = function(mat, tmpdir = here("tmp")) {
+    
+    tmp.filename = stringi::stri_rand_strings(1, 10, '[a-zA-Z]')
+    tmp.in = paste0(file.path(tmpdir, tmp.filename), ".in")
+    tmp.out = paste0(file.path(tmpdir, tmp.filename), ".out")
+    
+    if (is.matrix(mat)) {
+        mat = as.data.frame(mat)    
+    }
+    
+    write.table(mat, file = tmp.in, sep = "\t",
+                quote = FALSE, col.names = TRUE, row.names = FALSE)
+    cat("Running octave...\n")
+    octave_out = system(paste("octave ", here("octave/run_melanoma.m"),
+                 tmp.in, tmp.out) )
+    
+    if (octave_out) {
+        stop("Octave encountered an error.")
+    }
+    
+    GES = read.table(tmp.out, sep = "\t", 
+                     col.names = colnames(mat),
+                     row.names = colnames(mat))
+    return(GES)
 }

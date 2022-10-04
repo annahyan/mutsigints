@@ -56,7 +56,7 @@ plot_tissue_abundance = function(tissue_counts, title, bar_height_factor = 2,
           panel.border = element_blank(),
           legend.position = "none") +
     annotate("text", y = bar_height_factor * MIN.TISSUE.SIZE, x = annot_x,
-             label = paste0(">", MIN.TISSUE.SIZE)) + 
+             label = paste0(">", MIN.TISSUE.SIZE, " samples")) + 
         ggtitle(title)
 }
 
@@ -101,9 +101,13 @@ pcawg_tissue_counts_plot
 ggsave(filename = file.path(fig.dir, "pcawg_tissue_counts_plot.png"),
     plot = pcawg_tissue_counts_plot, width = 5, height = 3)
 
+
+ggsave(filename = file.path(fig.dir, "pcawg_tissue_counts_plot.pdf"),
+    plot = pcawg_tissue_counts_plot, width = 5, height = 3)
 ```
 
-
+In PCAWG we have `pcawg_tissue_counts %>% filter(n > 25) %>% summarise(sum = sum(n))`
+samples.
 
 ```{R tcga-numbers}
 tcga_tissue_counts = TCGA.filter_rec_acc %>% 
@@ -111,14 +115,20 @@ tcga_tissue_counts = TCGA.filter_rec_acc %>%
     count(Cancer.Types, sort = TRUE)
 
 tcga_tissue_counts_plot = plot_tissue_abundance(
-    tcga_tissue_counts, 
+    tcga_tissue_counts, bar_height_factor = 3,
     "TCGA - samples across tissues", 
     annot_x = 25)
 tcga_tissue_counts_plot
 
 ggsave(filename = file.path(fig.dir, "tcga_tissue_counts_plot.png"),
     plot = tcga_tissue_counts_plot, width = 5, height = 3)
+
+ggsave(filename = file.path(fig.dir, "tcga_tissue_counts_plot.pdf"),
+    plot = tcga_tissue_counts_plot, width = 4.5, height = 3)
 ```
+
+In TCGA we have `tcga_tissue_counts %>% filter(n > 25) %>% summarise(sum = sum(n))`
+samples.
 
 ### Number of active signatures across samples
 
@@ -128,6 +138,10 @@ pcawg.active.signatures.hist = plot_active_signatures(PCAWG.full.subset) +
 
 ggsave(pcawg.active.signatures.hist, 
        filename = file.path(fig.dir, "PCAWG.active.signatures.histogram.png"),
+       width = 3, height = 3.6)
+
+ggsave(pcawg.active.signatures.hist, 
+       filename = file.path(fig.dir, "PCAWG.active.signatures.histogram.pdf"),
        width = 3, height = 3.6)
 ```
 
@@ -173,6 +187,10 @@ tcga.active.signatures.hist = plot_active_signatures(TCGA.full.subset) +
 
 ggsave(tcga.active.signatures.hist, 
        filename = file.path(fig.dir, "TCGA.active.signatures.histogram.png"),
+       width = 3, height = 3.6)
+
+ggsave(tcga.active.signatures.hist, 
+       filename = file.path(fig.dir, "TCGA.active.signatures.histogram.pdf"),
        width = 3, height = 3.6)
 ```
 

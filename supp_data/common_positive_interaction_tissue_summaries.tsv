@@ -1,0 +1,4 @@
+	Ageing	SBS5	MMR	SBS17	Tobacco	UV
+SBS40	lung_adenoca					
+Ageing		breast_adenoca, colorect_adenoca, skin_melanoma, stomach_adenoca, uterus_adenoca	colorect_adenoca, stomach_adenoca			
+SBS5			colorect_adenoca, stomach_adenoca, uterus_adenoca	eso_adenoca	head_scc, lung_adenoca, lung_scc	skin_melanoma

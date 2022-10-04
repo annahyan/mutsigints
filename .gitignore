@@ -39,6 +39,8 @@ vignettes/*.pdf
 /figures/pathways_analysis
 /figures/sig_sig_analysis
 /figures/sig_sig_interactions
+/tmp
+/posters
 
 # Temporary files created by R markdown
 *.utf8.md
