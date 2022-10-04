@@ -60,14 +60,14 @@ path.total.type.occurrences = colSums(panc.tp53.mut.profiles$path.profiles)
 all.total.type.occurrences = colSums(panc.tp53.mut.profiles$all.profiles)
 
 
-to_tp53_p = total.type.occurrences[1:6] %>% enframe() %>% 
-    ggplot(aes(x = name, y = value, fill = name)) + 
-    geom_bar(stat = "identity") + 
-    scale_fill_manual( values = MutationalPatterns:::COLORS6) +
-    theme_bw() + xlab("") + ylab("Relative contribution") + 
-    theme(axis.ticks = element_blank(), axis.text.x = element_blank(), 
-          panel.grid.major.x = element_blank(),
-          legend.position = "none")
+# to_tp53_p = total.type.occurrences[1:6] %>% enframe() %>% 
+#     ggplot(aes(x = name, y = value, fill = name)) + 
+#     geom_bar(stat = "identity") + 
+#     scale_fill_manual( values = MutationalPatterns:::COLORS6) +
+#     theme_bw() + xlab("") + ylab("Relative contribution") + 
+#     theme(axis.ticks = element_blank(), axis.text.x = element_blank(), 
+#           panel.grid.major.x = element_blank(),
+#           legend.position = "none")
 
 
 panc_tp53_counts = ggarrange(to_tp53_p, to_p, widths = c(2,4))
@@ -98,7 +98,7 @@ pp = gg.pathplot %>% filter(mut.type != "C>T") %>%
                                c("C>A", "C>G", "C>T at CpG",
                                  "C>T other", "T>C", "T>G"))) +
     guides(fill="none", color = "none") + 
-    theme_classic(base_size = 13) + 
+    theme_classic(base_size = 16) + 
     theme(axis.title.x = element_blank(),
           axis.text.x = element_text(angle = 45, h = 1))+
     # scale_color_manual(values = setNames(c("white", "black"), c("all", "TP53"))))

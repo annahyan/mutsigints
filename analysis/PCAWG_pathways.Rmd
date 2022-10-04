@@ -12,7 +12,7 @@ knitr::opts_chunk$set(comment = '', fig.width = 6,
 ```
 
 
-```{r load-packages}
+```{r load-packages, message=FALSE}
 library(here)
 fig.dir = here("figures/pathways_analysis")
 
@@ -110,6 +110,77 @@ ggsave(plot = all.path.sig.heatmap,
        file = file.path(fig.dir, "all.path.sig.heatmap.png"),
        width = 5, height = 6)
 ```
+
+### Creating a signature-pathway matrix for GES in octave
+
+```{r}
+tissue = "Skin_Melanoma"
+
+tissue.sigs.mat = subset_tissue(PCAWG.full.subset.ann.pathways, tissue) %>% 
+    select(4:ncol(.))
+
+tissue.sigs.mat = tissue.sigs.mat[,colSums(tissue.sigs.mat > 0) > 10]
+
+tissue.path.mat = subset_tissue(mutated.pathways.tissues, tissue = tissue) %>% 
+    select(4:ncol(.))
+
+tissue.path.mat[ tissue.path.mat != 0 ] = 1
+tissue.path.mat = tissue.path.mat[, colSums(tissue.path.mat > 0) > 6]
+
+tissue.octave.out = cbind(tissue.sigs.mat, tissue.path.mat)
+
+write_tsv(tissue.octave.out, file = here("data/test/GES_test_melanoma_sig_pathways.tsv"))
+
+```
+
+Reading octave output for melanoma.
+
+```{r}
+tissue.octave.adjacency = read.table(here("data/test/GES_melanoma_adjacency.tsv"),
+                                     sep = "\t", col.names = colnames(tissue.octave.out),
+                                     row.names = colnames(tissue.octave.out))
+
+G = igraph::graph_from_adjacency_matrix(as.matrix(tissue.octave.adjacency))
+
+
+tbl.G = as_tbl_graph(G, directed = TRUE) %>% 
+    activate(nodes) %>% 
+    mutate(type = ifelse(name %in% colnames(tissue.sigs.mat), 
+                         yes = "signature", no = "pathways")) %>% 
+    mutate(node_isolated = node_is_isolated()) %>% 
+    filter(!node_isolated)
+
+
+
+raw.network = tbl.G  %>% ggraph(layout = "kk") +
+    geom_edge_link(arrow = arrow(length = unit(2, units = "mm"), angle = 25),
+                   start_cap = circle(3, 'mm'),
+                   end_cap = circle(3, 'mm'),
+                   color = "grey60") +
+    geom_node_point(aes(shape = type), color = "darkblue", size = 3) +
+    geom_node_text(aes(label = name), repel = TRUE, force = 60) + 
+    theme_void() + ggtitle("Raw signatures")
+
+tissue.logged.octave.adjacency = read.table(here("data/test/GES_melanoma_logged_adjacency.tsv"),
+                                     sep = "\t", col.names = colnames(tissue.octave.out),
+                                     row.names = colnames(tissue.octave.out))
+
+tbl.logged.G = as_tbl_graph(igraph::graph_from_adjacency_matrix(as.matrix(tissue.octave.adjacency)), directed = TRUE)
+
+
+logged.network = tbl.logged.G  %>% ggraph(layout = "kk") +
+    geom_edge_link(arrow = arrow(length = unit(2, units = "mm"), angle = 25),
+                   end_cap = circle(3, 'mm'),
+                   color = "grey60") +
+    geom_node_point(color = "red") +
+    geom_node_text(aes(label = name), repel = TRUE) + 
+    theme_void() + ggtitle("Logged signatures")
+
+comp.network =ggarrange(logged.network, raw.network)
+
+```
+
+
 
 #### Fisher's exact test between signatures and pathways in individual tissues
 

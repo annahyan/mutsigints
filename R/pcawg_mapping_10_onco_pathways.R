@@ -99,6 +99,9 @@ mutated.pathways.tissues = mutated.pathways.tissues[
 rownames(PCAWG.full.subset.ann.pathways) = common.samples
 rownames(mutated.pathways.tissues) = common.samples
 
+mutated.pathways.tissues = mutated.pathways.tissues[
+    , c("Cancer.Types", setdiff(colnames(mutated.pathways.tissues), "Cancer.Types"))]
+
 saveRDS(mutated.pathways.tissues, file = here("data/RDS/PCAWG/10_onco_pathways",
                                               "pcawg_pathways.RDS"))
 
