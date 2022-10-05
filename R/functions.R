@@ -419,34 +419,16 @@ ggheatmap_wrapper = function(metric.matrix,
 }
 
 
-
 #' For a list of interaction metrics this function summarizes the positive and
-#' negative interactions in a plot.
+#' negative interactions in a dataframe which can then be fed into plotting functions.
 #' 
 #' @param list.of.int.elems A list with matrix elements.
 #' @param threshold All the values below the threshold are discarded.
 #' @param min.abssum Rows and columns containing with less than this number of 
 #' interactions (absolute) are removed. Default: 1.
-#' @param psize Controls the size of the triangles. Default: 8.
-#' @param lsize Label size. Default: 2.
-#' @param expand.mult A vector of expansion factors for x and y axes. 
-#' Default. c(0.04, 0.04)
-#' @param diag.only If true, for symmetric matrices only diagonal will be printed.
-#' Default:TRUE.
-#' 
-#' @details The input is a list of matrices corresponding to e.g. interactions
-#' in different tissues. The output plot summarizes the number of list elements
-#' in which this interaction happens either in positive or negative direction.
-#' The positive and negative interactions are summarized separately.
-#' 
-#' @return ggplot object
+#' @return Dataframe for plotting.
 
-plot_all_counts = function(list.of.int.elems, threshold = 0.1, min.abssum = 1,
-                           psize = 8, lsize = 2, expand.mult = c(0.04, 0.04), 
-                           diag.only = TRUE) {
-    
-    # all.sigs = do.call(c, lapply(summary.matrix, function(x) colnames(x)) ) %>%
-    #     unique()
+summarize_ints_to_df = function(list.of.int.elems, threshold = 0.1, min.abssum = 1) {
     
     all.rows = do.call(c, lapply(list.of.int.elems, function(x) rownames(x))) %>% 
         unique()
@@ -519,6 +501,36 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.1, min.abssum = 1,
         mutate(x = row.indices[rows],
                y = col.indices[cols])
     
+    return(gg.final.dt)
+}
+
+#' For a list of interaction metrics this function summarizes the positive and
+#' negative interactions in a plot.
+#' 
+#' @param list.of.int.elems A list with matrix elements.
+#' @param threshold All the values below the threshold are discarded.
+#' @param min.abssum Rows and columns containing with less than this number of 
+#' interactions (absolute) are removed. Default: 1.
+#' @param psize Controls the size of the triangles. Default: 8.
+#' @param lsize Label size. Default: 2.
+#' @param expand.mult A vector of expansion factors for x and y axes. 
+#' Default. c(0.04, 0.04)
+#' @param diag.only If true, for symmetric matrices only diagonal will be printed.
+#' Default:TRUE.
+#' 
+#' @details The input is a list of matrices corresponding to e.g. interactions
+#' in different tissues. The output plot summarizes the number of list elements
+#' in which this interaction happens either in positive or negative direction.
+#' The positive and negative interactions are summarized separately.
+#' 
+#' @return ggplot object
+
+plot_all_counts = function(list.of.int.elems, threshold = 0.1, min.abssum = 1,
+                           psize = 8, lsize = 2, expand.mult = c(0.04, 0.04), 
+                           diag.only = TRUE) {
+    
+    gg.final.dt = summarize_ints_to_df(list.of.int.elems, threshold, min.abssum)
+
     gg.final.dt$text.col = sapply(gg.final.dt$count, function(x) {
         if ( x > 0 ) { return("black")
         }  else {return ("white")}
@@ -588,6 +600,45 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.1, min.abssum = 1,
             labels = names(col.indices))
     d
     return(d)
+}
+
+
+### bipartite (needs more work)
+#' @param gg.df Dataframe returned by summarize_ints_to_df
+#' @return gggraph with sugiyama layout
+
+plot_bipartite = function(gg.df) {
+    
+    
+    df = summarize_ints_to_df(tissue.odds.ratio.unadjusted) %>% filter(count != 0)
+    
+    # nodes.df
+    
+    nodes.df = rbind(data.frame(id = unique(df$rows), type ="Sig"),
+                     data.frame(id = unique(df$cols), type = "Path"))
+    
+    edges.df = df %>% rename(from = rows, to = cols)
+    
+    bipart = tbl_graph(nodes = nodes.df, edges = edges.df)
+    
+    pp = bipart %>% ggraph(layout = "sugiyama") +
+        geom_edge_parallel2(aes(edge_color = int.type), 
+                            width = 0.5,
+                            start_cap = circle(0), 
+                            end_cap = circle(0), 
+                            sep = unit(0.8, 'mm')) +
+        geom_node_label(aes(label = id)) + 
+        theme_graph()
+    
+    
+    dd = pp$data
+    dd$x = pp$data$y
+    dd$y = pp$data$x
+    
+    pp$data = dd
+    
+    # print(minor_plot(pp, expand.factor = 0.1))
+    return(pp)
 }
 
 
