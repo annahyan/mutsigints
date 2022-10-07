@@ -124,7 +124,12 @@ PATH_MIN_TISSUES = 30
 
 abundant.tissues = which(PCAWG.full.subset.ann.pathways$Cancer.Types %>% 
                              table() > PATH_MIN_TISSUES) %>% names()
+
+# number of total samples
+# PCAWG.full.subset.ann.pathways$Cancer.Types %in% abundant.tissues %>% sum()
+
 ```
+
 
 #### Interactions between all pathways and signatures
 
@@ -279,6 +284,33 @@ ggsave(plot = pp.odds.ratio.unadjusted,
                filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
                                     "PCAWG_summarized_sig_pathway_unadjusted.dotplot.pdf"),
                height = 3, width = 5, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
+```
+
+### Bipartite graph - not used 
+
+```{r}
+sig.path.int.odds.summary.df = summarize_ints_to_df(tissue.odds.ratio.unadjusted)
+sig.path.oddsratio.bipartite = minor_plot(plot_bipartite(sig.path.int.odds.summary.df),
+                                        expand.factor = 0.14)
+
+ggsave(plot = sig.path.oddsratio.bipartite,
+       filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
+                                    "PCAWG_summarized_sig_pathway_unadjusted.bipartite.pdf"),
+       height = 8, width = 5, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
+```
+
+### Tissues of Odds ratio interactions
+
+```{r}
+tissues.odds.ratio.lists = get_interaction_tissues(tissue.odds.ratio.unadjusted)
+
+write.table(as.data.frame(tissues.odds.ratio.lists$pos.tissues), 
+          file = here("supp_data", "PCAWG_sig_pathway_positive_interaction_tissue_summaries.tsv"),
+          row.names = TRUE, col.names = NA, sep = "\t", quote = FALSE)
+write.table(as.data.frame(tissues.odds.ratio.lists$neg.tissues), 
+          file = here("supp_data", "PCAWG_sig_pathway_negative_interaction_tissue_summaries.tsv"),
+          row.names = TRUE, col.names = NA, sep = "\t", quote = FALSE)
+
 ```
 
 

@@ -426,9 +426,12 @@ ggheatmap_wrapper = function(metric.matrix,
 #' @param threshold All the values below the threshold are discarded.
 #' @param min.abssum Rows and columns containing with less than this number of 
 #' interactions (absolute) are removed. Default: 1.
+#' @param upper.triangle.only If true, for symmetric matrices only upper triangle will be printed.
+#' Default:TRUE.
 #' @return Dataframe for plotting.
 
-summarize_ints_to_df = function(list.of.int.elems, threshold = 0.1, min.abssum = 1) {
+summarize_ints_to_df = function(list.of.int.elems, threshold = 0.1, min.abssum = 1,
+                                upper.triangle.only = TRUE) {
     
     all.rows = do.call(c, lapply(list.of.int.elems, function(x) rownames(x))) %>% 
         unique()
@@ -500,6 +503,17 @@ summarize_ints_to_df = function(list.of.int.elems, threshold = 0.1, min.abssum =
         filter(cols %in% abs.col.nonzero) %>% 
         mutate(x = row.indices[rows],
                y = col.indices[cols])
+
+    ### If the matrices are symmetric, then only upper triangle is plotted.
+
+    
+    if (isTRUE(all.equal(neg.ints.mat, t(neg.ints.mat))) &
+        isTRUE(all.equal(pos.ints.mat, t(pos.ints.mat))) & upper.triangle.only) {
+        gg.final.dt = gg.final.dt %>% filter(x < y)
+        
+        row.indices = row.indices[ which(row.indices %in% gg.final.dt$x)]
+        col.indices = col.indices[ which(col.indices %in% gg.final.dt$y)]
+    }
     
     return(gg.final.dt)
 }
@@ -515,7 +529,7 @@ summarize_ints_to_df = function(list.of.int.elems, threshold = 0.1, min.abssum =
 #' @param lsize Label size. Default: 2.
 #' @param expand.mult A vector of expansion factors for x and y axes. 
 #' Default. c(0.04, 0.04)
-#' @param diag.only If true, for symmetric matrices only diagonal will be printed.
+#' @param upper.triangle.only If true, for symmetric matrices only diagonal will be printed.
 #' Default:TRUE.
 #' 
 #' @details The input is a list of matrices corresponding to e.g. interactions
@@ -527,24 +541,16 @@ summarize_ints_to_df = function(list.of.int.elems, threshold = 0.1, min.abssum =
 
 plot_all_counts = function(list.of.int.elems, threshold = 0.1, min.abssum = 1,
                            psize = 8, lsize = 2, expand.mult = c(0.04, 0.04), 
-                           diag.only = TRUE) {
+                           upper.triangle.only = TRUE) {
     
     gg.final.dt = summarize_ints_to_df(list.of.int.elems, threshold, min.abssum)
 
-    gg.final.dt$text.col = sapply(gg.final.dt$count, function(x) {
-        if ( x > 0 ) { return("black")
-        }  else {return ("white")}
-    })
-    print(head(gg.final.dt))    
-    ### If the matrices are symmetric, then only upper triangle is plotted.
-
-    if (isTRUE(all.equal(neg.ints.mat, t(neg.ints.mat))) &
-            isTRUE(all.equal(pos.ints.mat, t(pos.ints.mat))) & diag.only) {
-        gg.final.dt = gg.final.dt %>% filter(x < y)
-        
-        row.indices = row.indices[ which(row.indices %in% gg.final.dt$x)]
-        col.indices = col.indices[ which(col.indices %in% gg.final.dt$y)]
-    }
+    # gg.final.dt$text.col = sapply(gg.final.dt$count, function(x) {
+    #     if ( x > 0 ) { return("black")
+    #     }  else {return ("white")}
+    # })
+    # print(head(gg.final.dt))    
+    
     
     gg.final.dt = gg.final.dt %>%
         mutate(xlab = ifelse(int.type == "pos", x - 0.2, x + 0.2),
@@ -572,6 +578,12 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.1, min.abssum = 1,
         scale_color_brewer(palette = "Set1") +
         geom_text(aes(x = xlab, y = ylab),
                   size = lsize, fontface = "bold", color = "black")
+    
+    row.indices = gg.final.dt %>% select(rows, x) %>% unique()
+    row.indices = setNames(row.indices$x, row.indices$rows) %>% base::sort()
+    
+    col.indices = gg.final.dt %>% select(cols, y) %>% unique()
+    col.indices = setNames(col.indices$y, col.indices$cols) %>% base::sort()
     
     d = d +
         # theme_minimal() +
@@ -622,13 +634,18 @@ plot_bipartite = function(gg.df) {
     bipart = tbl_graph(nodes = nodes.df, edges = edges.df)
     
     pp = bipart %>% ggraph(layout = "sugiyama") +
-        geom_edge_parallel2(aes(edge_color = int.type), 
-                            width = 0.5,
+        geom_edge_parallel2(aes(edge_color = int.type, width = abs(count)), 
+                            # width = 0.5,
+                            alpha = 0.8,
                             start_cap = circle(0), 
                             end_cap = circle(0), 
                             sep = unit(0.8, 'mm')) +
-        geom_node_label(aes(label = id)) + 
-        theme_graph()
+        geom_node_label(aes(label = id), fill = "white") + 
+        theme_graph(base_family = "Arial") + 
+        scale_edge_color_manual(values = c("pos" = scales::muted("red", 50, 90),
+                                           "neg" = scales::muted("blue", 50, 90))) + 
+        scale_edge_width_continuous(range = c(1,1.7)) #  + 
+        # guides(width = "none")
     
     
     dd = pp$data
@@ -640,6 +657,7 @@ plot_bipartite = function(gg.df) {
     # print(minor_plot(pp, expand.factor = 0.1))
     return(pp)
 }
+
 
 
 
