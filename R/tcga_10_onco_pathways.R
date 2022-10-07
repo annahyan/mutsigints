@@ -9,8 +9,6 @@ pathway_dir = here("data/raw/TCGA/10_onco_pathways/")
 pathways_file = file.path(pathway_dir, 
                           "1-s2.0-S0092867418303593-mmc4.xlsx")
 
-sheet.names = excel_sheets(pathway_genes_file)
-
 pathway.mutations = as.data.frame(readxl::read_excel(pathways_file, sheet = "Pathway level"))
 
 rownames(pathway.mutations) = pathway.mutations$SAMPLE_BARCODE
@@ -41,5 +39,5 @@ pathway.mutations = pathway.mutations %>%
 saveRDS(pathway.mutations, file = here("data/RDS/TCGA/10_onco_pathways",
                                               "tcga_pathways.RDS"))
 
-saveRDS(PCAWG.full.subset.ann.pathways, file = here("data/RDS/PCAWG/10_onco_pathways",
+saveRDS(TCGA.full.subset.ann.pathways, file = here("data/RDS/PCAWG/10_onco_pathways",
                                                     "TCGA.full.subset.ann.pathways.RDS"))
