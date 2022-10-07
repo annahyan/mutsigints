@@ -1,0 +1,19 @@
+	Cell Cycle	MYC	NOTCH	TP53	WNT	PI3K	HIPPO	NRF2	TGF-Beta	RTK RAS	Telomeric
+SBS30		Liver_HCC				Liver_HCC	Liver_HCC	Panc_AdenoCA			
+HR	Breast_AdenoCA	Breast_AdenoCA		Breast_AdenoCA	Eso_AdenoCA				Prost_AdenoCA		
+SBS41			Breast_AdenoCA, Prost_AdenoCA						Prost_AdenoCA		
+ROS		CNS_Medullo, Liver_HCC	Ovary_AdenoCA	Prost_AdenoCA			Liver_HCC				
+SBS40	Panc_AdenoCA		CNS_Medullo				Skin_Melanoma				Ovary_AdenoCA
+SBS8	CNS_Medullo				CNS_Medullo		Ovary_AdenoCA				
+SBS17			Skin_Melanoma							Liver_HCC	
+SBS28						Eso_AdenoCA					
+AA			Liver_HCC	Kidney_RCC			Liver_HCC				
+MMR			Panc_Endocrine					Liver_HCC	Liver_HCC		
+APOBEC			Skin_Melanoma			Lymph_BNHL, Panc_Endocrine	Skin_Melanoma				
+MUTYH	Lymph_BNHL	Lymph_BNHL		Lymph_BNHL							
+PolH				Panc_Endocrine		Lymph_BNHL			Panc_Endocrine		
+Chemo				Panc_Endocrine							
+SBS39				Panc_Endocrine					Panc_Endocrine		
+SBS38							Skin_Melanoma				
+Technical							Skin_Melanoma				
+UV										Skin_Melanoma	

@@ -1,5 +1,5 @@
 ---
-title: "Signalling pathways in PCAWG"
+title: "Signalling pathways in TCGA"
 output:
   html_document:
     df_print: paged
@@ -24,31 +24,33 @@ source(here("R/load_packages.R"))
 ```
 
 ```{r loading}
-PCAWG.pathways.tissues = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways",
-                                              "pcawg_pathways.RDS"))
+TCGA.pathways.tissues = readRDS(file = here("data/RDS/TCGA/10_onco_pathways",
+                                              "tcga_pathways.RDS"))
 
-PCAWG.full.subset.ann.pathways = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways",
-                                              "PCAWG.full.subset.ann.pathways.RDS"))
+TCGA.full.subset.ann.pathways = readRDS(file = here("data/RDS/TCGA/10_onco_pathways",
+                                              "TCGA.full.subset.ann.pathways.RDS"))
 
-PCAWG.full.subset.ann = readRDS(here("data", "RDS", "PCAWG", "signatures",
-                                     "PCAWG.full.subset.ann.RDS"))
+TCGA.full.subset.ann.pathways$Sample.Names = rownames(TCGA.full.subset.ann.pathways)
 
-PCAWG.active.sig.counts = data.frame(Tissues = PCAWG.full.subset.ann$Cancer.Types,
-                                      active.sig.counts = rowSums(PCAWG.full.subset.ann[4:ncol(PCAWG.full.subset.ann)] > 0))
+TCGA.full.subset.ann = readRDS(here("data", "RDS", "TCGA", "signatures",
+                                     "TCGA.full.subset.ann.RDS"))
+
+TCGA.active.sig.counts = data.frame(Tissues = TCGA.full.subset.ann$Cancer.Types,
+                                      active.sig.counts = rowSums(TCGA.full.subset.ann[4:ncol(TCGA.full.subset.ann)] > 0))
 ```
 
 
-### PCAWG summary statistics about available data
+### TCGA summary statistics about available data
 
-In total we have `r nrow(PCAWG.pathways.tissues)` samples and 
-`r unique(PCAWG.pathways.tissues$Cancer.Types) %>% length()` tissues.
+In total we have `r nrow(TCGA.pathways.tissues)` samples and 
+`r unique(TCGA.pathways.tissues$Cancer.Types) %>% length()` tissues.
 
 ```{r}
 # [1] 1552
-PCAWG.mutated.pathways.occ.plot = PCAWG.pathways.tissues %>% 
-    mutate(across (`Cell Cycle`:Telomeric, ~ . > 0)) %>% 
+TCGA.mutated.pathways.occ.plot = TCGA.pathways.tissues %>% 
+    mutate(across (`Cell Cycle`:WNT, ~ . > 0)) %>% 
     rowwise() %>% 
-    mutate(sum.mut.paths = sum(c_across(`Cell Cycle`:Telomeric))) %>% 
+    mutate(sum.mut.paths = sum(c_across(`Cell Cycle`:WNT))) %>% 
     ggplot(aes(x = sum.mut.paths, fill = Cancer.Types) ) + 
     geom_histogram(binwidth = 1, color = "gray90") +
     facet_wrap(~Cancer.Types) +
@@ -56,14 +58,14 @@ PCAWG.mutated.pathways.occ.plot = PCAWG.pathways.tissues %>%
         scale_x_continuous(breaks = seq(1, 7)) + 
         coord_cartesian(expand = FALSE) + 
         scale_fill_manual(values = scales::muted(
-            rainbow(PCAWG.active.sig.counts %>% pull(Tissues) %>% 
+            rainbow(TCGA.active.sig.counts %>% pull(Tissues) %>% 
                         n_distinct()), l = 50, c = 90 ), guide = "none" ) +
         xlab("Mutated pathways") + ylab("Number of samples") + 
     theme(strip.text.x = element_text(size = 6))
 
 
-ggsave(file = file.path(fig.dir, "PCAWG.mutated.pathways.occurrence.pdf"),
-       plot = PCAWG.mutated.pathways.occ.plot, 
+ggsave(file = file.path(fig.dir, "TCGA.mutated.pathways.occurrence.pdf"),
+       plot = TCGA.mutated.pathways.occ.plot, 
        width = 5, height = 5)
 ```
 
@@ -71,24 +73,24 @@ ggsave(file = file.path(fig.dir, "PCAWG.mutated.pathways.occurrence.pdf"),
 ### Heatmap of cancer types and pathways
 
 ```{r pathway-summary-heatmap}
-pathway.summaries.by.tissues = PCAWG.pathways.tissues %>% 
-    mutate(across(`Cell Cycle`:Telomeric, ~as.numeric(.x > 0))) %>% 
+pathway.summaries.by.tissues = TCGA.pathways.tissues %>% 
+    mutate(across(`Cell Cycle`:WNT, ~as.numeric(.x > 0))) %>% 
     group_by(Cancer.Types) %>% 
-    summarize(across(`Cell Cycle`:Telomeric, sum))
+    summarize(across(`Cell Cycle`:WNT, sum))
 
-pcawg.pathway.summaries.gg = pathway.summaries.by.tissues  %>% 
+TCGA.pathway.summaries.gg = pathway.summaries.by.tissues  %>% 
     gather("Pathway", "Activity", -Cancer.Types) %>% 
     group_by(Cancer.Types, Pathway) %>% 
     summarise(total = sum(Activity))
 
-path.order = pcawg.pathway.summaries.gg %>% 
+path.order = TCGA.pathway.summaries.gg %>% 
     dplyr::select(Pathway, total) %>% 
     group_by(Pathway) %>% 
     summarise(ss = sum(total)) %>% 
     arrange(desc(ss)) %>% 
     pull(Pathway)
 
-pcawg.pathways.plot = pcawg.pathway.summaries.gg %>% rename(Counts = total) %>% 
+TCGA.pathways.plot = TCGA.pathway.summaries.gg %>% rename(Counts = total) %>% 
     mutate(Pathway = factor(Pathway, levels = path.order)) %>% 
     
     ggplot(aes(x = Pathway, y = Cancer.Types) ) + 
@@ -98,35 +100,35 @@ pcawg.pathways.plot = pcawg.pathway.summaries.gg %>% rename(Counts = total) %>%
     scale_fill_gradient(low = "aliceblue", high = "orange") + 
     theme_minimal(base_size = 14) + 
     xlab("") + ylab("") + 
-    ggtitle("Pathway alterations across cancer types: PCAWG",) +
+    ggtitle("Pathway alterations across cancer types: TCGA",) +
     theme(panel.grid = element_blank(),
           axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
           legend.position = "none",
           plot.title = element_text(size = 12))
    
 
-print(pcawg.pathways.plot)
+print(TCGA.pathways.plot)
 
-ggsave(plot = pcawg.pathways.plot, 
-       filename = file.path(fig.dir, "pcawg_pathways_summary.png"),
+ggsave(plot = TCGA.pathways.plot, 
+       filename = file.path(fig.dir, "TCGA_pathways_summary.png"),
       width = 5, height = 6.2) 
 
-ggsave(plot = pcawg.pathways.plot, 
-       filename = file.path(fig.dir, "pcawg_pathways_summary.pdf"),
+ggsave(plot = TCGA.pathways.plot, 
+       filename = file.path(fig.dir, "TCGA_pathways_summary.pdf"),
       width = 5, height = 6.2) 
 
 ```
 
-### Interactions between PCAWG signatures and 10 pathway alterations
+### Interactions between TCGA signatures and 10 pathway alterations
 
 ```{r path-sig-prep}
 PATH_MIN_TISSUES = 30
 
-abundant.tissues = which(PCAWG.full.subset.ann.pathways$Cancer.Types %>% 
+abundant.tissues = which(TCGA.full.subset.ann.pathways$Cancer.Types %>% 
                              table() > PATH_MIN_TISSUES) %>% names()
 
 # number of total samples
-# PCAWG.full.subset.ann.pathways$Cancer.Types %in% abundant.tissues %>% sum()
+# TCGA.full.subset.ann.pathways$Cancer.Types %in% abundant.tissues %>% sum()
 
 ```
 
@@ -135,8 +137,8 @@ abundant.tissues = which(PCAWG.full.subset.ann.pathways$Cancer.Types %>%
 
 ```{r}
 all.path.sig.assocs = get_sig_path_assocs(
-    PCAWG.full.subset.ann.pathways %>% dplyr::select(4:ncol(.)),
-    PCAWG.pathways.tissues %>% dplyr::select(4:ncol(.)),
+    TCGA.full.subset.ann.pathways %>% dplyr::select(4:ncol(.)),
+    TCGA.pathways.tissues %>% dplyr::select(4:ncol(.)),
     p.val.threshold = 0.05)
 
 all.path.sig.heatmap = myggheatmap(
@@ -149,86 +151,86 @@ all.path.sig.heatmap = myggheatmap(
 all.path.sig.heatmap
 
 ggsave(plot = all.path.sig.heatmap,
-       file = file.path(fig.dir, "PCAWG.all.path.sig.heatmap.png"),
+       file = file.path(fig.dir, "TCGA.all.path.sig.heatmap.png"),
        width = 5, height = 6)
 ```
 
-### Creating a signature-pathway matrix for GES in octave
+<!-- ### Creating a signature-pathway matrix for GES in octave -->
 
-```{r}
-tissue = "Skin_Melanoma"
+<!-- ```{r} -->
+<!-- tissue = "Skin_Melanoma" -->
 
-tissue.sigs.mat = subset_tissue(PCAWG.full.subset.ann.pathways, tissue) %>% 
-    select(4:ncol(.))
+<!-- tissue.sigs.mat = subset_tissue(TCGA.full.subset.ann.pathways, tissue) %>%  -->
+<!--     select(4:ncol(.)) -->
 
-tissue.sigs.mat = tissue.sigs.mat[,colSums(tissue.sigs.mat > 0) > 10]
+<!-- tissue.sigs.mat = tissue.sigs.mat[,colSums(tissue.sigs.mat > 0) > 10] -->
 
-tissue.path.mat = subset_tissue(PCAWG.pathways.tissues, tissue = tissue) %>% 
-    select(4:ncol(.))
+<!-- tissue.path.mat = subset_tissue(TCGA.pathways.tissues, tissue = tissue) %>%  -->
+<!--     select(4:ncol(.)) -->
 
-tissue.path.mat[ tissue.path.mat != 0 ] = 1
-tissue.path.mat = tissue.path.mat[, colSums(tissue.path.mat > 0) > 6]
+<!-- tissue.path.mat[ tissue.path.mat != 0 ] = 1 -->
+<!-- tissue.path.mat = tissue.path.mat[, colSums(tissue.path.mat > 0) > 6] -->
 
-tissue.octave.out = cbind(tissue.sigs.mat, tissue.path.mat)
+<!-- tissue.octave.out = cbind(tissue.sigs.mat, tissue.path.mat) -->
 
-write_tsv(tissue.octave.out, file = here("data/test/GES_test_melanoma_sig_pathways.tsv"))
+<!-- write_tsv(tissue.octave.out, file = here("data/test/GES_test_melanoma_sig_pathways.tsv")) -->
 
-```
+<!-- ``` -->
 
-Reading octave output for melanoma.
+<!-- Reading octave output for melanoma. -->
 
-```{r}
-tissue.octave.adjacency = read.table(here("data/test/GES_melanoma_adjacency.tsv"),
-                                     sep = "\t", col.names = colnames(tissue.octave.out),
-                                     row.names = colnames(tissue.octave.out))
+<!-- ```{r} -->
+<!-- tissue.octave.adjacency = read.table(here("data/test/GES_melanoma_adjacency.tsv"), -->
+<!--                                      sep = "\t", col.names = colnames(tissue.octave.out), -->
+<!--                                      row.names = colnames(tissue.octave.out)) -->
 
-G = igraph::graph_from_adjacency_matrix(as.matrix(tissue.octave.adjacency))
-
-
-tbl.G = as_tbl_graph(G, directed = TRUE) %>% 
-    activate(nodes) %>% 
-    mutate(type = ifelse(name %in% colnames(tissue.sigs.mat), 
-                         yes = "signature", no = "pathways")) %>% 
-    mutate(node_isolated = node_is_isolated()) %>% 
-    filter(!node_isolated)
+<!-- G = igraph::graph_from_adjacency_matrix(as.matrix(tissue.octave.adjacency)) -->
 
 
-
-raw.network = tbl.G  %>% ggraph(layout = "kk") +
-    geom_edge_link(arrow = arrow(length = unit(2, units = "mm"), angle = 25),
-                   start_cap = circle(3, 'mm'),
-                   end_cap = circle(3, 'mm'),
-                   color = "grey60") +
-    geom_node_point(aes(shape = type), color = "darkblue", size = 3) +
-    geom_node_text(aes(label = name), repel = TRUE, force = 60) + 
-    theme_void() + ggtitle("Raw signatures")
-
-tissue.logged.octave.adjacency = read.table(here("data/test/GES_melanoma_logged_adjacency.tsv"),
-                                     sep = "\t", col.names = colnames(tissue.octave.out),
-                                     row.names = colnames(tissue.octave.out))
-
-tbl.logged.G = as_tbl_graph(igraph::graph_from_adjacency_matrix(as.matrix(tissue.octave.adjacency)), directed = TRUE)
+<!-- tbl.G = as_tbl_graph(G, directed = TRUE) %>%  -->
+<!--     activate(nodes) %>%  -->
+<!--     mutate(type = ifelse(name %in% colnames(tissue.sigs.mat),  -->
+<!--                          yes = "signature", no = "pathways")) %>%  -->
+<!--     mutate(node_isolated = node_is_isolated()) %>%  -->
+<!--     filter(!node_isolated) -->
 
 
-logged.network = tbl.logged.G  %>% ggraph(layout = "kk") +
-    geom_edge_link(arrow = arrow(length = unit(2, units = "mm"), angle = 25),
-                   end_cap = circle(3, 'mm'),
-                   color = "grey60") +
-    geom_node_point(color = "red") +
-    geom_node_text(aes(label = name), repel = TRUE) + 
-    theme_void() + ggtitle("Logged signatures")
 
-comp.network =ggarrange(logged.network, raw.network)
+<!-- raw.network = tbl.G  %>% ggraph(layout = "kk") + -->
+<!--     geom_edge_link(arrow = arrow(length = unit(2, units = "mm"), angle = 25), -->
+<!--                    start_cap = circle(3, 'mm'), -->
+<!--                    end_cap = circle(3, 'mm'), -->
+<!--                    color = "grey60") + -->
+<!--     geom_node_point(aes(shape = type), color = "darkblue", size = 3) + -->
+<!--     geom_node_text(aes(label = name), repel = TRUE, force = 60) +  -->
+<!--     theme_void() + ggtitle("Raw signatures") -->
 
-```
+<!-- tissue.logged.octave.adjacency = read.table(here("data/test/GES_melanoma_logged_adjacency.tsv"), -->
+<!--                                      sep = "\t", col.names = colnames(tissue.octave.out), -->
+<!--                                      row.names = colnames(tissue.octave.out)) -->
+
+<!-- tbl.logged.G = as_tbl_graph(igraph::graph_from_adjacency_matrix(as.matrix(tissue.octave.adjacency)), directed = TRUE) -->
+
+
+<!-- logged.network = tbl.logged.G  %>% ggraph(layout = "kk") + -->
+<!--     geom_edge_link(arrow = arrow(length = unit(2, units = "mm"), angle = 25), -->
+<!--                    end_cap = circle(3, 'mm'), -->
+<!--                    color = "grey60") + -->
+<!--     geom_node_point(color = "red") + -->
+<!--     geom_node_text(aes(label = name), repel = TRUE) +  -->
+<!--     theme_void() + ggtitle("Logged signatures") -->
+
+<!-- comp.network =ggarrange(logged.network, raw.network) -->
+
+<!-- ``` -->
 
 
 
 #### Fisher's exact test between signatures and pathways in individual tissues
 
 ```{r, warning = FALSE}
-tissue.odds.ratio = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
-                                 pathways.input = PCAWG.pathways.tissues,
+tissue.odds.ratio = pcawg_sig_pathway_int(sigs.input = TCGA.full.subset.ann.pathways,
+                                 pathways.input = TCGA.pathways.tissues,
                                  interaction_function = get_sig_path_assocs, 
                                  path.min.tissues = 30,
                                  p.val.threshold = 0.1,
@@ -245,7 +247,7 @@ for (tissue in names(tissue.odds.ratio)) {
         print(int.heatmap)
         ggsave(plot = int.heatmap,
                filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
-                                    paste0("PCAWG_", tissue, "_sig_pathway.dotplot.png")),
+                                    paste0("TCGA_", tissue, "_sig_pathway.dotplot.png")),
                height = 5, width = 6, bg = "white")
     }
 }
@@ -253,8 +255,8 @@ for (tissue in names(tissue.odds.ratio)) {
 
 
 ```{r}
-tissue.odds.ratio.unadjusted = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
-                                 pathways.input = PCAWG.pathways.tissues,
+tissue.odds.ratio.unadjusted = pcawg_sig_pathway_int(sigs.input = TCGA.full.subset.ann.pathways,
+                                 pathways.input = TCGA.pathways.tissues,
                                  interaction_function = get_sig_path_assocs, 
                                  path.min.tissues = 30,
                                  p.val.threshold = 0.05,
@@ -271,7 +273,7 @@ for (tissue in names(tissue.odds.ratio.unadjusted)) {
         print(int.heatmap)
         ggsave(plot = int.heatmap,
                filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
-                                    paste0("PCAWG_", tissue, "_sig_pathway_unadjusted.dotplot.png")),
+                                    paste0("TCGA_", tissue, "_sig_pathway_unadjusted.dotplot.png")),
                height = 5, width = 6, bg = "white")
     }
 }
@@ -282,8 +284,8 @@ pp.odds.ratio.unadjusted = plot_all_counts(tissue.odds.ratio.unadjusted, thresho
 
 ggsave(plot = pp.odds.ratio.unadjusted,
                filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
-                                    "PCAWG_summarized_sig_pathway_unadjusted.dotplot.pdf"),
-               height = 3, width = 5, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
+                                    "TCGA_summarized_sig_pathway_unadjusted.dotplot.pdf"),
+               height = 2.7, width = 4, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
 ```
 
 ### Bipartite graph - not used 
@@ -295,7 +297,7 @@ sig.path.oddsratio.bipartite = minor_plot(plot_bipartite(sig.path.int.odds.summa
 
 ggsave(plot = sig.path.oddsratio.bipartite,
        filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
-                                    "PCAWG_summarized_sig_pathway_unadjusted.bipartite.pdf"),
+                                    "TCGA_summarized_sig_pathway_unadjusted.bipartite.pdf"),
        height = 8, width = 5, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
 ```
 
@@ -305,10 +307,10 @@ ggsave(plot = sig.path.oddsratio.bipartite,
 tissues.odds.ratio.lists = get_interaction_tissues(tissue.odds.ratio.unadjusted)
 
 write.table(as.data.frame(tissues.odds.ratio.lists$pos.tissues), 
-          file = here("supp_data", "PCAWG_sig_pathway_positive_interaction_tissue_summaries.tsv"),
+          file = here("supp_data", "TCGA_sig_pathway_positive_interaction_tissue_summaries.tsv"),
           row.names = TRUE, col.names = NA, sep = "\t", quote = FALSE)
 write.table(as.data.frame(tissues.odds.ratio.lists$neg.tissues), 
-          file = here("supp_data", "PCAWG_sig_pathway_negative_interaction_tissue_summaries.tsv"),
+          file = here("supp_data", "TCGA_sig_pathway_negative_interaction_tissue_summaries.tsv"),
           row.names = TRUE, col.names = NA, sep = "\t", quote = FALSE)
 
 ```
@@ -321,8 +323,8 @@ In this first case, I tried logging.
 
 
 ```{r, warning = FALSE}
-tissue.lm.coefs.mats.log = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
-                                 pathways.input = PCAWG.pathways.tissues,
+tissue.lm.coefs.mats.log = TCGA_sig_pathway_int(sigs.input = TCGA.full.subset.ann.pathways,
+                                 pathways.input = TCGA.pathways.tissues,
                                  interaction_function = get_sig_path_lms, 
                                  robust = FALSE,
                                  path.min.tissues = 30,
@@ -341,7 +343,7 @@ for (tissue in abundant.tissues) {
         ggsave(plot = int.heatmap,
                filename = file.path(fig.dir, "pathway_to_signature",
                                     "by_tissues", "lm_log", 
-                                    paste0("PCAWG_", tissue, "_sig_tilde_pathway.dotplot.png")),
+                                    paste0("TCGA_", tissue, "_sig_tilde_pathway.dotplot.png")),
                height = 5, width = 6, bg = "white")
     }
 }
@@ -350,8 +352,8 @@ for (tissue in abundant.tissues) {
 In the example below I'm trying with raw counts.
 
 ```{r, warning = FALSE}
-tissue.lm.coefs.mats = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
-                                 pathways.input = PCAWG.pathways.tissues,
+tissue.lm.coefs.mats = TCGA_sig_pathway_int(sigs.input = TCGA.full.subset.ann.pathways,
+                                 pathways.input = TCGA.pathways.tissues,
                                  interaction_function = get_sig_path_lms, 
                                  robust = FALSE,
                                  path.min.tissues = 30,
@@ -370,7 +372,7 @@ for (tissue in abundant.tissues) {
         
         ggsave(plot = int.heatmap,
                filename = file.path(fig.dir,"pathway_to_signature", "by_tissues", "lm_counts", 
-                                    paste0("PCAWG_", tissue, "_sig_tilde_pathway.dotplot.png")),
+                                    paste0("TCGA_", tissue, "_sig_tilde_pathway.dotplot.png")),
                height = 5, width = 6, bg = "white")
     }
 }
@@ -385,12 +387,12 @@ print(pp.logged)
 ggsave(plot = pp.logged,
                filename = file.path(fig.dir, "pathway_to_signature", 
                                     "by_tissues", "lm_log", 
-                                    "PCAWG_logged_summarized_OLS.png"),
+                                    "TCGA_logged_summarized_OLS.png"),
                height = 2.3, width = 2.9, bg = "white")
 
 ggsave(plot = pp.logged,
                filename = file.path(fig.dir, "pathway_to_signature", 
-                                    "by_tissues", "lm_log", "PCAWG_logged_summarized_OLS_path_to_sigs.pdf"),
+                                    "by_tissues", "lm_log", "TCGA_logged_summarized_OLS_path_to_sigs.pdf"),
                height = 2.3, width = 2.9, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
 
 ```
@@ -405,12 +407,12 @@ print(pp.logged.excl.melanoma)
 ggsave(plot = pp.logged.excl.melanoma,
                filename = file.path(fig.dir, "pathway_to_signature", 
                                     "by_tissues", "lm_log", 
-                                    "PCAWG_logged_summarized_OLS_excl_melanoma_path_to_sigs.png"),
+                                    "TCGA_logged_summarized_OLS_excl_melanoma_path_to_sigs.png"),
                height = 2, width = 2.4, bg = "white")
 
 ggsave(plot = pp.logged.excl.melanoma,
                filename = file.path(fig.dir, "pathway_to_signature", 
-                                    "by_tissues", "lm_log", "PCAWG_logged_summarized_OLS_excl_melanoma_path_to_sigs.pdf"),
+                                    "by_tissues", "lm_log", "TCGA_logged_summarized_OLS_excl_melanoma_path_to_sigs.pdf"),
                height = 6, width = 8, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
 
 ```
@@ -455,8 +457,8 @@ cat(gsub(",", ", ", TP53.HR))
 ```{r}
 tissue = "Skin_Melanoma"
 skin.data = get_tissue_pathway_activities(tissue, 
-                                          sigs.input = PCAWG.full.subset.ann.pathways,
-                                          pathways.input = PCAWG.pathways.tissues)
+                                          sigs.input = TCGA.full.subset.ann.pathways,
+                                          pathways.input = TCGA.pathways.tissues)
 
 skin.data$sigs.logged = skin.data$sigs %>% 
     mutate(across(.cols = everything(), ~ log(.x + 1 )))
@@ -523,8 +525,8 @@ ggsave(filename = file.path(fig.dir, paste0(tissue, "_apobec_hippo_rev_relations
 ### Logistic regression predicting pathways from signatures across tissues
 
 ```{r}
-tissue.log.coefs.mats.log = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
-                                 pathways.input = PCAWG.pathways.tissues,
+tissue.log.coefs.mats.log = TCGA_sig_pathway_int(sigs.input = TCGA.full.subset.ann.pathways,
+                                 pathways.input = TCGA.pathways.tissues,
                                  interaction_function = get_sig_path_lms, 
                                  path.min.tissues = 30,
                                  p.val.threshold = 0.1,
@@ -544,7 +546,7 @@ for (tissue in abundant.tissues) {
         ggsave(plot = int.heatmap,
                filename = file.path(fig.dir, "signature_to_pathway", 
                                     "by_tissues", "log_log", 
-                                    paste0("PCAWG_", tissue, "_path_tilde_sig.dotplot.png")),
+                                    paste0("TCGA_", tissue, "_path_tilde_sig.dotplot.png")),
                height = 5, width = 6, bg = "white")
     }
 }
@@ -561,7 +563,7 @@ print(pp.log.log)
 ggsave(plot = pp.log.log,
                filename = file.path(fig.dir, "signature_to_pathway", 
                                     "by_tissues", "log_log", 
-                                    "PCAWG_logged_summarized.png"),
+                                    "TCGA_logged_summarized.png"),
                height = 1.15, width = 1.6, bg = "white")
 ```
 

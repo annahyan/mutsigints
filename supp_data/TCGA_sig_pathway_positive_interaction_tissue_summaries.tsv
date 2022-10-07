@@ -1,0 +1,16 @@
+	Cell Cycle	HIPPO	MYC	NRF2	PI3K	TP53	TGF-Beta	WNT	NOTCH	RTK RAS
+APOBEC	Head_SCC, Lung_AdenoCa, Transitional_cell_carcinoma		Lung_AdenoCa			Stomach_AdenoCa, Uterus_AdenoCa				
+HR	Breast_cancer	Breast_cancer	Breast_cancer		Eso_AdenoCa	Breast_cancer				
+MMR	ColoRect_AdenoCa	Breast_cancer, ColoRect_AdenoCa, Lung_AdenoCa, Stomach_AdenoCa, Uterus_AdenoCa	ColoRect_AdenoCa, Lung_AdenoCa		ColoRect_AdenoCa, Stomach_AdenoCa		Breast_cancer, Cervix_CA, ColoRect_AdenoCa, Stomach_AdenoCa	Breast_cancer, Stomach_AdenoCa, Uterus_AdenoCa	Cervix_CA, ColoRect_AdenoCa, Head_SCC, Stomach_AdenoCa, Uterus_AdenoCa	ColoRect_AdenoCa
+PolE		ColoRect_AdenoCa, Uterus_AdenoCa	ColoRect_AdenoCa, Uterus_AdenoCa	Breast_cancer, Transitional_cell_carcinoma, Uterus_AdenoCa	ColoRect_AdenoCa		ColoRect_AdenoCa, Transitional_cell_carcinoma, Uterus_AdenoCa	Breast_cancer, Uterus_AdenoCa	ColoRect_AdenoCa, Uterus_AdenoCa	Uterus_AdenoCa
+SBS29								Breast_cancer		
+Ageing				Lung_AdenoCa						Lung_AdenoCa
+SBS17						Stomach_AdenoCa	ColoRect_AdenoCa			
+SBS30				ColoRect_AdenoCa			Liver_HCC			
+SBS40						ColoRect_AdenoCa				
+SBS5		ColoRect_AdenoCa			ColoRect_AdenoCa	Head_SCC, Lung_SCC	ColoRect_AdenoCa			ColoRect_AdenoCa
+Tobacco							Lung_AdenoCa			
+SBS38		Skin_Melanoma								
+UV										Skin_Melanoma
+ROS				Transitional_cell_carcinoma						
+SBS28		Uterus_AdenoCa	Uterus_AdenoCa				Uterus_AdenoCa		Uterus_AdenoCa	
