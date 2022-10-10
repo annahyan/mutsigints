@@ -570,30 +570,3 @@ ggsave(plot = pp.log.log,
                height = 1.15, width = 1.6, bg = "white")
 ```
 
-
-
-```{r}
-pathways_signatures_heatmap = function(tissue, signatures, pathways, ...) {
-    
-    tissue.sigs = subset_tissue(signatures, tissue)
-    
-    common.samples = intersect(pathways$donor_id, tissue.sigs$Sample.Names)
-    
-    tissue.pathways = pathways[common.samples, ]
-    
-    tissue.pathways = cbind(tissue.pathways["donor_id"], 
-                            tissue.pathways[, names(which(colSums(
-                                tissue.pathways[4:ncol(tissue.pathways)]) > 0))])
-    
-    tissue.sigs = tissue.sigs[ common.samples, ]
-
-    p = pheatmap(log(tissue.sigs[4:ncol(tissue.sigs)] + 1), annotation_row = tissue.pathways[, 2:ncol(tissue.pathways)],
-                 annotation_legend = FALSE, color = viridis(15),
-                 show_rownames = FALSE, ...)
-    return(p)
-}
-
-
-
-```
-
