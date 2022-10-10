@@ -1,3 +1,7 @@
+library(pheatmap)
+
+
+
 #' The function aggregates mutations based on annotations
 #' @param annotations annotations data frame. It contains must contain 2 columns-
 #' Signature and Annotation
@@ -1603,4 +1607,48 @@ run_GES_octave_wrapper = function(mat, tmpdir = here("tmp")) {
                      col.names = colnames(mat),
                      row.names = colnames(mat))
     return(GES)
+}
+
+
+
+#' Order matrix/dataframe columns/rows in increasing order
+#' 
+
+order_matrix_rc = function(input.mat) {
+    
+    cnames = sort(colnames(input.mat))
+    rnames = sort(rownames(input.mat))
+    
+    return(input.mat[rnames, cnames])
+    
+}
+
+
+#' Plots a signature heatmap with pathway annotations
+#'
+#'@param tissue Tissue 
+#'@param signatures Signatures dataframe, signatures start from column 4.
+#'Column 2 is Sample.Names.
+#'@param pathways Pathway mutations dataframe, pathways start from column 4, 
+#'contains donor_id.
+#'@ ... Params passed to pheatmap.
+
+pathways_signatures_heatmap = function(tissue, signatures, pathways, ...) {
+    
+    tissue.sigs = subset_tissue(signatures, tissue)
+    
+    common.samples = intersect(pathways$donor_id, tissue.sigs$Sample.Names)
+    
+    tissue.pathways = pathways[common.samples, ]
+    
+    tissue.pathways = cbind(tissue.pathways["donor_id"], 
+                            tissue.pathways[, names(which(colSums(
+                                tissue.pathways[4:ncol(tissue.pathways)]) > 0))])
+    
+    tissue.sigs = tissue.sigs[ common.samples, ]
+    
+    p = pheatmap(log(tissue.sigs[4:ncol(tissue.sigs)] + 1), annotation_row = tissue.pathways[, 2:ncol(tissue.pathways)],
+                 annotation_legend = FALSE, color = viridis(15),
+                 show_rownames = FALSE, ...)
+    return(p)
 }

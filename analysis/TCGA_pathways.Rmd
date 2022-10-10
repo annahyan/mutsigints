@@ -127,8 +127,11 @@ PATH_MIN_TISSUES = 30
 abundant.tissues = which(TCGA.full.subset.ann.pathways$Cancer.Types %>% 
                              table() > PATH_MIN_TISSUES) %>% names()
 
+# number of tissues
+# length(abundant.tissues)
+
 # number of total samples
-# TCGA.full.subset.ann.pathways$Cancer.Types %in% abundant.tissues %>% sum()
+TCGA.full.subset.ann.pathways$Cancer.Types %in% abundant.tissues %>% sum()
 
 ```
 
@@ -565,5 +568,32 @@ ggsave(plot = pp.log.log,
                                     "by_tissues", "log_log", 
                                     "TCGA_logged_summarized.png"),
                height = 1.15, width = 1.6, bg = "white")
+```
+
+
+
+```{r}
+pathways_signatures_heatmap = function(tissue, signatures, pathways, ...) {
+    
+    tissue.sigs = subset_tissue(signatures, tissue)
+    
+    common.samples = intersect(pathways$donor_id, tissue.sigs$Sample.Names)
+    
+    tissue.pathways = pathways[common.samples, ]
+    
+    tissue.pathways = cbind(tissue.pathways["donor_id"], 
+                            tissue.pathways[, names(which(colSums(
+                                tissue.pathways[4:ncol(tissue.pathways)]) > 0))])
+    
+    tissue.sigs = tissue.sigs[ common.samples, ]
+
+    p = pheatmap(log(tissue.sigs[4:ncol(tissue.sigs)] + 1), annotation_row = tissue.pathways[, 2:ncol(tissue.pathways)],
+                 annotation_legend = FALSE, color = viridis(15),
+                 show_rownames = FALSE, ...)
+    return(p)
+}
+
+
+
 ```
 
