@@ -281,7 +281,7 @@ pp.odds.ratio.unadjusted = plot_all_counts(tissue.odds.ratio.unadjusted, thresho
 ggsave(plot = pp.odds.ratio.unadjusted,
                filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
                                     "PCAWG_summarized_sig_pathway_unadjusted.dotplot.pdf"),
-               height = 3, width = 5, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
+               height = 2.4, width = 3.4, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
 ```
 
 ### Bipartite graph - not used 
@@ -572,7 +572,7 @@ plotlist = list()
 for (tissue in abundant.tissues) {
     path.heatmap = pathways_signatures_heatmap(
         tissue = tissue,
-        signatures = PCAWG.full.subset.ann.pathways,
+        signatures = PCAWG.full.subset.ann.pathways, border_color = NA,
         pathways = PCAWG.pathways.tissues, main = tissue)
     
     if (any(abs(tissue.odds.ratio.unadjusted[[tissue]]) > 0) ) {
@@ -594,3 +594,18 @@ for (tissue in names(plotlist)) {
 }
 dev.off()
 ```
+
+### Melanoma pathway
+
+```{r}
+skin.annotated.heatmap = pathways_signatures_heatmap(
+        tissue = "Skin_Melanoma",
+        signatures = PCAWG.full.subset.ann.pathways, border_color = NA,
+        pathways = PCAWG.pathways.tissues, main = tissue) %>% add_pheatmap_legend_title
+    
+
+ggsave(plot = skin.annotated.heatmap,
+       file = file.path(fig.dir, "PCAWG.skin.annotated.heatmap.pdf"),
+       width = 4.5, height = 4)
+```
+

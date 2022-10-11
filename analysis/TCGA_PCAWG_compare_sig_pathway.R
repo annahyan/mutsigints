@@ -126,27 +126,27 @@ dimnames(c.pos.ints) = dimnames(pos.ints$common.tissues)
 c.pos.ints = make_matrix_square(c.pos.ints)
 
 
-c.neg.ints[ c.neg.ints != "" ] = 1
-c.neg.ints[ c.neg.ints == "" ] = 0
-c.neg.ints = apply(c.neg.ints, 2, as.numeric)
-dimnames(c.neg.ints) = dimnames(neg.ints$common.tissues)
-c.neg.ints = make_matrix_square(c.neg.ints)
+# c.neg.ints[ c.neg.ints != "" ] = 1
+# c.neg.ints[ c.neg.ints == "" ] = 0
+# c.neg.ints = apply(c.neg.ints, 2, as.numeric)
+# dimnames(c.neg.ints) = dimnames(neg.ints$common.tissues)
+# c.neg.ints = make_matrix_square(c.neg.ints)
 
 pos.graph = as_tbl_graph(graph_from_adjacency_matrix(as.matrix(c.pos.ints)))
-pos.graph = pos.graph %>% 
-    activate(edges) %>% 
+pos.graph = pos.graph %>%
+    activate(edges) %>%
     mutate(type = "positive") %>%
-    activate(nodes) %>% 
+    activate(nodes) %>%
     mutate(ifelse(name %in% all.sigs, "Signature", "Pathway"))
 
-neg.graph = as_tbl_graph(graph_from_adjacency_matrix(as.matrix(c.neg.ints)))
-neg.graph = neg.graph %>% 
-    activate(edges) %>% 
-    mutate(type = "negative") %>%
-    activate(nodes) %>% 
-    mutate(ifelse(name %in% all.sigs, "Signature", "Pathway"))
+# neg.graph = as_tbl_graph(graph_from_adjacency_matrix(as.matrix(c.neg.ints)))
+# neg.graph = neg.graph %>% 
+#     activate(edges) %>% 
+#     mutate(type = "negative") %>%
+#     activate(nodes) %>% 
+#     mutate(ifelse(name %in% all.sigs, "Signature", "Pathway"))
 
-joined.graph = graph_join(pos.graph, neg.graph)
+# joined.graph = graph_join(pos.graph, neg.graph)
 
 # pp.graph = joined.graph %>% 
 pp.graph = pos.graph %>% 

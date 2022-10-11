@@ -137,9 +137,17 @@ get_sig_path_assocs = function(sigs.df, pathways.df, p.val.threshold = 0.05,
             dd[ , sig] = dd[, sig] > 0
             dd[, sig] = factor(dd[, sig], levels = c(FALSE,TRUE), 
                                labels = c("Inactive", "Active"))
-            fisher.out = fisher.test(table(dd) + 1) ### adding 1, to avoind +/- Inf values
-            odds.mat[sig, pathway] = log2(fisher.out$estimate)
-            p.values[sig, pathway] = fisher.out$p.value
+            
+            contingency.mat = table(dd)
+            
+            if (any(contingency.mat == 0)) {
+                odds.mat[sig, pathway] = 0
+                p.values[sig, pathway] = 1
+            } else {
+                fisher.out = fisher.test(contingency.mat) ### adding 1, to avoind +/- Inf values
+                odds.mat[sig, pathway] = log2(fisher.out$estimate)
+                p.values[sig, pathway] = fisher.out$p.value
+            }
         }
     }
     
@@ -538,6 +546,7 @@ summarize_ints_to_df = function(list.of.int.elems, threshold = 0.1, min.abssum =
 #' The positive and negative interactions are summarized separately.
 #' 
 #' @return ggplot object
+
 
 plot_all_counts = function(list.of.int.elems, threshold = 0.1, min.abssum = 1,
                            psize = 8, lsize = 2, expand.mult = c(0.04, 0.04), 
@@ -944,8 +953,9 @@ plot_tissue_heatmap = function(.dataset, filename = NULL,
 #' @details Based on Mike H.'s answer from https://stackoverflow.com/questions/36852101/r-legend-title-or-units-when-using-pheatmap
 #' 
 
-add_pheatmap_legend_title = function(p, legend.grob.index = 6, 
-                                     legend.text = "log(n)") {
+add_pheatmap_legend_title = function(p, legend.text = "log(n)") {
+    
+    legend.grob.index = which(p$gtable$layout$name == "legend")
     
     legend.grob <- p$gtable$grob[[legend.grob.index]]
     

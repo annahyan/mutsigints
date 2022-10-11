@@ -1,11 +1,9 @@
-	Cell Cycle	MYC	NOTCH	TP53	WNT	PI3K	HIPPO	NRF2	TGF-Beta	RTK RAS
-SBS30	Bone_Osteosarc									
-HR	Panc_AdenoCA			Panc_Endocrine						
-SBS40				Kidney_RCC		Skin_Melanoma				Skin_Melanoma
-SBS17			Eso_AdenoCA							
-SBS5		Liver_HCC		Kidney_RCC, Panc_Endocrine	Panc_AdenoCA, Prost_AdenoCA		Liver_HCC		Prost_AdenoCA	
-SBS16				Liver_HCC						
-PolH				Lymph_CLL						
-Ageing				Panc_Endocrine			Prost_AdenoCA	Panc_AdenoCA, Prost_AdenoCA	Prost_AdenoCA	
-SBS38										Skin_Melanoma
-UV							Skin_Melanoma			
+	Cell Cycle	TP53	RTK RAS	NOTCH	PI3K	TGF-Beta
+HR	Panc_AdenoCA	Panc_Endocrine				
+SBS40		Kidney_RCC	Skin_Melanoma		Skin_Melanoma	
+SBS5		Kidney_RCC, Panc_Endocrine				Prost_AdenoCA
+SBS16		Liver_HCC				
+MUTYH				Lymph_BNHL		
+PolH		Lymph_CLL				
+Ageing		Panc_Endocrine				
+SBS38			Skin_Melanoma			
