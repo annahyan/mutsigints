@@ -8,6 +8,8 @@ library(ggpubr)
 library(ggraph)
 library(myggheatmap)
 library(grid)
+library(pheatmap)
+library(viridis)
 
 source(here("R/functions.R"))
 

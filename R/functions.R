@@ -1,7 +1,3 @@
-library(pheatmap)
-
-
-
 #' The function aggregates mutations based on annotations
 #' @param annotations annotations data frame. It contains must contain 2 columns-
 #' Signature and Annotation
@@ -880,7 +876,7 @@ get_tissue_dataset_networks = function(tissue,
 #' @param filename If provided the pheatmap will be save with this filename.
 #' Default: NULL
 #' @param main Title of the heatmap
-#' @param border_color Border color of cells. This parameter is ther to control 
+#' @param border_color Border color of cells. This parameter is there to control 
 #' removing border color with NA. Pheatmap doesn't properly remove it
 #' and the border is still present when saving the plot. Default: gray60. 
 #' Should be NA to remove the border_color.
@@ -1628,12 +1624,17 @@ order_matrix_rc = function(input.mat) {
 #'
 #'@param tissue Tissue 
 #'@param signatures Signatures dataframe, signatures start from column 4.
-#'Column 2 is Sample.Names.
+#' Column 2 is Sample.Names.
 #'@param pathways Pathway mutations dataframe, pathways start from column 4, 
-#'contains donor_id.
+#' contains donor_id.
+#'@param border_color Border color of cells. This parameter is there to control 
+#' removing border color with NA. Pheatmap doesn't properly remove it
+#' and the border is still present when saving the plot. Default: gray60. 
+#' Should be NA to remove the border_color.
 #'@ ... Params passed to pheatmap.
 
-pathways_signatures_heatmap = function(tissue, signatures, pathways, ...) {
+pathways_signatures_heatmap = function(tissue, signatures, pathways, 
+                                       border_color = "grey60", ...) {
     
     tissue.sigs = subset_tissue(signatures, tissue)
     
@@ -1647,8 +1648,31 @@ pathways_signatures_heatmap = function(tissue, signatures, pathways, ...) {
     
     tissue.sigs = tissue.sigs[ common.samples, ]
     
-    p = pheatmap(log(tissue.sigs[4:ncol(tissue.sigs)] + 1), annotation_row = tissue.pathways[, 2:ncol(tissue.pathways)],
+    pp = pheatmap(log(tissue.sigs[4:ncol(tissue.sigs)] + 1), annotation_row = tissue.pathways[, 2:ncol(tissue.pathways)],
                  annotation_legend = FALSE, color = viridis(15),
                  show_rownames = FALSE, ...)
-    return(p)
+    
+    
+    if (is.na(border_color)) {
+        # https://stackoverflow.com/questions/44318690/no-border-color-in-pheatmap-in-r
+        grob_classes <- purrr::map(pp$gtable$grobs, class)
+        
+        ### Finding the histogram
+        
+        idx_grob <- which(purrr::map_lgl(grob_classes, function(cl) 'gTree' %in% cl))[1]
+        grob_names <- names(pp$gtable$grobs[[idx_grob]]$children)
+        idx_rect <- grob_names[grep('rect', grob_names)][1]
+        
+        ## Remove borders around cells
+        pp$gtable$grobs[[idx_grob]]$children[[idx_rect]]$gp$col <- pp$gtable$grobs[[idx_grob]]$children[[idx_rect]]$gp$fill
+        pp$gtable$grobs[[idx_grob]]$children[[idx_rect]]$gp$lwd <- 0
+        
+        ### Finding annotation columns to the left
+        
+        annot_grob <- which(purrr::map_lgl(grob_classes, function(cl) 'rect' %in% cl))[1]
+       
+        ## Remove borders around cells
+        pp$gtable$grobs[[annot_grob]]$gp$col = NA
+    }
+    return(pp)
 }
