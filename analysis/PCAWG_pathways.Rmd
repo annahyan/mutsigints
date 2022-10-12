@@ -595,17 +595,26 @@ for (tissue in names(plotlist)) {
 dev.off()
 ```
 
-### Melanoma pathway
+### Melanoma pathways
 
 ```{r}
+tissue = "Skin_Melanoma"
 skin.annotated.heatmap = pathways_signatures_heatmap(
-        tissue = "Skin_Melanoma",
+        tissue = tissue,
         signatures = PCAWG.full.subset.ann.pathways, border_color = NA,
-        pathways = PCAWG.pathways.tissues, main = tissue) %>% add_pheatmap_legend_title
+        pathways = PCAWG.pathways.tissues, main = paste0(tissue, " - PCAWG")) %>% 
+    add_pheatmap_legend_title
     
 
 ggsave(plot = skin.annotated.heatmap,
        file = file.path(fig.dir, "PCAWG.skin.annotated.heatmap.pdf"),
        width = 4.5, height = 4)
+```
+
+
+```{r}
+tissue = "Skin_Melanoma"
+tissue.heatmap = subset_tissue(PCAWG.full.subset, tissue = tissue) %>% 
+            plot_tissue_heatmap(main = tissue)
 ```
 

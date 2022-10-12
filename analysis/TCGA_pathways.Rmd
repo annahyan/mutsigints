@@ -35,6 +35,9 @@ TCGA.full.subset.ann.pathways$Sample.Names = rownames(TCGA.full.subset.ann.pathw
 TCGA.full.subset.ann = readRDS(here("data", "RDS", "TCGA", "signatures",
                                      "TCGA.full.subset.ann.RDS"))
 
+TCGA.full.subset = readRDS(here("data", "RDS", "TCGA", "signatures",
+                                     "TCGA.full.subset.RDS"))
+
 TCGA.active.sig.counts = data.frame(Tissues = TCGA.full.subset.ann$Cancer.Types,
                                       active.sig.counts = rowSums(TCGA.full.subset.ann[4:ncol(TCGA.full.subset.ann)] > 0))
 ```
@@ -568,4 +571,28 @@ for (tissue in names(plotlist)) {
 }
 dev.off()
 ```
+### Melanoma pathways
+
+```{r}
+tissue = "Skin_Melanoma"
+skin.annotated.heatmap = pathways_signatures_heatmap(
+        tissue = tissue,
+        signatures = TCGA.full.subset.ann.pathways, border_color = NA,
+        pathways = TCGA.pathways.tissues, main = paste0(tissue, " - TCGA")) %>% 
+    add_pheatmap_legend_title
+    
+
+ggsave(plot = skin.annotated.heatmap,
+       file = file.path(fig.dir, "TCGA.skin.annotated.heatmap.pdf"),
+       width = 4.5, height = 4)
+```
+
+
+```{r}
+tissue = "Skin_Melanoma"
+tissue.heatmap = subset_tissue(TCGA.full.subset, tissue = tissue) %>% 
+            plot_tissue_heatmap(main = tissue)
+
+```
+
 
