@@ -1,0 +1,10 @@
+	C2	CNA	C1	C3
+APOBEC	Cervix_CA, Head_SCC, Uterus_AdenoCa		Lung_SCC	
+PolE	ColoRect_AdenoCa	Cervix_CA		
+MMR	ColoRect_AdenoCa, Stomach_AdenoCa		Uterus_AdenoCa	
+SBS40	Lung_AdenoCa		ColoRect_AdenoCa	
+Technical		Skin_Melanoma	Head_SCC	
+Tobacco			Head_SCC	
+Ageing			Lung_AdenoCa	
+Aflatoxin		Lung_SCC		
+UV				Lung_SCC
