@@ -314,8 +314,12 @@ get_tissue_pathway_activities = function(tissue,
     
     tissue.sig.subset = tissue.sig.subset %>% dplyr::select(4:ncol(.))
     
-    tissue.path.subset = pathways.input[ match(donor.ids, 
-                                               pathways.input$donor_id), ] 
+    # tissue.path.subset = pathways.input[ match(donor.ids, 
+    #                                            pathways.input$donor_id), ] 
+    
+    tissue.path.subset = pathways.input %>% filter(donor_id %in% donor.ids) %>% 
+        arrange(factor(donor_id, levels = donor.ids) )
+    
     tissue.path.subset = tissue.path.subset %>% 
         dplyr::select(4:ncol(.)) %>% 
         dplyr::select_if(colSums(., na.rm = TRUE) != 0)

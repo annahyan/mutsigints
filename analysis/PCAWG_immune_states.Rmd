@@ -238,11 +238,75 @@ for (tissue in names(immune.tissue.odds.ratio)) {
         
         ggsave(plot = int.heatmap,
                filename = file.path(fig.dir, "immune_to_signature", "by_tissues", "oddsratio",  
-                                    paste0(tissue, "_sig_pathway.dotplot.png")),
+                                    paste0("PCAWG_", tissue, "_sig_pathway.dotplot.png")),
                height = 5, width = 6, bg = "white")
     }
 }
 ```
+
+```{r}
+immune.tissue.odds.ratio.unadjusted = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.immune,
+                                 pathways.input = immune.states.tissues,
+                                 interaction_function = get_sig_path_assocs, 
+                                 path.min.tissues = 30,
+                                 p.val.threshold = 0.05,
+                                 p.adjust = FALSE,
+                                 method = "BH")
+
+
+for (tissue in names(immune.tissue.odds.ratio.unadjusted)) {
+   
+    if (any(abs(immune.tissue.odds.ratio.unadjusted[[tissue]]) > 0) ) {
+        cat(tissue, "\n")
+        int.heatmap = ggheatmap_wrapper(immune.tissue.odds.ratio.unadjusted[[tissue]], 
+                                        title = tissue)
+        
+        ggsave(plot = int.heatmap,
+               filename = file.path(fig.dir, "immune_to_signature", "by_tissues", "oddsratio",  
+                                    paste0("PCAWG_", tissue, "_sig_pathway_unadjusted.dotplot.png")),
+               height = 5, width = 6, bg = "white")
+    }
+}
+```
+
+```{r}
+
+immune.OR.plot.input = immune.tissue.odds.ratio.unadjusted
+
+for (tissue in names(immune.OR.plot.input) ) {
+    if (length(immune.OR.plot.input[[tissue]]) == 0) {
+        next
+    }
+    colnames(immune.OR.plot.input[[tissue]]) = immune.class.mapping[ colnames(immune.OR.plot.input[[tissue]]) ]
+}
+ 
+pp.immune.odds.ratio.unadjusted = plot_all_counts(immune.OR.plot.input, 
+                                                  threshold = 0.2, psize = 5, 
+                                                  expand.mult = c(0.06, 0.06)) + 
+    coord_cartesian(x = c(1, 7), clip = "off")
+
+ggsave(plot = pp.immune.odds.ratio.unadjusted,
+               filename = file.path(fig.dir,
+                                    "PCAWG_summarized_immune_sig_unadjusted.dotplot.pdf"),
+               height = 1.1, width = 2.5, bg = "white", device = cairo_pdf)
+```
+
+
+```{r}
+
+immune.tissues.odds.ratio.lists = get_interaction_tissues(immune.tissue.odds.ratio.unadjusted)
+
+write.table(as.data.frame(immune.tissues.odds.ratio.lists$pos.tissues), 
+          file = here("supp_data", "PCAWG_sig_immune_positive_interaction_tissue_summaries.tsv"),
+          row.names = TRUE, col.names = NA, sep = "\t", quote = FALSE)
+write.table(as.data.frame(immune.tissues.odds.ratio.lists$neg.tissues), 
+          file = here("supp_data", "PCAWG_sig_immune_negative_interaction_tissue_summaries.tsv"),
+          row.names = TRUE, col.names = NA, sep = "\t", quote = FALSE)
+
+```
+
+
+
 
 ```{r}
 tissue = "ColoRect_AdenoCA" 
@@ -259,7 +323,7 @@ ggsave(plot = colorectal.heatmap,
 
 
 cairo_pdf(filename = file.path(fig.dir, "immune_to_signature", "by_tissues", "oddsratio",  
-                            paste0(tissue, "_sig_pathway.dotplot.pdf")),
+                            paste0("PCAWG_", tissue, "_sig_pathway.dotplot.pdf")),
           height = 4, width = 4)
 print(colorectal.heatmap)
 dev.off()

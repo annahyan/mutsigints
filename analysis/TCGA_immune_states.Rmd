@@ -129,4 +129,108 @@ dev.off()
 #      file = file.path(fig.dir, "tcga.immune.states.heatmap.pdf"),
 #                       width = 5, height = 5)
 ```
+```{r}
+tcga.immune.tissues = tcga.immune.states %>% 
+    mutate(Immune.Subtype = ifelse(Immune.Subtype == "NA", "CNA", Immune.Subtype)) %>% 
+    pivot_wider(id_cols = c(Cancer.Types, Sample.Names, Accuracy),
+            names_from = Immune.Subtype, values_from = Immune.Subtype) %>% 
+    mutate(across(C1:CNA, ~ifelse(is.na(.x), 0, 1))) %>% 
+    rename(donor_id = Sample.Names)
 
+rownames(tcga.immune.tissues) = tcga.immune.tissues$donor_id
+
+tcga.immune.sigs = tcga.immune.states %>% select(-Immune.Subtype)
+```
+ 
+
+
+```{r}
+immune.tissue.odds.ratio = pcawg_sig_pathway_int(sigs.input = tcga.immune.sigs,
+                                 pathways.input = tcga.immune.tissues,
+                                 interaction_function = get_sig_path_assocs, 
+                                 path.min.tissues = 30,
+                                 p.val.threshold = 0.2,
+                                 p.adjust = TRUE,
+                                 method = "BH")
+
+
+for (tissue in names(immune.tissue.odds.ratio)) {
+   
+    if (any(abs(immune.tissue.odds.ratio[[tissue]]) > 0) ) {
+        cat(tissue, "\n")
+        int.heatmap = ggheatmap_wrapper(immune.tissue.odds.ratio[[tissue]], 
+                                        title = tissue)
+        
+        ggsave(plot = int.heatmap,
+               filename = file.path(fig.dir, "immune_to_signature", "by_tissues", "oddsratio",  
+                                    paste0("TCGA", tissue, "_sig_pathway.dotplot.png")),
+               height = 5, width = 6, bg = "white")
+    }
+}
+```
+
+```{r}
+
+immune.tissue.odds.ratio.unadjusted = pcawg_sig_pathway_int(sigs.input = tcga.immune.sigs,
+                                 pathways.input = tcga.immune.tissues,
+                                 interaction_function = get_sig_path_assocs, 
+                                 path.min.tissues = 30,
+                                 p.val.threshold = 0.05,
+                                 p.adjust = FALSE,
+                                 method = "BH")
+
+
+for (tissue in names(immune.tissue.odds.ratio.unadjusted)) {
+   
+    if (any(abs(immune.tissue.odds.ratio.unadjusted[[tissue]]) > 0) ) {
+        cat(tissue, "\n")
+        int.heatmap = ggheatmap_wrapper(immune.tissue.odds.ratio.unadjusted[[tissue]], 
+                                        title = tissue)
+        
+        ggsave(plot = int.heatmap,
+               filename = file.path(fig.dir, "immune_to_signature", "by_tissues", "oddsratio",  
+                                    paste0("TCGA", tissue, "_sig_pathway_unadjusted.dotplot.png")),
+               height = 5, width = 6, bg = "white")
+    }
+}
+
+```
+```{r}
+
+immune.OR.plot.input = immune.tissue.odds.ratio.unadjusted
+
+for (tissue in names(immune.OR.plot.input) ) {
+    if (length(immune.OR.plot.input[[tissue]]) == 0) {
+        next
+    }
+    colnames(immune.OR.plot.input[[tissue]]) = immune.class.mapping[ colnames(immune.OR.plot.input[[tissue]]) ]
+}
+ 
+pp.immune.odds.ratio.unadjusted = plot_all_counts(immune.OR.plot.input, 
+                                                  threshold = 0.2, psize = 5,
+                                                    expand.mult = c(0.03, 0.08)) 
+
+ggsave(plot = pp.immune.odds.ratio.unadjusted,
+               filename = file.path(fig.dir,
+                                    "TCGA_summarized_immune_sig_unadjusted.dotplot.pdf"),
+               height = 1.6, width = 3.7, bg = "white", device = cairo_pdf)
+```
+
+
+```{r}
+immune.tissues.odds.ratio.lists = get_interaction_tissues(immune.tissue.odds.ratio.unadjusted)
+
+write.table(as.data.frame(immune.tissues.odds.ratio.lists$pos.tissues), 
+          file = here("supp_data", "TCGA_sig_immune_positive_interaction_tissue_summaries.tsv"),
+          row.names = TRUE, col.names = NA, sep = "\t", quote = FALSE)
+write.table(as.data.frame(immune.tissues.odds.ratio.lists$neg.tissues), 
+          file = here("supp_data", "TCGA_sig_immune_negative_interaction_tissue_summaries.tsv"),
+          row.names = TRUE, col.names = NA, sep = "\t", quote = FALSE)
+
+```
+
+
+ 
+ 
+
+ 
