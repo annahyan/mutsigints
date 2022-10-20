@@ -218,8 +218,8 @@ get_sig_path_lms = function(sigs.df, pathways.df,
             
             ## Applying a threshold on minimal number of non-zero elements
             # cat("before printing zero element counts.\n")
-            zero.sigs = sum(tissue.concat[, sig] != 0)
-            zero.paths = sum(tissue.concat[, pathway] != 0)
+            zero.sigs = sum(tissue.concat[, sig,] != 0, na.rm = TRUE)
+            zero.paths = sum(tissue.concat[, pathway] != 0, na.rm = TRUE)
             
             if (zero.sigs < 3 | zero.paths < 3) {
                 # cat("zero.sigs = ", zero.sigs, " zero paths = ", zero.paths, "\n")
@@ -1658,7 +1658,7 @@ pathways_signatures_heatmap = function(tissue, signatures, pathways,
     
     tissue.pathways = cbind(tissue.pathways["donor_id"], 
                             tissue.pathways[, names(which(colSums(
-                                tissue.pathways[4:ncol(tissue.pathways)]) > 0))])
+                                tissue.pathways[4:ncol(tissue.pathways)], na.rm = TRUE) > 0))])
     
     tissue.sigs = tissue.sigs[ common.samples, ]
     

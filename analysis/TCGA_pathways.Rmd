@@ -295,6 +295,24 @@ ggsave(plot = pp.odds.ratio.unadjusted,
                height = 2.7, width = 4, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
 ```
 
+
+### Three summaries together
+
+```{r}
+pp.TCGA.combined.summaries = ggarrange(pp.odds.ratio.unadjusted + ggtitle("Co-occurrence"), 
+          pp.logged + ggtitle("lm(signature ~ pathway)"), 
+          pp.log.log + ggtitle("glm(pathway ~ signature)"), ncol = 1)
+
+pp.TCGA.combined.summaries = annotate_figure(
+    pp.TCGA.combined.summaries, top = text_grob("TCGA signature-pathway analysis summaries", 
+               color = "darkblue", face = "bold", size = 11))
+
+ggsave(plot = pp.TCGA.combined.summaries,
+               filename = file.path(fig.dir, "TCGA_combined_summaries_sig_pathway.pdf"),
+               height = 10, width = 4, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
+```
+
+
 ### Bipartite graph - not used 
 
 ```{r}
@@ -323,45 +341,45 @@ write.table(as.data.frame(tissues.odds.ratio.lists$neg.tissues),
 ```
 
 
-<!-- ### Linear regression predicting signatures from pathways across tissues -->
+### Linear regression predicting signatures from pathways across tissues
 
-<!-- I tried logging the signatures before the linear regression or using raw counts. -->
-<!-- In this first case, I tried logging.  -->
+I tried logging the signatures before the linear regression or using raw counts.
+In this first case, I tried logging.
 
 
-<!-- ```{r, warning = FALSE} -->
-<!-- tissue.lm.coefs.mats.log = TCGA_sig_pathway_int(sigs.input = TCGA.full.subset.ann.pathways, -->
-<!--                                  pathways.input = TCGA.pathways.tissues, -->
-<!--                                  interaction_function = get_sig_path_lms,  -->
-<!--                                  robust = FALSE, -->
-<!--                                  path.min.tissues = 30, -->
-<!--                                  p.val.threshold = 0.1, -->
-<!--                                  p.adjust = TRUE, -->
-<!--                                  method = "BH", -->
-<!--                                  sig.log = TRUE, -->
-<!--                                  path.to.sig = TRUE) -->
+```{r, warning = FALSE}
+tissue.lm.coefs.mats.log = pcawg_sig_pathway_int(sigs.input = TCGA.full.subset.ann.pathways,
+                                 pathways.input = TCGA.pathways.tissues,
+                                 interaction_function = get_sig_path_lms,
+                                 robust = FALSE,
+                                 path.min.tissues = 30,
+                                 p.val.threshold = 0.1,
+                                 p.adjust = TRUE,
+                                 method = "BH",
+                                 sig.log = TRUE,
+                                 path.to.sig = TRUE)
 
-<!-- for (tissue in abundant.tissues) { -->
-<!--     cat(tissue, "\n")    -->
-<!--     if (any(abs(tissue.lm.coefs.mats.log[[tissue]]) > 0) ) { -->
-<!--         int.heatmap = ggheatmap_wrapper(tissue.lm.coefs.mats.log[[tissue]],  -->
-<!--                                         title = tissue) -->
+for (tissue in abundant.tissues) {
+    cat(tissue, "\n")
+    if (any(abs(tissue.lm.coefs.mats.log[[tissue]]) > 0) ) {
+        int.heatmap = ggheatmap_wrapper(tissue.lm.coefs.mats.log[[tissue]],
+                                        title = tissue)
 
-<!--         ggsave(plot = int.heatmap, -->
-<!--                filename = file.path(fig.dir, "pathway_to_signature", -->
-<!--                                     "by_tissues", "lm_log",  -->
-<!--                                     paste0("TCGA_", tissue, "_sig_tilde_pathway.dotplot.png")), -->
-<!--                height = 5, width = 6, bg = "white") -->
-<!--     } -->
-<!-- } -->
-<!-- ``` -->
+        ggsave(plot = int.heatmap,
+               filename = file.path(fig.dir, "pathway_to_signature",
+                                    "by_tissues", "lm_log",
+                                    paste0("TCGA_", tissue, "_sig_tilde_pathway.dotplot.png")),
+               height = 5, width = 6, bg = "white")
+    }
+}
+```
 
-<!-- In the example below I'm trying with raw counts. -->
+In the example below I'm trying with raw counts.
 
 <!-- ```{r, warning = FALSE} -->
 <!-- tissue.lm.coefs.mats = TCGA_sig_pathway_int(sigs.input = TCGA.full.subset.ann.pathways, -->
 <!--                                  pathways.input = TCGA.pathways.tissues, -->
-<!--                                  interaction_function = get_sig_path_lms,  -->
+<!--                                  interaction_function = get_sig_path_lms, -->
 <!--                                  robust = FALSE, -->
 <!--                                  path.min.tissues = 30, -->
 <!--                                  p.val.threshold = 0.05, -->
@@ -374,35 +392,35 @@ write.table(as.data.frame(tissues.odds.ratio.lists$neg.tissues),
 
 <!--     if (any(abs(tissue.lm.coefs.mats[[tissue]]) > 0) ) { -->
 <!--         cat(tissue, "\n") -->
-<!--         int.heatmap = ggheatmap_wrapper(tissue.lm.coefs.mats[[tissue]],  -->
+<!--         int.heatmap = ggheatmap_wrapper(tissue.lm.coefs.mats[[tissue]], -->
 <!--                                         title = tissue) -->
 
 <!--         ggsave(plot = int.heatmap, -->
-<!--                filename = file.path(fig.dir,"pathway_to_signature", "by_tissues", "lm_counts",  -->
+<!--                filename = file.path(fig.dir,"pathway_to_signature", "by_tissues", "lm_counts", -->
 <!--                                     paste0("TCGA_", tissue, "_sig_tilde_pathway.dotplot.png")), -->
 <!--                height = 5, width = 6, bg = "white") -->
 <!--     } -->
 <!-- } -->
 <!-- ``` -->
 
-<!-- #### Summarizing the regression of signatures ~ pathways -->
+#### Summarizing the regression of signatures ~ pathways
 
-<!-- ```{r, fig.width=6, fig.height=4, warning= FALSE} -->
-<!-- pp.logged = plot_all_counts(tissue.lm.coefs.mats.log, threshold = 0.2, psize = 5) -->
-<!-- print(pp.logged) -->
+```{r, fig.width=6, fig.height=4, warning= FALSE}
+pp.logged = plot_all_counts(tissue.lm.coefs.mats.log, threshold = 0.2, psize = 5)
+print(pp.logged)
 
-<!-- ggsave(plot = pp.logged, -->
-<!--                filename = file.path(fig.dir, "pathway_to_signature",  -->
-<!--                                     "by_tissues", "lm_log",  -->
-<!--                                     "TCGA_logged_summarized_OLS.png"), -->
-<!--                height = 2.3, width = 2.9, bg = "white") -->
+ggsave(plot = pp.logged,
+               filename = file.path(fig.dir, "pathway_to_signature",
+                                    "by_tissues", "lm_log",
+                                    "TCGA_logged_summarized_OLS.png"),
+               height = 2.3, width = 2.9, bg = "white")
 
-<!-- ggsave(plot = pp.logged, -->
-<!--                filename = file.path(fig.dir, "pathway_to_signature",  -->
-<!--                                     "by_tissues", "lm_log", "TCGA_logged_summarized_OLS_path_to_sigs.pdf"), -->
-<!--                height = 2.3, width = 2.9, bg = "white", device = cairo_pdf, family = "DejaVu Sans") -->
+ggsave(plot = pp.logged,
+               filename = file.path(fig.dir, "pathway_to_signature",
+                                    "by_tissues", "lm_log", "TCGA_logged_summarized_OLS_path_to_sigs.pdf"),
+               height = 2.7, width = 3.6, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
 
-<!-- ``` -->
+```
 
 
 <!-- ```{r, fig.width=6, fig.height=4, warning= FALSE} -->
@@ -497,50 +515,56 @@ write.table(as.data.frame(tissues.odds.ratio.lists$neg.tissues),
 
 
 
-<!-- ### Logistic regression predicting pathways from signatures across tissues -->
+### Logistic regression predicting pathways from signatures across tissues
 
-<!-- ```{r} -->
-<!-- tissue.log.coefs.mats.log = TCGA_sig_pathway_int(sigs.input = TCGA.full.subset.ann.pathways, -->
-<!--                                  pathways.input = TCGA.pathways.tissues, -->
-<!--                                  interaction_function = get_sig_path_lms,  -->
-<!--                                  path.min.tissues = 30, -->
-<!--                                  p.val.threshold = 0.1, -->
-<!--                                  p.adjust = TRUE, -->
-<!--                                  method = "BH", -->
-<!--                                  sig.log = TRUE, -->
-<!--                                  robust = FALSE, -->
-<!--                                  path.to.sig = FALSE) -->
+```{r}
+tissue.log.coefs.mats.log = pcawg_sig_pathway_int(sigs.input = TCGA.full.subset.ann.pathways,
+                                 pathways.input = TCGA.pathways.tissues,
+                                 interaction_function = get_sig_path_lms,
+                                 path.min.tissues = 30,
+                                 p.val.threshold = 0.1,
+                                 p.adjust = TRUE,
+                                 method = "BH",
+                                 sig.log = TRUE,
+                                 robust = FALSE,
+                                 path.to.sig = FALSE)
 
 
-<!-- for (tissue in abundant.tissues) { -->
-<!--     if (any(abs(tissue.log.coefs.mats.log[[tissue]]) > 0) ) { -->
-<!--         cat(tissue, "\n") -->
-<!--         int.heatmap = ggheatmap_wrapper(tissue.log.coefs.mats.log[[tissue]],  -->
-<!--                                         title = tissue) -->
+for (tissue in abundant.tissues) {
+    if (any(abs(tissue.log.coefs.mats.log[[tissue]]) > 0) ) {
+        cat(tissue, "\n")
+        int.heatmap = ggheatmap_wrapper(tissue.log.coefs.mats.log[[tissue]],
+                                        title = tissue)
 
-<!--         ggsave(plot = int.heatmap, -->
-<!--                filename = file.path(fig.dir, "signature_to_pathway",  -->
-<!--                                     "by_tissues", "log_log",  -->
-<!--                                     paste0("TCGA_", tissue, "_path_tilde_sig.dotplot.png")), -->
-<!--                height = 5, width = 6, bg = "white") -->
-<!--     } -->
-<!-- } -->
+        ggsave(plot = int.heatmap,
+               filename = file.path(fig.dir, "signature_to_pathway",
+                                    "by_tissues", "log_log",
+                                    paste0("TCGA_", tissue, "_path_tilde_sig.dotplot.png")),
+               height = 5, width = 6, bg = "white")
+    }
+}
 
-<!-- ``` -->
+```
 
-<!-- #### Summarizing the regression of pathways ~ signatures -->
+#### Summarizing the regression of pathways ~ signatures
 
-<!-- ```{r} -->
-<!-- pp.log.log = plot_all_counts(tissue.log.coefs.mats.log, threshold = 0.1, psize = 6, -->
-<!--                              expand.mult = c(0.13, 0.13)) -->
-<!-- print(pp.log.log) -->
+```{r}
+pp.log.log = plot_all_counts(tissue.log.coefs.mats.log, threshold = 0.1, psize = 6,
+                             expand.mult = c(0.03, 0.03))
+print(pp.log.log)
 
-<!-- ggsave(plot = pp.log.log, -->
-<!--                filename = file.path(fig.dir, "signature_to_pathway",  -->
-<!--                                     "by_tissues", "log_log",  -->
-<!--                                     "TCGA_logged_summarized.png"), -->
-<!--                height = 1.15, width = 1.6, bg = "white") -->
-<!-- ``` -->
+ggsave(plot = pp.log.log,
+               filename = file.path(fig.dir, "signature_to_pathway",
+                                    "by_tissues", "log_log",
+                                    "TCGA_logged_summarized.png"),
+               height = 1.15, width = 1.6, bg = "white")
+
+ggsave(plot = pp.log.log,
+               filename = file.path(fig.dir, "signature_to_pathway",
+                                    "by_tissues", "log_log",
+                                    "TCGA_logged_logistic_summarized.pdf"),
+               height = 2.8, width = 3.5, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
+```
 
 ### All signatures and pathway mutation heatmaps
 
