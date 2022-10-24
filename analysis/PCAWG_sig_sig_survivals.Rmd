@@ -13,6 +13,8 @@ knitr::opts_chunk$set(comment = '', fig.width = 6,
 
 ```{r load-packages}
 library(here)
+library(survival)
+library(survminer)
 fig.dir = here("figures/sig_sig_survivals")
 
 if(! file.exists(fig.dir)){
@@ -22,7 +24,7 @@ if(! file.exists(fig.dir)){
 source(here("R/load_packages.R"))
 library(gridExtra)
 
-out.dir = out.dir = here("data/RDS/PCAWG/metadata")
+out.dir = here("data/RDS/PCAWG/metadata")
 
 ```
 

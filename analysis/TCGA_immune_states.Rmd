@@ -141,8 +141,20 @@ rownames(tcga.immune.tissues) = tcga.immune.tissues$donor_id
 
 tcga.immune.sigs = tcga.immune.states %>% select(-Immune.Subtype)
 ```
- 
 
+```{r path-sig-prep}
+PATH_MIN_TISSUES = 30
+
+abundant.tissues = which(tcga.immune.sigs$Cancer.Types %>% 
+                             table() > PATH_MIN_TISSUES) %>% names()
+
+cat(abundant.tissues, sep = "\n")
+# number of total samples
+tcga.immune.sigs$Cancer.Types %in% abundant.tissues %>% sum()
+
+```
+
+### Interactions between TCGA signatures and immune states
 
 ```{r}
 immune.tissue.odds.ratio = pcawg_sig_pathway_int(sigs.input = tcga.immune.sigs,
