@@ -141,3 +141,29 @@ for (i in 1:length(neg.plotlist) ) {
 dev.off()
 ```
 
+```{r}
+eso_APOBEC_SBS40 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+                                                      signatures = c("APOBEC", "SBS40"), 
+                                                      tissues = "Eso_AdenoCA", 
+                                                      clin.df = PCAWG.clin.df,
+                                                      legend_pos = c(0.34, 0.22),
+                                                      with.total.muts = TRUE,
+                                                      binary.status = FALSE)
+
+ggsave(plot = eso_APOBEC_SBS40$survP$plot,
+       filename = file.path(fig.dir, "PCAWG_Eso_AdenoCA_APOBEC_SBS40.pdf"),
+       width = 3.6, height = 3.3)
+
+eso_SBS40_HR = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+                                                      signatures = c("SBS40", "HR"), 
+                                                      tissues = "Eso_AdenoCA", 
+                                                      clin.df = PCAWG.clin.df,
+                                                      legend_pos = c(0.8, 0.8),
+                                                      with.total.muts = TRUE,
+                                                      binary.status = FALSE)
+
+ggsave(plot = eso_SBS40_HR$survP$plot,
+       filename = file.path(fig.dir, "PCAWG_Eso_AdenoCA_SBS40_HR.pdf"),
+       width = 3.6, height = 3.3)
+```
+

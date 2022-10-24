@@ -1,0 +1,143 @@
+---
+title: "Survival analysis of signature-signature interactions in TCGA"
+output: 
+  html_document:
+    df_print: paged
+---
+
+```{r}
+knitr::opts_chunk$set(comment = '', fig.width = 6, 
+                      fig.height = 6, echo = FALSE, 
+                      warning = FALSE)
+```
+
+```{r load-packages}
+library(here)
+library(survival)
+library(survminer)
+fig.dir = here("figures/sig_sig_survivals")
+
+if(! file.exists(fig.dir)){
+    dir.create(fig.dir, recursive = TRUE)
+}
+
+source(here("R/load_packages.R"))
+library(gridExtra)
+
+out.dir = out.dir = here("data/RDS/TCGA/metadata")
+
+```
+
+### Reading in clinical and signature data
+
+```{r}
+TCGA.full.subset.ann = readRDS(file = here("data/RDS",
+                                           "TCGA/signatures/TCGA.full.subset.ann.RDS"))   
+TCGA.clin.df = readRDS(file = file.path(out.dir, "TCGA.clin.df.RDS") )
+
+positive.sig.sig = read.delim(file = here("supp_data", 
+                                        "TCGA_positive_interaction_tissue_summaries.tsv"),
+                              row.names = 1)
+
+negative.sig.sig = read.delim(file = here("supp_data", 
+                                        "TCGA_negative_interaction_tissue_summaries.tsv"),
+                            row.names = 1)
+```
+
+
+### Survival models for positive interactions
+
+```{r}
+pos.plotlist = get_surv_plotlist(positive.sig.sig, 
+                                 dataset = TCGA.full.subset.ann,
+                                 clin.df = TCGA.clin.df,
+                                 with.total.muts = TRUE, 
+                                 binary.status = FALSE )
+
+pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut_nonbinary.pdf"),
+    onefile = TRUE, width = 4, height = 7)
+
+for (i in 1:length(pos.plotlist) ) {
+    try({print(pos.plotlist[[i]] ) })
+}
+dev.off()
+
+
+pos.plotlist = get_surv_plotlist(positive.sig.sig, 
+                                 dataset = TCGA.full.subset.ann,
+                                 clin.df = TCGA.clin.df,
+                                 with.total.muts = FALSE, 
+                                 binary.status = FALSE )
+
+pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_nontotmut_nonbinary.pdf"),
+    onefile = TRUE, width = 4, height = 7)
+
+for (i in 1:length(pos.plotlist) ) {
+    try({print(pos.plotlist[[i]] ) })
+}
+dev.off()
+
+
+pos.plotlist = get_surv_plotlist(positive.sig.sig, 
+                                 dataset = TCGA.full.subset.ann,
+                                 clin.df = TCGA.clin.df,
+                                 with.total.muts = TRUE, 
+                                 binary.status = TRUE )
+
+pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut_binary.pdf"),
+    onefile = TRUE, width = 4, height = 7)
+
+for (i in 1:length(pos.plotlist) ) {
+    try({print(pos.plotlist[[i]] ) })
+}
+dev.off()
+```
+
+### Survival models for negative interactions
+
+```{r}
+neg.plotlist = get_surv_plotlist(negative.sig.sig, 
+                                 dataset = TCGA.full.subset.ann,
+                                 clin.df = TCGA.clin.df,
+                                 with.total.muts = TRUE, 
+                                 binary.status = FALSE )
+
+pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_totmut_nonbinary.pdf"),
+    onefile = TRUE, width = 4, height = 7)
+
+for (i in 1:length(neg.plotlist) ) {
+    try({print(neg.plotlist[[i]] ) })
+}
+dev.off()
+
+
+neg.plotlist = get_surv_plotlist(negative.sig.sig, 
+                                 dataset = TCGA.full.subset.ann,
+                                 clin.df = TCGA.clin.df,
+                                 with.total.muts = FALSE, 
+                                 binary.status = FALSE )
+
+pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_nontotmut_nonbinary.pdf"),
+    onefile = TRUE, width = 4, height = 7)
+
+for (i in 1:length(neg.plotlist) ) {
+    try({print(neg.plotlist[[i]] ) })
+}
+dev.off()
+
+
+neg.plotlist = get_surv_plotlist(negative.sig.sig, 
+                                 dataset = TCGA.full.subset.ann,
+                                 clin.df = TCGA.clin.df,
+                                 with.total.muts = TRUE, 
+                                 binary.status = TRUE )
+
+pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_totmut_binary.pdf"),
+    onefile = TRUE, width = 4, height = 7)
+
+for (i in 1:length(neg.plotlist) ) {
+    try({print(neg.plotlist[[i]] ) })
+}
+dev.off()
+```
+
