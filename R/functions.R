@@ -1419,7 +1419,9 @@ get_surv_plotlist = function(sig.sig.tissues.matrix,
                          base_size = 10,
                          padding = unit(c(2, 4), "mm"))
     
-    sig.sig.tissues.matrix[lower.tri(sig.sig.tissues.matrix, diag = TRUE)] = NA
+    if (all.equal(rownames(sig.sig.tissues.matrix), colnames(sig.sig.tissues.matrix)) == TRUE) {
+        sig.sig.tissues.matrix[lower.tri(sig.sig.tissues.matrix, diag = TRUE)] = NA    
+    }
     ints.indeces = which(! is.na(sig.sig.tissues.matrix), arr.ind = T)
 
     
@@ -1428,7 +1430,7 @@ get_surv_plotlist = function(sig.sig.tissues.matrix,
     for (i in 1:nrow(ints.indeces)) {
         
         indeces = ints.indeces[i, ]
-        sig1 = colnames(sig.sig.tissues.matrix)[indeces[1]]
+        sig1 = rownames(sig.sig.tissues.matrix)[indeces[1]]
         sig2 = colnames(sig.sig.tissues.matrix)[indeces[2]]
         
         tissues = strsplit(sig.sig.tissues.matrix[indeces[1], indeces[2]], split = ",")[[1]]
