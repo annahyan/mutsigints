@@ -1,0 +1,154 @@
+---
+title: "Survival analysis of signature-signature interactions in PCAWG"
+output: 
+  html_document:
+    df_print: paged
+---
+
+```{r}
+knitr::opts_chunk$set(comment = '', fig.width = 6, 
+                      fig.height = 6, echo = FALSE, 
+                      warning = FALSE)
+```
+
+```{r load-packages}
+library(here)
+library(survival)
+library(survminer)
+fig.dir = here("figures/sig_pathway_survivals")
+
+if(! file.exists(fig.dir)){
+    dir.create(fig.dir, recursive = TRUE)
+}
+
+source(here("R/load_packages.R"))
+library(gridExtra)
+
+out.dir = here("data/RDS/PCAWG/metadata")
+
+```
+
+### Reading in clinical and signature data
+
+```{r}
+PCAWG.full.subset.ann.pathways = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways",
+                                              "PCAWG.full.subset.ann.pathways.RDS"))
+
+PCAWG.pathways.tissues = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways",
+                                              "pcawg_pathways.RDS"))
+if (all.equal(rownames(PCAWG.full.subset.ann.pathways), rownames(PCAWG.pathways.tissues))) {
+
+    PCAWG.path.sig.aggregate = cbind(PCAWG.full.subset.ann.pathways, 
+                                     PCAWG.pathways.tissues[4:ncol(PCAWG.pathways.tissues)])
+} else {
+    stop("Rownames of pathway and signature dataframes do not match.\n")
+}
+
+
+PCAWG.clin.df = readRDS(file = file.path(out.dir, "PCAWG.clin.df.RDS") )
+
+positive.sig.pathway = read.delim(file = here("supp_data", 
+                                        "PCAWG_sig_pathway_positive_interaction_tissue_summaries.tsv"),
+                              row.names = 1)
+
+negative.sig.pathway = read.delim(file = here("supp_data", 
+                                        "PCAWG_sig_pathway_negative_interaction_tissue_summaries.tsv"),
+                            row.names = 1)
+```
+
+
+### Survival models for positive interactions
+
+```{r}
+pos.plotlist = get_surv_plotlist(positive.sig.pathway, 
+                                 dataset = PCAWG.path.sig.aggregate,
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = TRUE, 
+                                 binary.status = FALSE )
+
+pdf(file.path(fig.dir, "PCAWG_positive_interactions_survivals_totmut_nonbinary.pdf"),
+    onefile = TRUE, width = 4, height = 7)
+
+for (i in 1:length(pos.plotlist) ) {
+    try({print(pos.plotlist[[i]] ) })
+}
+dev.off()
+
+
+pos.plotlist = get_surv_plotlist(positive.sig.pathway, 
+                                 dataset = PCAWG.path.sig.aggregate,
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = FALSE, 
+                                 binary.status = FALSE )
+
+pdf(file.path(fig.dir, "PCAWG_positive_interactions_survivals_nontotmut_nonbinary.pdf"),
+    onefile = TRUE, width = 4, height = 7)
+
+for (i in 1:length(pos.plotlist) ) {
+    try({print(pos.plotlist[[i]] ) })
+}
+dev.off()
+
+
+pos.plotlist = get_surv_plotlist(positive.sig.pathway, 
+                                 dataset = PCAWG.path.sig.aggregate,
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = TRUE, 
+                                 binary.status = TRUE )
+
+pdf(file.path(fig.dir, "PCAWG_positive_interactions_survivals_totmut_binary.pdf"),
+    onefile = TRUE, width = 4, height = 7)
+
+for (i in 1:length(pos.plotlist) ) {
+    try({print(pos.plotlist[[i]] ) })
+}
+dev.off()
+```
+
+### Survival models for negative interactions
+
+```{r}
+neg.plotlist = get_surv_plotlist(negative.sig.pathway, 
+                                 dataset = PCAWG.full.subset.ann,
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = TRUE, 
+                                 binary.status = FALSE )
+
+pdf(file.path(fig.dir, "PCAWG_negative_interactions_survivals_totmut_nonbinary.pdf"),
+    onefile = TRUE, width = 4, height = 7)
+
+for (i in 1:length(neg.plotlist) ) {
+    try({print(neg.plotlist[[i]] ) })
+}
+dev.off()
+
+
+neg.plotlist = get_surv_plotlist(negative.sig.pathway, 
+                                 dataset = PCAWG.full.subset.ann,
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = FALSE, 
+                                 binary.status = FALSE )
+
+pdf(file.path(fig.dir, "PCAWG_negative_interactions_survivals_nontotmut_nonbinary.pdf"),
+    onefile = TRUE, width = 4, height = 7)
+
+for (i in 1:length(neg.plotlist) ) {
+    try({print(neg.plotlist[[i]] ) })
+}
+dev.off()
+
+
+neg.plotlist = get_surv_plotlist(negative.sig.pathway, 
+                                 dataset = PCAWG.full.subset.ann,
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = TRUE, 
+                                 binary.status = TRUE )
+
+pdf(file.path(fig.dir, "PCAWG_negative_interactions_survivals_totmut_binary.pdf"),
+    onefile = TRUE, width = 4, height = 7)
+
+for (i in 1:length(neg.plotlist) ) {
+    try({print(neg.plotlist[[i]] ) })
+}
+dev.off()
+```
