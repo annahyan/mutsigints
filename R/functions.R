@@ -1294,7 +1294,7 @@ survival_for_interactions = function(dataset, clin.df, signatures,
     } else { ### for TCGA
         
         tissues.subset$Sample.Names = substr(tissues.subset$Sample.Names, 1, 12)
-        valid.indeces = which(tissues.subset$Sample.Names %in% TCGA.all.survivals$bcr_patient_barcode)
+        valid.indeces = which(tissues.subset$Sample.Names %in% clin.df$bcr_patient_barcode)
         tissues.subset = tissues.subset[valid.indeces, ]
         
         adjusted.clin.df = clin.df[ match(tissues.subset$Sample.Names, 
