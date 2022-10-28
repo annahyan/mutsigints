@@ -1,5 +1,5 @@
 ---
-title: "Survival analysis of signature-signature interactions in PCAWG"
+title: "Survival analysis of signature-signature interactions in TCGA"
 output: 
   html_document:
     df_print: paged
@@ -24,39 +24,38 @@ if(! file.exists(fig.dir)){
 source(here("R/load_packages.R"))
 library(gridExtra)
 
-out.dir = here("data/RDS/PCAWG/metadata")
+out.dir = here("data/RDS/TCGA/metadata")
 
 ```
 
 ### Reading in clinical and signature data
 
 ```{r}
-PCAWG.full.subset.ann.pathways = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways",
-                                              "PCAWG.full.subset.ann.pathways.RDS"))
+TCGA.full.subset.ann.pathways = readRDS(file = here("data/RDS/TCGA/10_onco_pathways",
+                                              "TCGA.full.subset.ann.pathways.RDS"))
 
-PCAWG.pathways.tissues = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways",
-                                              "pcawg_pathways.RDS"))
+TCGA.pathways.tissues = readRDS(file = here("data/RDS/TCGA/10_onco_pathways",
+                                              "tcga_pathways.RDS"))
 
-colnames(PCAWG.pathways.tissues) = gsub("[ -]", ".", colnames(PCAWG.pathways.tissues))
+colnames(TCGA.pathways.tissues) = gsub("[ -]", ".", colnames(TCGA.pathways.tissues))
 
+if (all.equal(rownames(TCGA.full.subset.ann.pathways), rownames(TCGA.pathways.tissues))) {
 
-if (all.equal(rownames(PCAWG.full.subset.ann.pathways), rownames(PCAWG.pathways.tissues))) {
-
-    PCAWG.path.sig.aggregate = cbind(PCAWG.full.subset.ann.pathways, 
-                                     PCAWG.pathways.tissues[4:ncol(PCAWG.pathways.tissues)])
+    TCGA.path.sig.aggregate = cbind(TCGA.full.subset.ann.pathways, 
+                                     TCGA.pathways.tissues[4:ncol(TCGA.pathways.tissues)])
 } else {
     stop("Rownames of pathway and signature dataframes do not match.\n")
 }
 
 
-PCAWG.clin.df = readRDS(file = file.path(out.dir, "PCAWG.clin.df.RDS") )
+TCGA.clin.df = readRDS(file = file.path(out.dir, "TCGA.clin.df.RDS") )
 
 positive.sig.pathway = read.delim(file = here("supp_data", 
-                                        "PCAWG_sig_pathway_positive_interaction_tissue_summaries.tsv"),
+                                        "TCGA_sig_pathway_positive_interaction_tissue_summaries.tsv"),
                               row.names = 1, na.strings = "")
 
 negative.sig.pathway = read.delim(file = here("supp_data", 
-                                        "PCAWG_sig_pathway_negative_interaction_tissue_summaries.tsv"),
+                                        "TCGA_sig_pathway_negative_interaction_tissue_summaries.tsv"),
                             row.names = 1, na.strings = "")
 ```
 
@@ -65,12 +64,12 @@ negative.sig.pathway = read.delim(file = here("supp_data",
 
 ```{r}
 pos.plotlist = get_surv_plotlist(positive.sig.pathway, 
-                                 dataset = PCAWG.path.sig.aggregate,
-                                 clin.df = PCAWG.clin.df,
+                                 dataset = TCGA.path.sig.aggregate,
+                                 clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
                                  binary.status = FALSE )
 
-pdf(file.path(fig.dir, "PCAWG_positive_interactions_survivals_totmut_nonbinary.pdf"),
+pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut_nonbinary.pdf"),
     onefile = TRUE, width = 4, height = 7)
 
 for (i in 1:length(pos.plotlist) ) {
@@ -80,12 +79,12 @@ dev.off()
 
 
 pos.plotlist = get_surv_plotlist(positive.sig.pathway, 
-                                 dataset = PCAWG.path.sig.aggregate,
-                                 clin.df = PCAWG.clin.df,
+                                 dataset = TCGA.path.sig.aggregate,
+                                 clin.df = TCGA.clin.df,
                                  with.total.muts = FALSE, 
                                  binary.status = FALSE )
 
-pdf(file.path(fig.dir, "PCAWG_positive_interactions_survivals_nontotmut_nonbinary.pdf"),
+pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_nontotmut_nonbinary.pdf"),
     onefile = TRUE, width = 4, height = 7)
 
 for (i in 1:length(pos.plotlist) ) {
@@ -95,12 +94,12 @@ dev.off()
 
 
 pos.plotlist = get_surv_plotlist(positive.sig.pathway, 
-                                 dataset = PCAWG.path.sig.aggregate,
-                                 clin.df = PCAWG.clin.df,
+                                 dataset = TCGA.path.sig.aggregate,
+                                 clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
                                  binary.status = TRUE )
 
-pdf(file.path(fig.dir, "PCAWG_positive_interactions_survivals_totmut_binary.pdf"),
+pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut_binary.pdf"),
     onefile = TRUE, width = 4, height = 7)
 
 for (i in 1:length(pos.plotlist) ) {
@@ -112,13 +111,13 @@ dev.off()
 ### Survival models for negative interactions
 
 ```{r}
-neg.plotlist = get_surv_plotlist(negative.sig.pathway, 
-                                 dataset = PCAWG.path.sig.aggregate,
-                                 clin.df = PCAWG.clin.df,
+neg.plotlist = get_surv_plotlist(sig.sig.tissues.matrix = negative.sig.pathway, 
+                                 dataset = TCGA.path.sig.aggregate,
+                                 clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
                                  binary.status = FALSE )
 
-pdf(file.path(fig.dir, "PCAWG_negative_interactions_survivals_totmut_nonbinary.pdf"),
+pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_totmut_nonbinary.pdf"),
     onefile = TRUE, width = 4, height = 7)
 
 for (i in 1:length(neg.plotlist) ) {
@@ -128,12 +127,12 @@ dev.off()
 
 
 neg.plotlist = get_surv_plotlist(negative.sig.pathway, 
-                                 dataset = PCAWG.path.sig.aggregate,
-                                 clin.df = PCAWG.clin.df,
+                                 dataset = TCGA.path.sig.aggregate,
+                                 clin.df = TCGA.clin.df,
                                  with.total.muts = FALSE, 
                                  binary.status = FALSE )
 
-pdf(file.path(fig.dir, "PCAWG_negative_interactions_survivals_nontotmut_nonbinary.pdf"),
+pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_nontotmut_nonbinary.pdf"),
     onefile = TRUE, width = 4, height = 7)
 
 for (i in 1:length(neg.plotlist) ) {
@@ -143,12 +142,12 @@ dev.off()
 
 
 neg.plotlist = get_surv_plotlist(negative.sig.pathway, 
-                                 dataset = PCAWG.path.sig.aggregate,
-                                 clin.df = PCAWG.clin.df,
+                                 dataset = TCGA.path.sig.aggregate,
+                                 clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
                                  binary.status = TRUE )
 
-pdf(file.path(fig.dir, "PCAWG_negative_interactions_survivals_totmut_binary.pdf"),
+pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_totmut_binary.pdf"),
     onefile = TRUE, width = 4, height = 7)
 
 for (i in 1:length(neg.plotlist) ) {

@@ -1433,7 +1433,7 @@ get_surv_plotlist = function(sig.sig.tissues.matrix,
         sig1 = rownames(sig.sig.tissues.matrix)[indeces[1]]
         sig2 = colnames(sig.sig.tissues.matrix)[indeces[2]]
         
-        tissues = strsplit(sig.sig.tissues.matrix[indeces[1], indeces[2]], split = ",")[[1]]
+        tissues = strsplit(sig.sig.tissues.matrix[indeces[1], indeces[2]], split = ", ")[[1]]
         for (tissue in tissues) {
             cat("Attempting cox survival for:", tissue, "::", sig1, "+", sig2, "j = ", j, "\n")
             try({surv.out = survival_for_interactions(dataset = dataset, 
@@ -1445,6 +1445,7 @@ get_surv_plotlist = function(sig.sig.tissues.matrix,
                                                       binary.status = binary.status)
             
             cox.coefs = round(summary(surv.out$coxout)$coefficients, 2)
+            rownames(cox.coefs) = gsub("status", "", rownames(cox.coefs))
             nosig = all(summary(surv.out$coxout)$coefficients[, "Pr(>|z|)"] > 0.05, na.rm = TRUE)
             
             if ( nosig ) {
@@ -1455,8 +1456,10 @@ get_surv_plotlist = function(sig.sig.tissues.matrix,
             tblgrob = tableGrob(cox.coefs, theme=tt)
             
             survp = surv.out$survP
-            survp$plot = survp$plot + ggtitle(paste(tissue, "::", sig1, "+", sig2))
-            p = ggarrange(survp$plot, tblgrob, nrow = 2)
+            survp$plot = survp$plot + ggtitle(paste(tissue, "::", sig1, "+", sig2)) + 
+                theme(plot.title = element_text(size = 14))
+            # p = ggarrange(survp$plot, tblgrob, nrow = 2)
+            p = cowplot::plot_grid(survp$plot, tblgrob, nrow = 2)
             j = j + 1
             out_plotlist[[j]] = p} )
         }
