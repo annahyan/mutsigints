@@ -144,7 +144,6 @@ dev.off()
 
 
 ```{r}
-
 mult_tissues_ROS_SBS40 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
                                                       signatures = c( "SBS40", "ROS"), 
                                                       tissues = c("Prost_AdenoCA", "Panc_AdenoCA", "CNS_Medullo", 
@@ -160,7 +159,7 @@ mult_tissues_ROS_SBS40_adjusted = ggadjustedcurves(mult_tissues_ROS_SBS40$coxout
 
 
 ggsave(plot = mult_tissues_ROS_SBS40_adjusted + theme(plot.margin = unit(c(0, 1.5, 0,0), units = "cm") ),
-       filename = file.path(fig.dir, "mult_tissues_SBS40_ROS.survivals.pdf"),
+       filename = file.path(fig.dir, "PCAWG_mult_tissues_SBS40_ROS.survivals.pdf"),
        width = 4, height = 3.5)
 
 
@@ -168,7 +167,7 @@ mult_tissues_ROS_SBS40_ggforest = ggforest(model = mult_tissues_ROS_SBS40$coxout
 
 
 ggsave(plot = mult_tissues_ROS_SBS40_ggforest,
-       filename = file.path(fig.dir, "mult_tissues_SBS40_ROS.ggforest.pdf"),
+       filename = file.path(fig.dir, "PCAWG_mult_tissues_SBS40_ROS.ggforest.pdf"),
        width = 6, height = 2.9)
 
 
@@ -183,7 +182,7 @@ eso_APOBEC_HR = survival_for_interactions(dataset = PCAWG.full.subset.ann,
 
 ggsave(plot = eso_APOBEC_HR$survP$plot + theme(plot.margin = unit(c(4,4,4,4), units = "mm")) + 
            theme(plot.margin = unit(x = c(0.5, 2, 0, 0), units = "cm")),
-       filename = file.path(fig.dir, "Eso_APOBEC_HR.survivals.pdf"),
+       filename = file.path(fig.dir, "PCAWG_Eso_APOBEC_HR.survivals.pdf"),
        width = 4, height = 3.5)
 
 
@@ -191,7 +190,7 @@ APOBEC_HR_eso_ggforest = ggforest(model = eso_APOBEC_HR$coxout, data = eso_APOBE
 
 
 ggsave(plot = APOBEC_HR_eso_ggforest,
-       filename = file.path(fig.dir, "Eso_APOBEC_HR.ggforest.pdf"),
+       filename = file.path(fig.dir, "PCAWG_Eso_APOBEC_HR.ggforest.pdf"),
        width = 6, height = 2.2)
 
 

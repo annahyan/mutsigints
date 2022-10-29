@@ -141,3 +141,31 @@ for (i in 1:length(neg.plotlist) ) {
 dev.off()
 ```
 
+### Specific interactions
+
+```{r}
+ColoRect_AdenoCa_MMR_SBS40 = survival_for_interactions(dataset = TCGA.full.subset.ann, 
+                                                      signatures = c("MMR", "SBS40"), 
+                                                      tissues = "ColoRect_AdenoCa", 
+                                                      clin.df = TCGA.clin.df,
+                                                      legend_pos = c(0.7, 0.22),
+                                                      with.total.muts = TRUE,
+                                                      binary.status = FALSE,
+                                                      conf.int = TRUE)
+
+ggsave(plot = ColoRect_AdenoCa_MMR_SBS40$survP$plot,
+       filename = file.path(fig.dir, "TCGA_ColoRect_AdenoCa_MMR_SBS40.survivals.pdf"),
+       width = 4, height = 3.5)
+
+
+ColoRect_AdenoCa_MMR_SBS40_ggforest = ggforest(model = ColoRect_AdenoCa_MMR_SBS40$coxout, data = ColoRect_AdenoCa_MMR_SBS40$survival.df)
+
+
+ggsave(plot = ColoRect_AdenoCa_MMR_SBS40_ggforest,
+       filename = file.path(fig.dir, "TCGA_ColoRect_AdenoCa_MMR_SBS40_ggforest.ggforest.pdf"),
+       width = 6, height = 2.3)
+
+
+
+```
+

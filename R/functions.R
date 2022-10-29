@@ -1254,12 +1254,14 @@ get_interaction_tissues = function(list.of.int.elems, threshold = 0.1) {
 #' FALSE
 #' @param get_df If true, the function returns the constructed model dataframe
 #' (for debugging). Default:FALSE.
+#' @param conf.int If TRUE confidence interval should be added to ggsurvplot.
 
 survival_for_interactions = function(dataset, clin.df, signatures, 
                                      tissues, legend_pos = c(0.8, 0.8),
                                      with.total.muts = TRUE,
                                      binary.status = FALSE,
-                                     get_df = FALSE) {
+                                     get_df = FALSE,
+                                     conf.int = FALSE) {
     
     # SBS40_APOBEC = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
     #                                          signatures = c("SBS40", "APOBEC"), 
@@ -1386,7 +1388,8 @@ survival_for_interactions = function(dataset, clin.df, signatures,
                    legend.labs = gsub("status=", "", names(objsurv$strata)),
                    # palette = "jco",
                    xlab = "Days",
-                   legend = legend_pos) + 
+                   legend = legend_pos,
+                   conf.int = conf.int) + 
         guides(colour = guide_legend(nrow = length(objsurv$strata)))
     
     P$plot = P$plot + theme(legend.background = element_rect(fill='transparent'),
