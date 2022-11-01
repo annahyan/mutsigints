@@ -1411,12 +1411,14 @@ survival_for_interactions = function(dataset, clin.df, signatures,
 #'  @param binary.status If TRUE, the model will compare samples with both signatures
 #'  with all the other samples having either of the signatures or none. Default:
 #'  FALSE
+#'  @param legend.pos Position of the legend in the survival plot.
 
 get_surv_plotlist = function(sig.sig.tissues.matrix,
                              dataset,
                              clin.df,
                              with.total.muts = TRUE, 
-                             binary.status = FALSE ) { 
+                             binary.status = FALSE,
+                             legend.pos = c(0.8, 0.8)) { 
     
     tt <- ttheme_default(colhead=list(fg_params = list(parse=TRUE)),
                          base_size = 10,
@@ -1443,7 +1445,7 @@ get_surv_plotlist = function(sig.sig.tissues.matrix,
                                                       signatures = c(sig1, sig2), 
                                                       tissues = tissue, 
                                                       clin.df = clin.df,
-                                                      legend_pos = c(0.3, 0.3),
+                                                      legend_pos = legend.pos,
                                                       with.total.muts = with.total.muts,
                                                       binary.status = binary.status)
             
@@ -1456,13 +1458,19 @@ get_surv_plotlist = function(sig.sig.tissues.matrix,
                 next
             }
             
-            tblgrob = tableGrob(cox.coefs, theme=tt)
-            
             survp = surv.out$survP
             survp$plot = survp$plot + ggtitle(paste(tissue, "::", sig1, "+", sig2)) + 
                 theme(plot.title = element_text(size = 14))
+            
+            tblgrob = tableGrob(cox.coefs, theme=tt)
+            
+            coefs.ggforest = ggforest(model = surv.out$coxout, data = surv.out$survival.df)
+            
             # p = ggarrange(survp$plot, tblgrob, nrow = 2)
-            p = cowplot::plot_grid(survp$plot, tblgrob, nrow = 2)
+            p = cowplot::plot_grid(survp$plot, coefs.ggforest, nrow = 2,
+                                   rel_heights = c(2, 1),
+                                   rel_widths = c(1, 1.5))
+            
             j = j + 1
             out_plotlist[[j]] = p} )
         }

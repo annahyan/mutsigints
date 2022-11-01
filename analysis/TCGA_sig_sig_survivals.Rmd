@@ -52,10 +52,11 @@ pos.plotlist = get_surv_plotlist(positive.sig.sig,
                                  dataset = TCGA.full.subset.ann,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
-                                 binary.status = FALSE )
+                                 binary.status = FALSE,
+                                 legend.pos = c(0.8, 0.8))
 
 pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut_nonbinary.pdf"),
-    onefile = TRUE, width = 4, height = 7)
+    onefile = TRUE, width = 6, height = 8)
 
 for (i in 1:length(pos.plotlist) ) {
     try({print(pos.plotlist[[i]] ) })
@@ -67,10 +68,11 @@ pos.plotlist = get_surv_plotlist(positive.sig.sig,
                                  dataset = TCGA.full.subset.ann,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = FALSE, 
-                                 binary.status = FALSE )
+                                 binary.status = FALSE,
+                                 legend.pos = c(0.8, 0.8))
 
 pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_nontotmut_nonbinary.pdf"),
-    onefile = TRUE, width = 4, height = 7)
+    onefile = TRUE, width = 6, height = 8)
 
 for (i in 1:length(pos.plotlist) ) {
     try({print(pos.plotlist[[i]] ) })
@@ -82,10 +84,11 @@ pos.plotlist = get_surv_plotlist(positive.sig.sig,
                                  dataset = TCGA.full.subset.ann,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
-                                 binary.status = TRUE )
+                                 binary.status = TRUE,
+                                 legend.pos = c(0.8, 0.8))
 
 pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut_binary.pdf"),
-    onefile = TRUE, width = 4, height = 7)
+    onefile = TRUE, width = 6, height = 8)
 
 for (i in 1:length(pos.plotlist) ) {
     try({print(pos.plotlist[[i]] ) })
@@ -100,10 +103,11 @@ neg.plotlist = get_surv_plotlist(negative.sig.sig,
                                  dataset = TCGA.full.subset.ann,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
-                                 binary.status = FALSE )
+                                 binary.status = FALSE,
+                                 legend.pos = c(0.8, 0.8))
 
 pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_totmut_nonbinary.pdf"),
-    onefile = TRUE, width = 4, height = 7)
+    onefile = TRUE, width = 6, height = 8)
 
 for (i in 1:length(neg.plotlist) ) {
     try({print(neg.plotlist[[i]] ) })
@@ -115,10 +119,11 @@ neg.plotlist = get_surv_plotlist(negative.sig.sig,
                                  dataset = TCGA.full.subset.ann,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = FALSE, 
-                                 binary.status = FALSE )
+                                 binary.status = FALSE,
+                                 legend.pos = c(0.8, 0.8))
 
 pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_nontotmut_nonbinary.pdf"),
-    onefile = TRUE, width = 4, height = 7)
+    onefile = TRUE, width = 6, height = 8)
 
 for (i in 1:length(neg.plotlist) ) {
     try({print(neg.plotlist[[i]] ) })
@@ -130,10 +135,11 @@ neg.plotlist = get_surv_plotlist(negative.sig.sig,
                                  dataset = TCGA.full.subset.ann,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
-                                 binary.status = TRUE )
+                                 binary.status = TRUE,
+                                 legend.pos = c(0.8, 0.8))
 
 pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_totmut_binary.pdf"),
-    onefile = TRUE, width = 4, height = 7)
+    onefile = TRUE, width = 6, height = 8)
 
 for (i in 1:length(neg.plotlist) ) {
     try({print(neg.plotlist[[i]] ) })
@@ -159,7 +165,6 @@ ggsave(plot = ColoRect_AdenoCa_MMR_SBS40$survP$plot,
 
 
 ColoRect_AdenoCa_MMR_SBS40_ggforest = ggforest(model = ColoRect_AdenoCa_MMR_SBS40$coxout, data = ColoRect_AdenoCa_MMR_SBS40$survival.df)
-
 
 ggsave(plot = ColoRect_AdenoCa_MMR_SBS40_ggforest,
        filename = file.path(fig.dir, "TCGA_ColoRect_AdenoCa_MMR_SBS40_ggforest.ggforest.pdf"),

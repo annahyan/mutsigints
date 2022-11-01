@@ -70,7 +70,7 @@ pos.plotlist = get_surv_plotlist(positive.sig.pathway,
                                  binary.status = FALSE )
 
 pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut_nonbinary.pdf"),
-    onefile = TRUE, width = 4, height = 7)
+    onefile = TRUE, width = 6, height = 8)
 
 for (i in 1:length(pos.plotlist) ) {
     try({print(pos.plotlist[[i]] ) })
@@ -85,7 +85,7 @@ pos.plotlist = get_surv_plotlist(positive.sig.pathway,
                                  binary.status = FALSE )
 
 pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_nontotmut_nonbinary.pdf"),
-    onefile = TRUE, width = 4, height = 7)
+    onefile = TRUE, width = 6, height = 8)
 
 for (i in 1:length(pos.plotlist) ) {
     try({print(pos.plotlist[[i]] ) })
@@ -100,7 +100,7 @@ pos.plotlist = get_surv_plotlist(positive.sig.pathway,
                                  binary.status = TRUE )
 
 pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut_binary.pdf"),
-    onefile = TRUE, width = 4, height = 7)
+    onefile = TRUE, width = 6, height = 8)
 
 for (i in 1:length(pos.plotlist) ) {
     try({print(pos.plotlist[[i]] ) })
@@ -118,7 +118,7 @@ neg.plotlist = get_surv_plotlist(sig.sig.tissues.matrix = negative.sig.pathway,
                                  binary.status = FALSE )
 
 pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_totmut_nonbinary.pdf"),
-    onefile = TRUE, width = 4, height = 7)
+    onefile = TRUE, width = 6, height = 8)
 
 for (i in 1:length(neg.plotlist) ) {
     try({print(neg.plotlist[[i]] ) })
@@ -133,7 +133,7 @@ neg.plotlist = get_surv_plotlist(negative.sig.pathway,
                                  binary.status = FALSE )
 
 pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_nontotmut_nonbinary.pdf"),
-    onefile = TRUE, width = 4, height = 7)
+    onefile = TRUE, width = 6, height = 8)
 
 for (i in 1:length(neg.plotlist) ) {
     try({print(neg.plotlist[[i]] ) })
@@ -148,7 +148,7 @@ neg.plotlist = get_surv_plotlist(negative.sig.pathway,
                                  binary.status = TRUE )
 
 pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_totmut_binary.pdf"),
-    onefile = TRUE, width = 4, height = 7)
+    onefile = TRUE, width = 6, height = 8)
 
 for (i in 1:length(neg.plotlist) ) {
     try({print(neg.plotlist[[i]] ) })
