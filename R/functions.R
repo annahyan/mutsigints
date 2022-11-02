@@ -1424,7 +1424,7 @@ get_surv_plotlist = function(sig.sig.tissues.matrix,
                          base_size = 10,
                          padding = unit(c(2, 4), "mm"))
     
-    if (all.equal(rownames(sig.sig.tissues.matrix), colnames(sig.sig.tissues.matrix)) == TRUE) {
+    if ( all(rownames(sig.sig.tissues.matrix) == colnames(sig.sig.tissues.matrix) ) ) {
         sig.sig.tissues.matrix[lower.tri(sig.sig.tissues.matrix, diag = TRUE)] = NA    
     }
     ints.indeces = which(! is.na(sig.sig.tissues.matrix), arr.ind = T)
