@@ -44,12 +44,12 @@ PCAWG.sig.survivals = PCAWG.donor.table[
       "donor_vital_status", "donor_age_at_diagnosis", "donor_sex")]
 
 survivals_time = PCAWG.sig.survivals$donor_survival_time
-intervals_followup = PCAWG.sig.survivals$donor_interval_of_last_followup
 
-survival.values = pairwise_nonNA(survivals_time, intervals_followup)
-
-PCAWG.sig.survivals$survival_out = survival.values
-
+# intervals_followup = PCAWG.sig.survivals$donor_interval_of_last_followup
+# 
+# survival.values = pairwise_nonNA(survivals_time, intervals_followup)
+# 
+# PCAWG.sig.survivals$survival_out = survival.values
 
 colnames(PCAWG.sig.survivals) = gsub('donor_', '', colnames(PCAWG.sig.survivals))
 
