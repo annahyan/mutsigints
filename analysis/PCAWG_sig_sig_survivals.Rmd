@@ -147,6 +147,16 @@ for (i in 1:length(neg.plotlist) ) {
 dev.off()
 ```
 
+```{r}
+neg.coxlist = get_surv_plotlist(negative.sig.sig, 
+                                 dataset = PCAWG.full.subset.ann,
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = TRUE, 
+                                 binary.status = FALSE)
+```
+
+
+
 
 
 ```{r}

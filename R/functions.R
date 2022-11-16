@@ -1479,6 +1479,73 @@ get_surv_plotlist = function(sig.sig.tissues.matrix,
 }
 
 
+#' Running batch survival analysis tests for a set of interactions. Returns a
+#' list of cox regression outputs for all the interaction tests which didn't fail.
+#' @param sig.sig.tissues.matrix A matrix with rows and columns with signatures,
+#'  and the elements are comma-separated tissue names where that interaction is 
+#'  observed.
+#'  @param dataset The signature values for all samples. E.g. PCAWG.full.subset.ann
+#'  @param clin.df The dataframe with clinical info.
+#'  @param with.total.muts If TRUE the total number of mutations in the samples will
+#'  be provided as a confounder to the model. Default: TRUE
+#'  @param binary.status If TRUE, the model will compare samples with both signatures
+#'  with all the other samples having either of the signatures or none. Default:
+#'  FALSE
+
+get_surv_coxlist = function(sig.sig.tissues.matrix,
+                             dataset,
+                             clin.df,
+                             with.total.muts = TRUE, 
+                             binary.status = FALSE) { 
+    
+    tt <- ttheme_default(colhead=list(fg_params = list(parse=TRUE)),
+                         base_size = 10,
+                         padding = unit(c(2, 4), "mm"))
+    
+    if ( all(rownames(sig.sig.tissues.matrix) == colnames(sig.sig.tissues.matrix) ) ) {
+        sig.sig.tissues.matrix[lower.tri(sig.sig.tissues.matrix, diag = TRUE)] = NA    
+    }
+    ints.indeces = which(! is.na(sig.sig.tissues.matrix), arr.ind = T)
+    
+    
+    out_plotlist = list()
+    j = 0
+    for (i in 1:nrow(ints.indeces)) {
+        
+        indeces = ints.indeces[i, ]
+        sig1 = rownames(sig.sig.tissues.matrix)[indeces[1]]
+        sig2 = colnames(sig.sig.tissues.matrix)[indeces[2]]
+        
+        tissues = strsplit(sig.sig.tissues.matrix[indeces[1], indeces[2]], split = ", ")[[1]]
+        for (tissue in tissues) {
+            cat("Attempting cox survival for:", tissue, "::", sig1, "+", sig2, "j = ", j, "\n")
+            try({surv.out = survival_for_interactions(dataset = dataset, 
+                                                      signatures = c(sig1, sig2), 
+                                                      tissues = tissue, 
+                                                      clin.df = clin.df,
+                                                      legend_pos = legend.pos,
+                                                      with.total.muts = with.total.muts,
+                                                      binary.status = binary.status)
+            
+            cox.coefs = round(summary(surv.out$coxout)$coefficients, 2)
+            rownames(cox.coefs) = gsub("status", "", rownames(cox.coefs))
+            nosig = all(summary(surv.out$coxout)$coefficients[, "Pr(>|z|)"] > 0.05, na.rm = TRUE)
+            
+            if ( nosig ) {
+                cat("\tNone of the covariates are significant. Skipping.\n")
+                next
+            }
+            
+
+            j = j + 1
+            out_coxlist[[j]] = surv.out$coxout} )
+        }
+    }
+    return(out_coxlist)
+}
+
+
+
 #' A function to generate default colors in ggplots.
 #' @param n number of colors.
 #' 
