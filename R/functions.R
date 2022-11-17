@@ -1508,7 +1508,7 @@ get_surv_coxlist = function(sig.sig.tissues.matrix,
     ints.indeces = which(! is.na(sig.sig.tissues.matrix), arr.ind = T)
     
     
-    out_plotlist = list()
+    out_coxlist = list()
     j = 0
     for (i in 1:nrow(ints.indeces)) {
         
@@ -1523,7 +1523,6 @@ get_surv_coxlist = function(sig.sig.tissues.matrix,
                                                       signatures = c(sig1, sig2), 
                                                       tissues = tissue, 
                                                       clin.df = clin.df,
-                                                      legend_pos = legend.pos,
                                                       with.total.muts = with.total.muts,
                                                       binary.status = binary.status)
             
@@ -1538,7 +1537,7 @@ get_surv_coxlist = function(sig.sig.tissues.matrix,
             
 
             j = j + 1
-            out_coxlist[[j]] = surv.out$coxout} )
+            out_coxlist[[paste(tissue, "::", sig1, "+", sig2)]] = surv.out$coxout} )
         }
     }
     return(out_coxlist)

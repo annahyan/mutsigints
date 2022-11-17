@@ -15,17 +15,20 @@ knitr::opts_chunk$set(comment = '', fig.width = 6,
 library(here)
 library(survival)
 library(survminer)
-fig.dir = here("figures/sig_pathway_survivals")
-
-if(! file.exists(fig.dir)){
-    dir.create(fig.dir, recursive = TRUE)
-}
 
 source(here("R/load_packages.R"))
 library(gridExtra)
 
-out.dir = here("data/RDS/TCGA/metadata")
+input.dir = here("data/RDS/TCGA/metadata")
 
+out.dir = here("data/RDS/TCGA/sig_pathway_survivals")
+fig.dir = here("figures/sig_pathway_survivals")
+
+for (dir.name in c(fig.dir, out.dir)) {
+    if (! file.exists(dir.name) ) {
+        dir.create(dir.name, recursive = TRUE)
+    }
+}
 ```
 
 ### Reading in clinical and signature data
@@ -48,7 +51,7 @@ if (all.equal(rownames(TCGA.full.subset.ann.pathways), rownames(TCGA.pathways.ti
 }
 
 
-TCGA.clin.df = readRDS(file = file.path(out.dir, "TCGA.clin.df.RDS") )
+TCGA.clin.df = readRDS(file = file.path(input.dir, "TCGA.clin.df.RDS") )
 
 positive.sig.pathway = read.delim(file = here("supp_data", 
                                         "TCGA_sig_pathway_positive_interaction_tissue_summaries.tsv"),
@@ -107,6 +110,16 @@ for (i in 1:length(pos.plotlist) ) {
 }
 dev.off()
 ```
+```{r}
+pos.coxlist = get_surv_plotlist(positive.sig.pathway, 
+                                 dataset = TCGA.path.sig.aggregate,
+                                 clin.df = TCGA.clin.df,
+                                 with.total.muts = TRUE, 
+                                 binary.status = FALSE )
+
+saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.totmut.nonbinary.RDS"))
+```
+
 
 ### Survival models for negative interactions
 
@@ -155,3 +168,14 @@ for (i in 1:length(neg.plotlist) ) {
 }
 dev.off()
 ```
+
+```{r}
+neg.coxlist = get_surv_plotlist(negative.sig.pathway, 
+                                 dataset = TCGA.path.sig.aggregate,
+                                 clin.df = TCGA.clin.df,
+                                 with.total.muts = TRUE, 
+                                 binary.status = FALSE )
+
+saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.totmut.nonbinary.RDS"))
+```
+
