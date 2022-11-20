@@ -1,0 +1,85 @@
+---
+title: "Survival summaries"
+author: "Anna Hakobyan"
+date: "2022-11-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(comment = '', fig.width = 6, 
+                      fig.height = 6, echo = FALSE, 
+                      warning = FALSE)
+```
+
+
+
+```{r load-packages}
+library(here)
+library(survival)
+library(survminer)
+
+source(here("R/load_packages.R"))
+library(gridExtra)
+
+```
+
+
+```{r}
+pcawg.sig.sig.pos = readRDS(here("data/RDS/PCAWG/sig_sig_survivals/pos.coxlist.totmut.nonbinary.RDS"))
+pcawg.sig.sig.neg = readRDS(here("data/RDS/PCAWG/sig_sig_survivals/neg.coxlist.totmut.nonbinary.RDS"))
+
+tcga.sig.sig.pos = readRDS(here("data/RDS/TCGA/sig_sig_survivals/pos.coxlist.totmut.nonbinary.RDS"))
+tcga.sig.sig.neg = readRDS(here("data/RDS/TCGA/sig_sig_survivals/neg.coxlist.totmut.nonbinary.RDS"))
+
+pcawg.sig.path.pos = readRDS(here("data/RDS/PCAWG/sig_pathway_survivals/pos.coxlist.totmut.nonbinary.RDS"))
+pcawg.sig.path.neg = readRDS(here("data/RDS/PCAWG/sig_pathway_survivals/neg.coxlist.totmut.nonbinary.RDS"))
+
+tcga.sig.path.pos = readRDS(here("data/RDS/TCGA/sig_pathway_survivals/pos.coxlist.totmut.nonbinary.RDS"))
+tcga.sig.path.neg = readRDS(here("data/RDS/TCGA/sig_pathway_survivals/neg.coxlist.totmut.nonbinary.RDS"))
+```
+
+
+
+```{r}
+summarize_interaction_survival = function(surv.list, p.val = 0.05) {
+    
+    output.list = list()
+    for (int.name in names(surv.list)) {
+        
+        cox.out = surv.list[[int.name]]
+        name.split = strsplit(int.name, split = " :: ")[[1]]
+        
+        tissue = name.split[1]
+        int.combo = name.split[2]
+        
+        cox.summary = summary(cox.out)
+        coeffs = cox.summary$coefficients
+        
+        significant.vars = which(coeffs[, 5] < p.val)
+        
+        if (length(significant.vars) == 0) {
+            next
+        }
+        
+        trimmed.vars = gsub("status", "", names(significant.vars))
+        var.coeffs  = coeffs[names(significant.vars), 1]
+        names(var.coeffs) = trimmed.vars
+        
+        if (tissue %in% names(output.list ) ) {
+            output.list[[tissue]][[int.combo]] = var.coeffs
+        } else {
+            output.list[[tissue]] = list()            
+            output.list[[tissue]][[int.combo]] = var.coeffs
+        }
+    }
+    return(output.list)
+}
+```
+
+
+```{r}
+pcawg.sig.sig.pos.summ = summarize_interaction_survival(pcawg.sig.sig.pos)
+tcga.sig.sig.pos.summ = summarize_interaction_survival(tcga.sig.sig.pos)
+
+```
+

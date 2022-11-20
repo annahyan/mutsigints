@@ -174,7 +174,7 @@ neg.coxlist = get_surv_plotlist(negative.sig.pathway,
                                  dataset = TCGA.path.sig.aggregate,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
-                                 binary.status = FALSE )
+                                 binary.status = FALSE)
 
 saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.totmut.nonbinary.RDS"))
 ```
