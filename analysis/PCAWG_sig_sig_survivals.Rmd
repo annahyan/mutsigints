@@ -6,6 +6,8 @@ output:
 ---
 
 ```{r}
+# .rs.restartR()
+rm(list = ls())
 knitr::opts_chunk$set(comment = '', fig.width = 6, 
                       fig.height = 6, echo = FALSE, 
                       warning = FALSE)
@@ -55,6 +57,7 @@ pos.plotlist = get_surv_plotlist(positive.sig.sig,
                                  dataset = PCAWG.full.subset.ann,
                                  clin.df = PCAWG.clin.df,
                                  with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
                                  binary.status = FALSE,
                                  legend.pos = c(0.8, 0.8))
 
@@ -71,6 +74,7 @@ pos.plotlist = get_surv_plotlist(positive.sig.sig,
                                  dataset = PCAWG.full.subset.ann,
                                  clin.df = PCAWG.clin.df,
                                  with.total.muts = FALSE, 
+                                 tmb.logged = TRUE,
                                  binary.status = FALSE,
                                  legend.pos = c(0.8, 0.8))
 
@@ -87,6 +91,7 @@ pos.plotlist = get_surv_plotlist(positive.sig.sig,
                                  dataset = PCAWG.full.subset.ann,
                                  clin.df = PCAWG.clin.df,
                                  with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
                                  binary.status = TRUE,
                                  legend.pos = c(0.8, 0.8))
 
@@ -105,6 +110,7 @@ pos.coxlist = get_surv_coxlist(positive.sig.sig,
                                  dataset = PCAWG.full.subset.ann,
                                  clin.df = PCAWG.clin.df,
                                  with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
                                  binary.status = FALSE)
 saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.totmut.nonbinary.RDS"))
 ```
@@ -117,6 +123,7 @@ neg.plotlist = get_surv_plotlist(negative.sig.sig,
                                  dataset = PCAWG.full.subset.ann,
                                  clin.df = PCAWG.clin.df,
                                  with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
                                  binary.status = FALSE,
                                  legend.pos = c(0.8, 0.8))
 
@@ -133,6 +140,7 @@ neg.plotlist = get_surv_plotlist(negative.sig.sig,
                                  dataset = PCAWG.full.subset.ann,
                                  clin.df = PCAWG.clin.df,
                                  with.total.muts = FALSE, 
+                                 tmb.logged = TRUE,
                                  binary.status = FALSE,
                                  legend.pos = c(0.8, 0.8))
 
@@ -166,6 +174,7 @@ neg.coxlist = get_surv_coxlist(negative.sig.sig,
                                  dataset = PCAWG.full.subset.ann,
                                  clin.df = PCAWG.clin.df,
                                  with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
                                  binary.status = FALSE)
 saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.totmut.nonbinary.RDS"))
 ```
@@ -182,6 +191,7 @@ mult_tissues_ROS_SBS40 = survival_for_interactions(dataset = PCAWG.full.subset.a
                                                       clin.df = PCAWG.clin.df,
                                                       legend_pos = c(0.9, 0.9),
                                                       with.total.muts = TRUE,
+                                                   tmb.logged = TRUE,
                                                       binary.status = FALSE)
 
 mult_tissues_ROS_SBS40_adjusted = ggadjustedcurves(mult_tissues_ROS_SBS40$coxout, 
@@ -209,6 +219,7 @@ eso_APOBEC_HR = survival_for_interactions(dataset = PCAWG.full.subset.ann,
                                                       clin.df = PCAWG.clin.df,
                                                       legend_pos = c(0.9, 0.9),
                                                       with.total.muts = FALSE,
+                                                      tmb.logged = TRUE,
                                                       binary.status = FALSE)
 
 ggsave(plot = eso_APOBEC_HR$survP$plot + theme(plot.margin = unit(c(4,4,4,4), units = "mm")) + 
@@ -231,6 +242,7 @@ eso_APOBEC_SBS40 = survival_for_interactions(dataset = PCAWG.full.subset.ann,
                                                       clin.df = PCAWG.clin.df,
                                                       legend_pos = c(0.34, 0.22),
                                                       with.total.muts = TRUE,
+                                                      tmb.logged = TRUE,
                                                       binary.status = FALSE)
 
 ggsave(plot = eso_APOBEC_SBS40$survP$plot,
@@ -243,6 +255,7 @@ eso_SBS40_HR = survival_for_interactions(dataset = PCAWG.full.subset.ann,
                                                       clin.df = PCAWG.clin.df,
                                                       legend_pos = c(0.8, 0.8),
                                                       with.total.muts = TRUE,
+                                                      tmb.logged = TRUE,
                                                       binary.status = FALSE)
 
 ggsave(plot = eso_SBS40_HR$survP$plot,

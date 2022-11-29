@@ -1249,6 +1249,8 @@ get_interaction_tissues = function(list.of.int.elems, threshold = 0.1) {
 #' @param legend_pos Legend position. Default: c(0.8, 0.8).
 #' @param with.total.muts If TRUE the total number of mutations in the samples will
 #' be provided as a confounder to the model. Default: TRUE
+#' @param tmb.logged If TRUE the tumor mutational burden will be logged.
+#' Default: TRUE
 #' @param binary.status If TRUE, the model will compare samples with both signatures
 #' with all the other samples having either of the signatures or none. Default:
 #' FALSE
@@ -1259,6 +1261,7 @@ get_interaction_tissues = function(list.of.int.elems, threshold = 0.1) {
 survival_for_interactions = function(dataset, clin.df, signatures, 
                                      tissues, legend_pos = c(0.8, 0.8),
                                      with.total.muts = TRUE,
+                                     tmb.logged = TRUE,
                                      binary.status = FALSE,
                                      get_df = FALSE,
                                      conf.int = FALSE) {
@@ -1356,9 +1359,15 @@ survival_for_interactions = function(dataset, clin.df, signatures,
     
     if (length(tissues) >1 ) {    
         if (with.total.muts) {
-            cox <- coxph(Surv(survival_time, vital_status) ~ age_at_diagnosis + 
-                             Cancer.Types + status + total_muts, 
-                         data = survival.df, na.action = na.omit)
+            if (tmb.logged) {
+                cox <- coxph(Surv(survival_time, vital_status) ~ age_at_diagnosis + 
+                                 Cancer.Types + status + log(total_muts + 1), 
+                             data = survival.df, na.action = na.omit)
+            } else {
+                cox <- coxph(Surv(survival_time, vital_status) ~ age_at_diagnosis + 
+                                 Cancer.Types + status + total_muts, 
+                             data = survival.df, na.action = na.omit)
+            }
         }else {
             cox <- coxph(Surv(survival_time, vital_status) ~ age_at_diagnosis + 
                              Cancer.Types + status, 
@@ -1366,9 +1375,16 @@ survival_for_interactions = function(dataset, clin.df, signatures,
         }
     } else {
         if (with.total.muts) {
-            cox <- coxph(Surv(survival_time, vital_status) ~ age_at_diagnosis + 
-                             status + total_muts, 
-                         data = survival.df, na.action = na.omit)
+            if (tmb.logged) {
+                cox <- coxph(Surv(survival_time, vital_status) ~ age_at_diagnosis + 
+                                 status + log(total_muts + 1), 
+                             data = survival.df, na.action = na.omit)
+            } else {
+                cox <- coxph(Surv(survival_time, vital_status) ~ age_at_diagnosis + 
+                                 status + total_muts, 
+                             data = survival.df, na.action = na.omit)
+                
+            }
         }else {
             cox <- coxph(Surv(survival_time, vital_status) ~ age_at_diagnosis + 
                              status, 
@@ -1382,19 +1398,23 @@ survival_for_interactions = function(dataset, clin.df, signatures,
     objsurv = survfit(Surv(survival_time, vital_status) ~ status, data = survival.df)
     
     
-    P = ggsurvplot(objsurv, data = survival.df,
-                   font.legend = c(14, "plain", "black"),
-                   legend.title = element_blank(),
-                   legend.labs = gsub("status=", "", names(objsurv$strata)),
-                   # palette = "jco",
-                   xlab = "Days",
-                   legend = legend_pos,
-                   conf.int = conf.int) + 
-        guides(colour = guide_legend(nrow = length(objsurv$strata)))
-    
-    P$plot = P$plot + theme(legend.background = element_rect(fill='transparent'),
-                            legend.box.background = 
-                                element_rect(fill='transparent', size = 0))
+    if (length(objsurv$strata) == 0) {
+        P = ggplot()
+    } else {
+        P = ggsurvplot(objsurv, data = survival.df,
+                       font.legend = c(14, "plain", "black"),
+                       legend.title = element_blank(),
+                       legend.labs = gsub("status=", "", names(objsurv$strata)),
+                       # palette = "jco",
+                       xlab = "Days",
+                       legend = legend_pos,
+                       conf.int = conf.int) + 
+            guides(colour = guide_legend(nrow = length(objsurv$strata)))
+        
+        P$plot = P$plot + theme(legend.background = element_rect(fill='transparent'),
+                                legend.box.background = 
+                                    element_rect(fill='transparent', size = 0))
+    }
     
     return(list(survival.df = survival.df, coxout = cox, survP = P))
 }
@@ -1408,6 +1428,8 @@ survival_for_interactions = function(dataset, clin.df, signatures,
 #'  @param clin.df The dataframe with clinical info.
 #'  @param with.total.muts If TRUE the total number of mutations in the samples will
 #'  be provided as a confounder to the model. Default: TRUE
+#'  @param tmb.logged If TRUE the tumor mutational burden will be logged.
+#'  Default: TRUE
 #'  @param binary.status If TRUE, the model will compare samples with both signatures
 #'  with all the other samples having either of the signatures or none. Default:
 #'  FALSE
@@ -1417,6 +1439,7 @@ get_surv_plotlist = function(sig.sig.tissues.matrix,
                              dataset,
                              clin.df,
                              with.total.muts = TRUE, 
+                             tmb.logged = TRUE,
                              binary.status = FALSE,
                              legend.pos = c(0.8, 0.8)) { 
     
@@ -1447,6 +1470,7 @@ get_surv_plotlist = function(sig.sig.tissues.matrix,
                                                       clin.df = clin.df,
                                                       legend_pos = legend.pos,
                                                       with.total.muts = with.total.muts,
+                                                      tmb.logged = tmb.logged,
                                                       binary.status = binary.status)
             
             cox.coefs = round(summary(surv.out$coxout)$coefficients, 2)
@@ -1488,6 +1512,8 @@ get_surv_plotlist = function(sig.sig.tissues.matrix,
 #'  @param clin.df The dataframe with clinical info.
 #'  @param with.total.muts If TRUE the total number of mutations in the samples will
 #'  be provided as a confounder to the model. Default: TRUE
+#'  @param tmb.logged If TRUE the tumor mutational burden will be logged.
+#'  Default: TRUE
 #'  @param binary.status If TRUE, the model will compare samples with both signatures
 #'  with all the other samples having either of the signatures or none. Default:
 #'  FALSE
@@ -1496,6 +1522,7 @@ get_surv_coxlist = function(sig.sig.tissues.matrix,
                              dataset,
                              clin.df,
                              with.total.muts = TRUE, 
+                             tmb.logged = TRUE,
                              binary.status = FALSE) { 
     
     tt <- ttheme_default(colhead=list(fg_params = list(parse=TRUE)),
@@ -1524,6 +1551,7 @@ get_surv_coxlist = function(sig.sig.tissues.matrix,
                                                       tissues = tissue, 
                                                       clin.df = clin.df,
                                                       with.total.muts = with.total.muts,
+                                                      tmb.logged = tmb.logged,
                                                       binary.status = binary.status)
             
             cox.coefs = round(summary(surv.out$coxout)$coefficients, 2)

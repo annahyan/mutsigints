@@ -6,6 +6,8 @@ output:
 ---
 
 ```{r}
+# .rs.restartR()
+rm(list = ls())
 knitr::opts_chunk$set(comment = '', fig.width = 6, 
                       fig.height = 6, echo = FALSE, 
                       warning = FALSE)
@@ -55,6 +57,7 @@ pos.plotlist = get_surv_plotlist(positive.sig.sig,
                                  dataset = TCGA.full.subset.ann,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
                                  binary.status = FALSE,
                                  legend.pos = c(0.8, 0.8))
 
@@ -87,6 +90,7 @@ pos.plotlist = get_surv_plotlist(positive.sig.sig,
                                  dataset = TCGA.full.subset.ann,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
                                  binary.status = TRUE,
                                  legend.pos = c(0.8, 0.8))
 
@@ -105,6 +109,7 @@ pos.coxlist = get_surv_coxlist(positive.sig.sig,
                                  dataset = TCGA.full.subset.ann,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
                                  binary.status = FALSE)
 saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.totmut.nonbinary.RDS"))
 ```
@@ -116,7 +121,8 @@ saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.totmut.nonbinary.RDS
 neg.plotlist = get_surv_plotlist(negative.sig.sig, 
                                  dataset = TCGA.full.subset.ann,
                                  clin.df = TCGA.clin.df,
-                                 with.total.muts = TRUE, 
+                                 with.total.muts = TRUE,
+                                 tmb.logged = TRUE,
                                  binary.status = FALSE,
                                  legend.pos = c(0.8, 0.8))
 
@@ -149,6 +155,7 @@ neg.plotlist = get_surv_plotlist(negative.sig.sig,
                                  dataset = TCGA.full.subset.ann,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
                                  binary.status = TRUE,
                                  legend.pos = c(0.8, 0.8))
 
@@ -166,6 +173,7 @@ neg.coxlist = get_surv_coxlist(negative.sig.sig,
                                  dataset = TCGA.full.subset.ann,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
+                               tmb.logged = TRUE,
                                  binary.status = FALSE)
 saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.totmut.nonbinary.RDS"))
 ```
@@ -180,6 +188,7 @@ ColoRect_AdenoCa_MMR_SBS40 = survival_for_interactions(dataset = TCGA.full.subse
                                                       clin.df = TCGA.clin.df,
                                                       legend_pos = c(0.7, 0.22),
                                                       with.total.muts = TRUE,
+                                                      tmb.logged = TRUE,
                                                       binary.status = FALSE,
                                                       conf.int = TRUE)
 

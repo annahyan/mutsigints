@@ -6,6 +6,7 @@ output:
 ---
 
 ```{r}
+rm(list = ls())
 knitr::opts_chunk$set(comment = '', fig.width = 6, 
                       fig.height = 6, echo = FALSE, 
                       warning = FALSE)
@@ -70,6 +71,7 @@ pos.plotlist = get_surv_plotlist(positive.sig.pathway,
                                  dataset = TCGA.path.sig.aggregate,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
                                  binary.status = FALSE )
 
 pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut_nonbinary.pdf"),
@@ -100,6 +102,7 @@ pos.plotlist = get_surv_plotlist(positive.sig.pathway,
                                  dataset = TCGA.path.sig.aggregate,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
                                  binary.status = TRUE )
 
 pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut_binary.pdf"),
@@ -115,6 +118,7 @@ pos.coxlist = get_surv_plotlist(positive.sig.pathway,
                                  dataset = TCGA.path.sig.aggregate,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
                                  binary.status = FALSE )
 
 saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.totmut.nonbinary.RDS"))
@@ -128,6 +132,7 @@ neg.plotlist = get_surv_plotlist(sig.sig.tissues.matrix = negative.sig.pathway,
                                  dataset = TCGA.path.sig.aggregate,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
                                  binary.status = FALSE )
 
 pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_totmut_nonbinary.pdf"),
@@ -158,6 +163,7 @@ neg.plotlist = get_surv_plotlist(negative.sig.pathway,
                                  dataset = TCGA.path.sig.aggregate,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
                                  binary.status = TRUE )
 
 pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_totmut_binary.pdf"),
@@ -174,6 +180,7 @@ neg.coxlist = get_surv_plotlist(negative.sig.pathway,
                                  dataset = TCGA.path.sig.aggregate,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
                                  binary.status = FALSE)
 
 saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.totmut.nonbinary.RDS"))
