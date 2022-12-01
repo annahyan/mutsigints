@@ -114,7 +114,7 @@ for (i in 1:length(pos.plotlist) ) {
 dev.off()
 ```
 ```{r}
-pos.coxlist = get_surv_plotlist(positive.sig.pathway, 
+pos.coxlist = get_surv_coxlist(positive.sig.pathway, 
                                  dataset = TCGA.path.sig.aggregate,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
@@ -122,6 +122,16 @@ pos.coxlist = get_surv_plotlist(positive.sig.pathway,
                                  binary.status = FALSE )
 
 saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.totmut.nonbinary.RDS"))
+
+
+pos.coxlist = get_surv_coxlist(positive.sig.pathway, 
+                                 dataset = TCGA.path.sig.aggregate,
+                                 clin.df = TCGA.clin.df,
+                                 with.total.muts = FALSE, 
+                                 tmb.logged = TRUE,
+                                 binary.status = FALSE )
+
+saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.nototmut.nonbinary.RDS"))
 ```
 
 
@@ -176,7 +186,7 @@ dev.off()
 ```
 
 ```{r}
-neg.coxlist = get_surv_plotlist(negative.sig.pathway, 
+neg.coxlist = get_surv_coxlist(negative.sig.pathway, 
                                  dataset = TCGA.path.sig.aggregate,
                                  clin.df = TCGA.clin.df,
                                  with.total.muts = TRUE, 
@@ -184,5 +194,15 @@ neg.coxlist = get_surv_plotlist(negative.sig.pathway,
                                  binary.status = FALSE)
 
 saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.totmut.nonbinary.RDS"))
+
+
+neg.coxlist = get_surv_coxlist(negative.sig.pathway, 
+                                 dataset = TCGA.path.sig.aggregate,
+                                 clin.df = TCGA.clin.df,
+                                 with.total.muts = FALSE, 
+                                 tmb.logged = TRUE,
+                                 binary.status = FALSE)
+
+saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.nototmut.nonbinary.RDS"))
 ```
 

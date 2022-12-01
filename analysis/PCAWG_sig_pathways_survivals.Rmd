@@ -124,6 +124,15 @@ pos.coxlist = get_surv_coxlist(positive.sig.pathway,
                                tmb.logged = TRUE,
                                  binary.status = FALSE )
 saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.totmut.nonbinary.RDS"))
+
+
+pos.coxlist = get_surv_coxlist(positive.sig.pathway, 
+                                 dataset = PCAWG.path.sig.aggregate,
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = FALSE, 
+                               tmb.logged = TRUE,
+                                 binary.status = FALSE )
+saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.nototmut.nonbinary.RDS"))
 ```
 
 ### Survival models for negative interactions
@@ -185,5 +194,14 @@ neg.coxlist = get_surv_coxlist(negative.sig.pathway,
                                tmb.logged = TRUE,
                                  binary.status = FALSE )
 saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.totmut.nonbinary.RDS"))
+
+
+neg.coxlist = get_surv_coxlist(negative.sig.pathway, 
+                                 dataset = PCAWG.path.sig.aggregate,
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = FALSE, 
+                               tmb.logged = TRUE,
+                                 binary.status = FALSE )
+saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.nototmut.nonbinary.RDS"))
 ```
 

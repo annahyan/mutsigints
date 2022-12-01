@@ -113,6 +113,15 @@ pos.coxlist = get_surv_coxlist(positive.sig.sig,
                                  tmb.logged = TRUE,
                                  binary.status = FALSE)
 saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.totmut.nonbinary.RDS"))
+
+
+pos.coxlist = get_surv_coxlist(positive.sig.sig, 
+                                 dataset = PCAWG.full.subset.ann,
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = FALSE, 
+                                 tmb.logged = TRUE,
+                                 binary.status = FALSE)
+saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.nototmut.nonbinary.RDS"))
 ```
 
 
@@ -177,6 +186,15 @@ neg.coxlist = get_surv_coxlist(negative.sig.sig,
                                  tmb.logged = TRUE,
                                  binary.status = FALSE)
 saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.totmut.nonbinary.RDS"))
+
+neg.coxlist = get_surv_coxlist(negative.sig.sig, 
+                                 dataset = PCAWG.full.subset.ann,
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = FALSE, 
+                                 tmb.logged = TRUE,
+                                 binary.status = FALSE)
+saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.nototmut.nonbinary.RDS"))
+
 ```
 
 

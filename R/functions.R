@@ -61,14 +61,31 @@ p_matrix_process = function(p.values, p.adjust = TRUE, method = "BH") {
 }
 
 
-
-
 #' Remove the columns and rows of the dataframe with all 0's
 #' 
 rm_zeros = function(x) {
     pos.x = abs(x)
     rmout = x[rowSums(pos.x) > 0, colSums(pos.x) > 0, drop = FALSE]
     return(rmout)
+}
+
+
+#' Significance starts from a pvalue.
+#' @param p.val
+get_sig_stars = function(p.val) {
+    if (is.na(p.val)) {
+        return(" ")
+    }
+    if (p.val < 0.001) {
+        sig.star = "***"
+    } else if (p.val < 0.01) {
+        sig.star = "**"
+    } else if (p.val < 0.05) {
+        sig.star = "*" 
+    } else {
+        sig.star = " "
+    }
+    return(sig.star)
 }
 
 
