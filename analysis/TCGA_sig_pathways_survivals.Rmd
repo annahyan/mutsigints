@@ -205,4 +205,49 @@ neg.coxlist = get_surv_coxlist(negative.sig.pathway,
 
 saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.nototmut.nonbinary.RDS"))
 ```
+### TCGA survival 
+
+```{r}
+stomach_MMR_HIPPO = survival_for_interactions(dataset = TCGA.path.sig.aggregate, 
+                                                      signatures = c( "MMR", "HIPPO"), 
+                                                      tissues = c("Stomach_AdenoCa"), 
+                                                      clin.df = TCGA.clin.df,
+                                                      legend_pos = c(0.9, 0.9),
+                                                      with.total.muts = TRUE,
+                                              tmb.logged = TRUE,
+                                                      binary.status = FALSE)
+
+stomach_MMR_HIPPO_adjusted = ggadjustedcurves(stomach_MMR_HIPPO$coxout, 
+                 variable = "status", 
+                 data = stomach_MMR_HIPPO$survival.df)
+
+
+ggsave(plot = stomach_MMR_HIPPO_adjusted + 
+           theme(plot.margin = unit(c(0, 1.5, 0,0), units = "cm"),
+                 legend.title = element_blank()),
+       filename = file.path(fig.dir, "TCGA_stomach_MMR_HIPPO_adjusted.survivals.pdf"),
+       width = 4, height = 2.5)
+
+
+
+uterus_MMR_HIPPO = survival_for_interactions(dataset = TCGA.path.sig.aggregate, 
+                                                      signatures = c( "MMR", "HIPPO"), 
+                                                      tissues = c("Uterus_AdenoCa"), 
+                                                      clin.df = TCGA.clin.df,
+                                                      legend_pos = c(0.9, 0.9),
+                                                      with.total.muts = TRUE,
+                                              tmb.logged = TRUE,
+                                                      binary.status = FALSE)
+
+uterus_MMR_HIPPO_adjusted = ggadjustedcurves(stomach_MMR_HIPPO$coxout, 
+                 variable = "status", 
+                 data = uterus_MMR_HIPPO$survival.df)
+
+
+ggsave(plot = uterus_MMR_HIPPO_adjusted + 
+           theme(plot.margin = unit(c(0, 1.5, 0,0), units = "cm"),
+                 legend.title = element_blank()),
+       filename = file.path(fig.dir, "TCGA_uterus_MMR_HIPPO_adjusted.survivals.pdf"),
+       width = 4, height = 2.5)
+```
 

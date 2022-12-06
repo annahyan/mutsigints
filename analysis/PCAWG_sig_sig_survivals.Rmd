@@ -281,3 +281,17 @@ ggsave(plot = eso_SBS40_HR$survP$plot,
        width = 3.6, height = 3.3)
 ```
 
+```{r}
+
+Eso_AdenoCA :: APOBEC + SBS40
+eso_APOBEC_SBS40 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+                                                      signatures = c("SBS40", "APOBEC"), 
+                                                      tissues = "Eso_AdenoCA", 
+                                                      clin.df = PCAWG.clin.df,
+                                                      legend_pos = c(0.8, 0.8),
+                                                      with.total.muts = TRUE,
+                                                      tmb.logged = TRUE,
+                                                      binary.status = FALSE,
+                                             conf.int = TRUE)
+```
+

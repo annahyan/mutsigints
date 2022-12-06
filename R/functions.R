@@ -1817,3 +1817,130 @@ pathways_signatures_heatmap = function(tissue, signatures, pathways,
     }
     return(pp)
 }
+
+
+#' Summarizes coxph statistics from a list of coxph objects. List names are the 
+#' names of interactions inside the tissues.
+#' @param interaction.summaries the list of coxph objects
+#' @param type if not NULL, the output has one more column with this variable.
+#' Can be used to indicate if the interaction is positive or negative.
+#' @result results in a dataframe summarizing the regression output for all the 
+#' models and parameters.
+
+HR_summary_for_all = function(interaction.summaries, type = NULL) {
+    
+    get_surv_vector = function(cox.out, cond, param.name = param) {
+        summary.out = summary(cox.out)
+        coeffs = summary.out$coefficients
+        conf.int = summary.out$conf.int
+        
+        P.val = coeffs[, 5]
+        
+        sig.star = sapply(P.val, get_sig_stars)
+        
+        lower.95 = conf.int[, 3]
+        upper.95 = conf.int[, 4]
+        estimate = conf.int[, 1]
+        return(data.frame(params = gsub(pattern = "status", "", rownames(conf.int) ), 
+                          cond = cond, 
+                          estimate = estimate, 
+                          lower.95 = lower.95, 
+                          upper.95 = upper.95, 
+                          P.val = P.val, 
+                          sig.star = sig.star))
+    }
+    
+    all.cond.summaries.list = lapply(names(interaction.summaries), function(x)
+        get_surv_vector(interaction.summaries[[x]], x))
+    all.params.ever = do.call(rbind, all.cond.summaries.list)
+    all.params.ever$tissue = sapply(strsplit(all.params.ever$cond, " :: "), function(x) x[1])
+    all.params.ever$int = sapply(strsplit(all.params.ever$cond, " :: "), function(x) x[2])
+    
+    if (! is.null(type)) {
+        all.params.ever$type = type
+    }
+        
+    return(all.params.ever)
+}
+
+#' (plot hazard ratio for variables)
+#' Makes a forest plot for hazard ratios for given parameter
+#' @param all.conds.df Data.frame with all the parameters, hazard ratios, 
+#' confidence intervals. Generated with function HR_summary_for_all.
+#' @param param Parameter to be plotted
+#' @param average If TRUE the parameter values for a given tissues should be 
+#' averaged. Default:TRUE.
+#' @param log.HR If TRUE the Hazard ratio will be logged. Default: FALSE.
+#' @param no_stripes If TRUE gray/white stripes will be added in the background
+#' for each tissue. If average = FALSE, this value has no effect. Default: TRUE. 
+
+plot_HR_vars = function(all.conds.df, param, average = TRUE, log.HR = FALSE, no_stripes = TRUE) {
+    
+    tissue.increasing.order = all.conds.df %>% 
+        filter(params == param) %>% 
+        arrange(estimate) %>%
+        pull(tissue) %>% 
+        unique()
+    
+    all.conds.df = all.conds.df %>% 
+    filter(params == param) %>% 
+    arrange(estimate) %>%
+    mutate(tissue = factor(tissue, levels = tissue.increasing.order))
+# all.conds.df$tissue = factor(all.conds.df$tissue, levels = sort(unique(all.conds.df$tissue)))
+    if (average) {
+        df = all.conds.df %>%
+            group_by(tissue) %>% 
+            summarize(estimate = mean(estimate), 
+                      lower.95 = mean(lower.95), 
+                      upper.95 = mean(upper.95), 
+                      P.val = mean(P.val), 
+                      sig.star = get_sig_stars(P.val)) 
+        
+        if (log.HR) {
+            df = df %>% mutate(estimate = log(estimate),
+                               lower.95 = log(lower.95), 
+                               upper.95 = log(upper.95))
+        }  
+        p = ggplot(df, aes(y = tissue, x = estimate) )
+    } else {
+        df = all.conds.df 
+        if (log.HR) {
+            df = df %>% mutate(estimate = log(estimate),
+                               lower.95 = log(lower.95), 
+                               upper.95 = log(upper.95))
+        }  
+        p = ggplot(df, aes(y = tissue, x = estimate, color = int))    
+        
+    }
+    
+    
+    p = p + geom_point(position=position_dodge(1), shape = 15, size = 3) +
+        geom_errorbar(aes(y = tissue, xmin = lower.95, xmax = upper.95), 
+                      width=.2, 
+                      position=position_dodge(1)) + 
+        scale_y_discrete(position = "right")
+    
+    if (log.HR) {
+        p = p + geom_vline(xintercept = 0, linetype="dashed", color = "gray") + 
+            xlab("log(Hazard Ratio)")
+    } else {
+        p = p + geom_vline(xintercept = 1, linetype="dashed", color = "gray") +
+            xlab("Hazard Ratio")
+    }
+    
+    p = p + theme_classic(base_size = 15) + 
+        theme(
+            axis.title.y = element_blank(),
+            legend.position = "none", 
+            axis.line.y = element_blank(),
+            axis.ticks.y = element_blank())
+    # Add striped background
+    # geom_stripes(odd = "#33333333", even = "#00000000")  
+    
+    if (!average & no_stripes) {
+        
+    } else {
+        p = p + geom_stripes(odd = "#33333333", even = "#00000000") 
+    }
+    return(p)
+}

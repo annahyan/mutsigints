@@ -221,8 +221,46 @@ ColoRect_AdenoCa_MMR_SBS40_ggforest = ggforest(model = ColoRect_AdenoCa_MMR_SBS4
 ggsave(plot = ColoRect_AdenoCa_MMR_SBS40_ggforest,
        filename = file.path(fig.dir, "TCGA_ColoRect_AdenoCa_MMR_SBS40_ggforest.ggforest.pdf"),
        width = 6, height = 2.3)
+```
 
 
 
+### Case of Stomach AdenoCa
+
+```{r}
+stomach.sigs = TCGA.full.subset.ann %>% filter(Cancer.Types == "Stomach_AdenoCa")
+stomach.sigs$TMB = rowSums(stomach.sigs[4:ncol(stomach.sigs)])
+rownames(stomach.sigs) = substr(stomach.sigs$Sample.Names, 1, 12)
+stomach.clin = TCGA.clin.df %>% filter(bcr_patient_barcode %in% 
+                                           rownames(stomach.sigs)) %>% unique()
+rownames(stomach.clin) = stomach.clin$bcr_patient_barcode
+stomach.clin = stomach.clin[rownames(stomach.sigs),]
+
+
+stomach.combined = cbind(stomach.sigs, stomach.clin)
+
+stomach.combined = stomach.combined %>% mutate(status = ifelse(
+    MMR > 0 & SBS17 > 0, "MMR + SBS17", 
+    ifelse (APOBEC > 0 & SBS40 > 0,"APOBEC+SBS40", "Other")) ) %>% 
+    rename(survival_time = times, vital_status = patient.vital_status)
+
+
+stomach.surv = survfit(Surv(survival_time, vital_status) ~ status, data = stomach.combined)
+
+
+P = ggsurvplot(stomach.surv, data = stomach.combined,
+                       font.legend = c(14, "plain", "black"),
+                       legend.title = element_blank(),
+                       legend.labs = gsub("status=", "", names(stomach.surv$strata)),
+                       # palette = "jco",
+                       xlab = "Days",
+                       conf.int = TRUE) + 
+            guides(colour = guide_legend(nrow = length(stomach.surv$strata)))
+        
+P$plot = P$plot + theme(legend.background = element_rect(fill='transparent'),
+                        legend.box.background = element_rect(fill='transparent', size = 0))
+
+ggsave(filename = file.path(fig.dir, "tcga.stomach.MMR_SBS17.APOBEC_SBS40.Others.survival.pdf"),
+                            width = 4, height = 3)
 ```
 
