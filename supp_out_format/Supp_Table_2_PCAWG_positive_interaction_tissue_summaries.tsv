@@ -1,0 +1,24 @@
+	APOBEC	SBS40	Ageing	HR	ROS	SBS5	SBS39	SBS19	SBS23	MMR	PolE	SBS28	SBS17	Tobacco	SBS12	SBS29	PolH	SBS34	SBS37	Technical	SBS30	SBS38	UV
+APOBEC		Biliary_AdenoCA, Panc_AdenoCA, Skin_Melanoma	Panc_Endocrine, Skin_Melanoma	Breast_AdenoCA, Eso_AdenoCA, Panc_AdenoCA		Breast_AdenoCA, Head_SCC																Skin_Melanoma	
+SBS40	Biliary_AdenoCA, Panc_AdenoCA, Skin_Melanoma		Bone_Osteosarc, CNS_GBM, CNS_Medullo, CNS_PiloAstro, Kidney_ChRCC, Kidney_RCC, Liver_HCC, Lung_AdenoCA, Lymph_BNHL, Panc_AdenoCA, Prost_AdenoCA, Skin_Melanoma, Thy_AdenoCA	Ovary_AdenoCA		CNS_Medullo, Prost_AdenoCA				Lymph_BNHL			Eso_AdenoCA, Liver_HCC									Skin_Melanoma	
+Ageing	Panc_Endocrine, Skin_Melanoma	Bone_Osteosarc, CNS_GBM, CNS_Medullo, CNS_PiloAstro, Kidney_ChRCC, Kidney_RCC, Liver_HCC, Lung_AdenoCA, Lymph_BNHL, Panc_AdenoCA, Prost_AdenoCA, Skin_Melanoma, Thy_AdenoCA		Panc_Endocrine	Prost_AdenoCA	Breast_AdenoCA, CNS_Medullo, ColoRect_AdenoCA, Lymph_BNHL, Lymph_CLL, Myeloid_MPN, Ovary_AdenoCA, Panc_Endocrine, Prost_AdenoCA, Skin_Melanoma, Stomach_AdenoCA, Thy_AdenoCA, Uterus_AdenoCA				ColoRect_AdenoCA, Stomach_AdenoCA			Lymph_BNHL									Skin_Melanoma	
+HR	Breast_AdenoCA, Eso_AdenoCA, Panc_AdenoCA	Ovary_AdenoCA	Panc_Endocrine															Lymph_BNHL	Lymph_BNHL		Panc_Endocrine		
+ROS			Prost_AdenoCA			Breast_AdenoCA, Panc_AdenoCA, Prost_AdenoCA, Stomach_AdenoCA																	
+SBS5	Breast_AdenoCA, Head_SCC	CNS_Medullo, Prost_AdenoCA	Breast_AdenoCA, CNS_Medullo, ColoRect_AdenoCA, Lymph_BNHL, Lymph_CLL, Myeloid_MPN, Ovary_AdenoCA, Panc_Endocrine, Prost_AdenoCA, Skin_Melanoma, Stomach_AdenoCA, Thy_AdenoCA, Uterus_AdenoCA		Breast_AdenoCA, Panc_AdenoCA, Prost_AdenoCA, Stomach_AdenoCA					ColoRect_AdenoCA, Stomach_AdenoCA, Uterus_AdenoCA	ColoRect_AdenoCA	ColoRect_AdenoCA	Eso_AdenoCA, Lymph_BNHL, Panc_AdenoCA, Stomach_AdenoCA	Head_SCC, Liver_HCC, Lung_AdenoCA, Lung_SCC	Liver_HCC	Liver_HCC		Lymph_BNHL	Lymph_BNHL, Prost_AdenoCA				Skin_Melanoma
+SBS39																	Panc_Endocrine						
+SBS19									CNS_PiloAstro														
+SBS23								CNS_PiloAstro															
+MMR		Lymph_BNHL	ColoRect_AdenoCA, Stomach_AdenoCA			ColoRect_AdenoCA, Stomach_AdenoCA, Uterus_AdenoCA												Lymph_BNHL	Lymph_BNHL	Lymph_BNHL			
+PolE						ColoRect_AdenoCA						ColoRect_AdenoCA											
+SBS28						ColoRect_AdenoCA					ColoRect_AdenoCA		Panc_AdenoCA										
+SBS17		Eso_AdenoCA, Liver_HCC	Lymph_BNHL			Eso_AdenoCA, Lymph_BNHL, Panc_AdenoCA, Stomach_AdenoCA						Panc_AdenoCA											
+Tobacco						Head_SCC, Liver_HCC, Lung_AdenoCA, Lung_SCC									Liver_HCC								
+SBS12						Liver_HCC								Liver_HCC		Liver_HCC							
+SBS29						Liver_HCC									Liver_HCC								
+PolH							Panc_Endocrine																
+SBS34				Lymph_BNHL		Lymph_BNHL				Lymph_BNHL									Lymph_BNHL	Lymph_BNHL			
+SBS37				Lymph_BNHL		Lymph_BNHL, Prost_AdenoCA				Lymph_BNHL								Lymph_BNHL		Lymph_BNHL			
+Technical										Lymph_BNHL								Lymph_BNHL	Lymph_BNHL				
+SBS30				Panc_Endocrine																			
+SBS38	Skin_Melanoma	Skin_Melanoma	Skin_Melanoma																				
+UV						Skin_Melanoma																	

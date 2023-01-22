@@ -251,3 +251,35 @@ ggsave(plot = uterus_MMR_HIPPO_adjusted +
        width = 4, height = 2.5)
 ```
 
+
+```{r}
+uterus_stomach_MMR_HIPPO = survival_for_interactions(dataset = TCGA.path.sig.aggregate, 
+                                                      signatures = c( "MMR", "HIPPO"), 
+                                                      tissues = c("Stomach_AdenoCa", "Uterus_AdenoCa"), 
+                                                      clin.df = TCGA.clin.df,
+                                                      legend_pos = c(0.9, 0.9),
+                                                      with.total.muts = TRUE,
+                                              tmb.logged = TRUE,
+                                                      binary.status = FALSE)
+
+
+uterus_MMR_HIPPO_adjusted = ggadjustedcurves(stomach_MMR_HIPPO$coxout, 
+                 variable = "status", 
+                 data = uterus_MMR_HIPPO$survival.df)
+
+
+ggsave(plot = uterus_MMR_HIPPO_adjusted + theme(plot.margin = unit(c(0, 1.5, 0,0), units = "cm") ),
+       filename = file.path(fig.dir, "TCGA_uterus_stomach_MMR_HIPPO.adjusted.survivals.pdf"),
+       width = 4, height = 3.5)
+
+
+
+uterus_stomach_MMR_HIPPO_ggforest = ggforest(model = uterus_stomach_MMR_HIPPO$coxout, 
+                                             data = uterus_stomach_MMR_HIPPO$survival.df)
+
+
+ggsave(plot = uterus_stomach_MMR_HIPPO_ggforest,
+       filename = file.path(fig.dir, "TCGA_uterus_stomach_MMR_HIPPO.ggforest.pdf"),
+       width = 6, height = 2.9)
+```
+

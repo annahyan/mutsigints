@@ -1,0 +1,10 @@
+	C2	CNA	C1	C3	C4
+SBS30	Breast_cancer				
+APOBEC		Cervix_CA	Head_SCC, Uterus_AdenoCa		
+MMR			ColoRect_AdenoCa, Stomach_AdenoCa		
+SBS40	ColoRect_AdenoCa				
+SBS5	Lung_AdenoCa		ColoRect_AdenoCa	Lung_SCC	
+SBS17	Eso_AdenoCa				
+Technical	Head_SCC				
+Tobacco	Lung_AdenoCa				
+Ageing		Lung_AdenoCa, Skin_Melanoma			Transitional_cell_carcinoma

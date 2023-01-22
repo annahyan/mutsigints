@@ -18,7 +18,7 @@ source(here("R/load_packages.R"))
 library(ggrepel)
 library(ggpmisc)
 
-fig.dir = here("figures/figure0")
+fig.dir = here("figures/supp_figures")
 
 if (!file.exists(fig.dir)) {
     dir.create(fig.dir)

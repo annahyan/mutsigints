@@ -620,3 +620,47 @@ tissue.heatmap = subset_tissue(TCGA.full.subset, tissue = tissue) %>%
 ```
 
 
+### Breast_cancer pathways
+
+```{r}
+tissue = "Breast_cancer"
+skin.annotated.heatmap = pathways_signatures_heatmap(
+        tissue = tissue,
+        signatures = TCGA.full.subset.ann.pathways, border_color = NA,
+        pathways = TCGA.pathways.tissues, main = paste0(tissue, " - TCGA")) %>% 
+    add_pheatmap_legend_title
+    
+
+ggsave(plot = skin.annotated.heatmap,
+       file = file.path(fig.dir, paste0("TCGA.", tissue, ".annotated.heatmap.pdf")),
+       width = 4.5, height = 4)
+```
+
+
+
+
+### Stomach_AdenoCa pathways
+
+```{r}
+tissue = "Stomach_AdenoCa"
+skin.annotated.heatmap = pathways_signatures_heatmap(
+        tissue = tissue,
+        signatures = TCGA.full.subset.ann.pathways, border_color = NA,
+        pathways = TCGA.pathways.tissues, main = paste0(tissue, " - TCGA")) %>% 
+    add_pheatmap_legend_title
+    
+
+ggsave(plot = skin.annotated.heatmap,
+       file = file.path(fig.dir, paste0("TCGA.", tissue, ".annotated.heatmap.pdf")),
+       width = 4.5, height = 4)
+
+
+int.heatmap = ggheatmap_wrapper(tissue.odds.ratio[[tissue]], 
+                                        title = tissue)
+        
+print(int.heatmap)
+ggsave(plot = int.heatmap,
+       filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
+                     paste0("TCGA_", tissue, "_sig_pathway.dotplot.pdf")),
+height = 5, width = 6, bg = "white")
+```

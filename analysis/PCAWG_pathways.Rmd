@@ -128,7 +128,6 @@ abundant.tissues = which(PCAWG.full.subset.ann.pathways$Cancer.Types %>%
 
 # number of total samples
 # PCAWG.full.subset.ann.pathways$Cancer.Types %in% abundant.tissues %>% sum()
-
 ```
 
 
@@ -642,6 +641,15 @@ skin.annotated.heatmap = pathways_signatures_heatmap(
 ggsave(plot = skin.annotated.heatmap,
        file = file.path(fig.dir, "PCAWG.skin.annotated.heatmap.pdf"),
        width = 4.5, height = 4)
+
+ int.heatmap = ggheatmap_wrapper(tissue.odds.ratio.unadjusted[[tissue]], 
+                                        title = tissue)
+        
+print(int.heatmap)
+ggsave(plot = int.heatmap,
+       filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
+                            paste0("PCAWG_", tissue, "_sig_pathway_unadjusted.dotplot.pdf")),
+               height = 5, width = 6, bg = "white")
 ```
 
 
@@ -650,4 +658,21 @@ tissue = "Skin_Melanoma"
 tissue.heatmap = subset_tissue(PCAWG.full.subset, tissue = tissue) %>% 
             plot_tissue_heatmap(main = tissue)
 ```
+
+### Breast_AdenoCA pathways
+
+```{r}
+tissue = "Breast_AdenoCA"
+skin.annotated.heatmap = pathways_signatures_heatmap(
+        tissue = tissue,
+        signatures = PCAWG.full.subset.ann.pathways, border_color = NA,
+        pathways = PCAWG.pathways.tissues, main = paste0(tissue, " - PCAWG")) %>% 
+    add_pheatmap_legend_title
+    
+
+ggsave(plot = skin.annotated.heatmap,
+       file = file.path(fig.dir, paste0("PCAWG.", tissue, ".annotated.heatmap.pdf")),
+       width = 4.5, height = 4)
+```
+
 
