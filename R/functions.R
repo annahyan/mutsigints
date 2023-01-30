@@ -1883,10 +1883,11 @@ plot_HR_vars = function(all.conds.df, param, average = TRUE, log.HR = FALSE, no_
         unique()
     
     all.conds.df = all.conds.df %>% 
-    filter(params == param) %>% 
-    arrange(estimate) %>%
-    mutate(tissue = factor(tissue, levels = tissue.increasing.order))
-# all.conds.df$tissue = factor(all.conds.df$tissue, levels = sort(unique(all.conds.df$tissue)))
+        filter(params == param) %>% 
+        arrange(estimate) %>%
+        mutate(tissue = factor(tissue, levels = tissue.increasing.order))
+    # all.conds.df$tissue = factor(all.conds.df$tissue, 
+    #                       levels = sort(unique(all.conds.df$tissue)))
     if (average) {
         df = all.conds.df %>%
             group_by(tissue) %>% 
@@ -1942,5 +1943,20 @@ plot_HR_vars = function(all.conds.df, param, average = TRUE, log.HR = FALSE, no_
     } else {
         p = p + geom_stripes(odd = "#33333333", even = "#00000000") 
     }
+    
+    tissue.mapping = all.conds.df%>% select(tissue, data) %>% unique()
+    tissue.map = setNames(substr(tissue.mapping$data, 1, 1), tissue.mapping$tissue)
+    
+    pgbuild = ggplot_build(p)
+    xlimits = pgbuild$layout$panel_scales_x[[1]]$range$range
+    ylimits = pgbuild$layout$panel_scales_y[[1]]$range$range
+    
+    annot.shift = (xlimits[2] - xlimits[1] )/ 10
+    
+    p = p + 
+        annotate("text", x = xlimits[1] - annot.shift, y = ylimits, label = tissue.map[ylimits]) + 
+        coord_cartesian(xlim = xlimits, clip = "off") + 
+        theme(plot.margin = margin(0, 0, 0, 0.3, "cm"))
+    
     return(p)
 }

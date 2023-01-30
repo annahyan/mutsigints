@@ -448,44 +448,43 @@ ggsave(plot = pp.logged,
 <!-- cat(gsub(",", ", ", TP53.HR)) -->
 <!-- ``` -->
 
-<!-- ### Case inspection of melanoma -->
+### Case inspection of melanoma
 
-<!-- ```{r} -->
-<!-- tissue = "Skin_Melanoma" -->
-<!-- skin.data = get_tissue_pathway_activities(tissue,  -->
-<!--                                           sigs.input = PCAWG.full.subset.ann.pathways, -->
-<!--                                           pathways.input = PCAWG.pathways.tissues) -->
+```{r}
+tissue = "Skin_Melanoma"
+skin.data = get_tissue_pathway_activities(tissue,
+                                          sigs.input = PCAWG.full.subset.ann.pathways,
+                                          pathways.input = PCAWG.pathways.tissues)
 
-<!-- skin.data$sigs.logged = skin.data$sigs %>%  -->
-<!--     mutate(across(.cols = everything(), ~ log(.x + 1 ))) -->
+skin.data$sigs.logged = skin.data$sigs %>%
+    mutate(across(.cols = everything(), ~ log(.x + 1 )))
 
-<!-- skin.concat = merge(skin.data$sigs.logged, skin.data$paths, by = "row.names") -->
+skin.concat = merge(skin.data$sigs.logged, skin.data$paths, by = "row.names")
+
+uv.rtkras = skin.concat %>%
+    mutate (`RTK RAS` = factor(`RTK RAS`, levels = c(0, 1,2,3))) %>%
+    ggplot(aes(x = `RTK RAS`, y = UV,
+                           group = `RTK RAS`, fill = `RTK RAS`) ) +
+    geom_boxplot(width = 0.6) + geom_jitter(width = 0.15, height = 0.15, size = 0.5) +
+    theme_bw(base_size = 13) +
+    ylab("log(UV)") + coord_flip()
+
+print(uv.rtkras)
+
+ggsave(filename = file.path(fig.dir, paste0(tissue, "PCAWG_uv_rtkras_relationship.pdf")),
+       plot = uv.rtkras, width = 4, height = 2)
 
 
-<!-- uv.rtkras = skin.concat %>%  -->
-<!--     mutate (`RTK RAS` = factor(`RTK RAS`, levels = c(0, 1,2,3))) %>% -->
-<!--     ggplot(aes(x = `RTK RAS`, y = UV,  -->
-<!--                            group = `RTK RAS`, fill = `RTK RAS`) ) +  -->
-<!--     geom_boxplot() + geom_jitter(width = 0.15, height = 0.15) +  -->
-<!--     theme_bw(base_size = 13) +  -->
-<!--     ylab("log(UV)") -->
+rev.uv.rtkras = skin.concat %>%
+    mutate (`RTK RAS` = factor(`RTK RAS`, levels = c(0, 1,2,3))) %>%
+    ggplot(aes(x = UV, y = `RTK RAS`) ) +
+    geom_jitter(width = 0.1, height = 0.15) +
+    theme_bw(base_size = 13) +
+    xlab("log(UV)")
 
-<!-- print(uv.rtkras) -->
-
-<!-- ggsave(filename = file.path(fig.dir, paste0(tissue, "uv_rtkras_relationship.png")),  -->
-<!--        plot = uv.rtkras, width = 4, height = 3.2) -->
-
-
-<!-- rev.uv.rtkras = skin.concat %>%  -->
-<!--     mutate (`RTK RAS` = factor(`RTK RAS`, levels = c(0, 1,2,3))) %>% -->
-<!--     ggplot(aes(x = UV, y = `RTK RAS`) ) +  -->
-<!--     geom_jitter(width = 0.1, height = 0.15) +  -->
-<!--     theme_bw(base_size = 13) +  -->
-<!--     xlab("log(UV)") -->
-
-<!-- ggsave(filename = file.path(fig.dir, paste0(tissue, "rev_uv_rtkras_relationship.png")),  -->
-<!--        plot = rev.uv.rtkras, width = 4, height = 3.2) -->
-<!-- ``` -->
+ggsave(filename = file.path(fig.dir, paste0(tissue, "rev_uv_rtkras_relationship.png")),
+       plot = rev.uv.rtkras, width = 4, height = 3.2)
+```
 
 
 <!-- ```{r} -->
