@@ -205,3 +205,58 @@ neg.coxlist = get_surv_coxlist(negative.sig.pathway,
 saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.nototmut.nonbinary.RDS"))
 ```
 
+### Melanoma survival for the two classes
+
+```{r}
+tissue = "Skin_Melanoma"
+skin.annotated.heatmap = pathways_signatures_heatmap(
+        tissue = tissue,
+        signatures = PCAWG.full.subset.ann.pathways, border_color = NA,
+        pathways = PCAWG.pathways.tissues, main = paste0(tissue, " - PCAWG")) %>% 
+    add_pheatmap_legend_title
+    
+```
+```{r}
+skin.sigs = PCAWG.full.subset.ann.pathways %>% filter(Cancer.Types == "Skin_Melanoma")
+skin.sigs$TMB = rowSums(skin.sigs[4:ncol(skin.sigs)])
+rownames(skin.sigs) = substr(skin.sigs$Sample.Names, 1, 12)
+skin.clin = PCAWG.clin.df %>% filter(icgc_donor_id %in% 
+                                           rownames(skin.sigs)) %>% unique()
+rownames(skin.clin) = skin.clin$icgc_donor_id
+skin.clin = skin.clin[rownames(skin.sigs),]
+
+
+skin.combined = cbind(skin.sigs, skin.clin)
+
+skin.combined = skin.combined %>% mutate(status = ifelse(
+    UV > 0 & APOBEC == 0, "UV-high", "UV-low")) 
+
+
+skin.surv = survfit(Surv(survival_time, vital_status) ~ status, data = skin.combined)
+
+
+P = ggsurvplot(skin.surv, data = skin.combined,
+                       font.legend = c(14, "plain", "black"),
+                       legend.title = element_blank(),
+                       legend.labs = gsub("status=", "", names(skin.surv$strata)),
+                       # palette = "jco",
+                       xlab = "Days",
+                       conf.int = FALSE) + 
+            guides(colour = guide_legend(nrow = length(skin.surv$strata)))
+        
+P$plot = P$plot + theme(legend.background = element_rect(fill='transparent'),
+                        legend.box.background = element_rect(fill='transparent', size = 0))
+
+ggsave(filename = file.path(fig.dir, "PCAWG.skin.MMR_SBS17.APOBEC_SBS40.Others.survival.pdf"),
+                            width = 4, height = 3)
+
+skin.cox <- coxph(Surv(survival_time, vital_status) ~ age_at_diagnosis + 
+                                 status + TMB, 
+                             data = skin.combined, na.action = na.omit)
+
+skin.cox.adjusted = ggadjustedcurves(skin.cox, 
+                 variable = "status", 
+                 data = skin.combined)
+
+```
+

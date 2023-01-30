@@ -124,7 +124,6 @@ pos.coxlist = get_surv_coxlist(positive.sig.sig,
 saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.nototmut.nonbinary.RDS"))
 ```
 
-
 ### Survival models for negative interactions
 
 ```{r}
@@ -282,8 +281,7 @@ ggsave(plot = eso_SBS40_HR$survP$plot,
 ```
 
 ```{r}
-
-Eso_AdenoCA :: APOBEC + SBS40
+# Eso_AdenoCA :: APOBEC + SBS40
 eso_APOBEC_SBS40 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
                                                       signatures = c("SBS40", "APOBEC"), 
                                                       tissues = "Eso_AdenoCA", 

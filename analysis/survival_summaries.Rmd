@@ -203,8 +203,11 @@ plot_param_piechart = function(data, param) {
                significance = ifelse(sig.star != " ", TRUE, FALSE),
                HR.sign = ifelse(significance == FALSE, FALSE, HR.sign)) %>% 
         group_by(tissue, significance, HR.sign) %>% 
-        select(tissue, significance, HR.sign) %>% unique()
+        select(tissue, significance, HR.sign) %>% unique() %>% 
+        arrange(-significance, -HR.sign)
 
+    data.tissues = data.tissues[ !(duplicated(data.tissues$tissue)),]
+    
     p = data.tissues %>% 
         group_by(significance, HR.sign) %>% 
         summarize(counts = n()) %>% 
@@ -231,6 +234,7 @@ plot_param_piechart = function(data, param) {
 # pcawg.neg.sig.sig.HRs.all = HR_summary_for_all(pcawg.sig.sig.neg)
 
 pcawg.sig.sig.comb = rbind (pcawg.pos.sig.sig.HRs.all, pcawg.neg.sig.sig.HRs.all)
+pcawg.sig.sig.comb$data = "PCAWG"
 
 p = plot_param_piechart(pcawg.sig.sig.comb, param = "log(total_muts + 1)")
 
@@ -239,8 +243,6 @@ ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.sig.tmb.piechart.pdf")
 ```
 
 ```{r}
-pcawg.sig.sig.comb = rbind (pcawg.pos.sig.sig.HRs.all, pcawg.neg.sig.sig.HRs.all)
-
 p = plot_param_piechart(pcawg.sig.sig.comb, param = "age_at_diagnosis")
 
 ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.sig.age.piechart.pdf"),
@@ -338,7 +340,8 @@ ggsave(plot = pp, filename = file.path(fig.dir, "pcawg.sig.path.significant_inte
 
 ```{r}
 tcga.sig.sig.comb = rbind (tcga.pos.sig.sig.HRs.all, tcga.neg.sig.sig.HRs.all)
-
+tcga.sig.sig.comb$data = "TCGA"
+ 
 p = plot_param_piechart(tcga.sig.sig.comb, param = "log(total_muts + 1)")
 
 ggsave(plot = p, filename = file.path(fig.dir, "tcga.sig.sig.tmb.piechart.pdf"),
@@ -346,8 +349,6 @@ ggsave(plot = p, filename = file.path(fig.dir, "tcga.sig.sig.tmb.piechart.pdf"),
 ```
 
 ```{r}
-tcga.sig.sig.comb = rbind (tcga.pos.sig.sig.HRs.all, tcga.neg.sig.sig.HRs.all)
-
 p = plot_param_piechart(tcga.sig.sig.comb, param = "age_at_diagnosis")
 
 ggsave(plot = p, filename = file.path(fig.dir, "tcga.sig.sig.age.piechart.pdf"),
