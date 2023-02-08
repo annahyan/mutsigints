@@ -143,6 +143,18 @@ ggsave(pcawg.active.signatures.hist,
 ggsave(pcawg.active.signatures.hist, 
        filename = file.path(fig.dir, "PCAWG.active.signatures.histogram.pdf"),
        width = 3, height = 3.6)
+
+
+pcawg.active.signatures.hist.ann = plot_active_signatures(PCAWG.full.subset.ann) + 
+    ggtitle("PCAWG") + theme(plot.margin = unit(c(2,2,2,2), "mm"))
+
+ggsave(pcawg.active.signatures.hist.ann, 
+       filename = file.path(fig.dir, "PCAWG.active.signatures.histogram.annotated.png"),
+       width = 3, height = 3.6)
+
+ggsave(pcawg.active.signatures.hist.ann, 
+       filename = file.path(fig.dir, "PCAWG.active.signatures.histogram.annotated.pdf"),
+       width = 3, height = 3.6)
 ```
 
 ### Most common signature counts
@@ -158,6 +170,16 @@ pcawg.number.3.to.5.sigs = PCAWG.full.subset %>%
 pcawg.number.3.to.5.sigs / nrow(PCAWG.full.subset)
 # [1] 0.7838672
 
+pcawg.number.3.to.4.sigs.ann = PCAWG.full.subset.ann %>% 
+    select(4:ncol(.)) %>% 
+    mutate_all( ~ . > 0) %>% 
+    rowwise() %>% 
+    summarize(active_sigs = sum(c_across(everything()))) %>% 
+    summarize(x = sum(active_sigs >= 3 & active_sigs <= 4))
+
+pcawg.number.3.to.4.sigs.ann / nrow(PCAWG.full.subset.ann)
+# [1] 0.7657275	
+
 tcga.number.3.to.5.sigs = TCGA.full.subset %>% 
     select(4:ncol(.)) %>% 
     mutate_all( ~ . > 0) %>% 
@@ -166,6 +188,17 @@ tcga.number.3.to.5.sigs = TCGA.full.subset %>%
     summarize(x = sum(active_sigs >= 3 & active_sigs <= 5))
 tcga.number.3.to.5.sigs / nrow(TCGA.full.subset)
 # [1] 0.7789681
+
+
+tcga.number.3.to.4.sigs.ann = TCGA.full.subset.ann %>% 
+    select(4:ncol(.)) %>% 
+    mutate_all( ~ . > 0) %>% 
+    rowwise() %>% 
+    summarize(active_sigs = sum(c_across(everything()))) %>% 
+    summarize(x = sum(active_sigs >= 3 & active_sigs <= 4))
+
+tcga.number.3.to.4.sigs.ann / nrow(TCGA.full.subset.ann)
+# [1] 0.8063152
 ```
 
 
@@ -191,6 +224,18 @@ ggsave(tcga.active.signatures.hist,
 
 ggsave(tcga.active.signatures.hist, 
        filename = file.path(fig.dir, "TCGA.active.signatures.histogram.pdf"),
+       width = 3, height = 3.6)
+
+
+tcga.active.signatures.hist.ann = plot_active_signatures(TCGA.full.subset.ann) + 
+    ggtitle("TCGA") + theme(plot.margin = unit(c(2,2,2,2), "mm"))
+
+ggsave(tcga.active.signatures.hist.ann, 
+       filename = file.path(fig.dir, "TCGA.active.signatures.histogram.annotated.png"),
+       width = 3, height = 3.6)
+
+ggsave(tcga.active.signatures.hist.ann, 
+       filename = file.path(fig.dir, "TCGA.active.signatures.histogram.annotated.pdf"),
        width = 3, height = 3.6)
 ```
 

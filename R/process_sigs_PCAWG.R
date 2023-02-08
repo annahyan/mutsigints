@@ -36,7 +36,7 @@ selected_signatures = PCAWG.filter_rec_acc %>%
     colnames()
 
 PCAWG.full.subset = PCAWG.filter_rec_acc %>% filter(Cancer.Types %in% selected_tissues) %>% 
-    select(c("Cancer.Types", "Sample.Names", "Accuracy", selected_signatures)) %>% 
+    select(c("Cancer.Types", "Sample.Names", "Accuracy", all_of(selected_signatures))) %>% 
     mutate( 
         Sample.Names = PCAWG.sample.sheet[ ## using donor IDs as sample names
             match(Sample.Names,

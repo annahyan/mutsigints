@@ -32,7 +32,7 @@ selected_signatures = TCGA.filter_rec_acc %>%
     colnames()
 
 TCGA.full.subset = TCGA.filter_rec_acc %>% filter(Cancer.Types %in% selected_tissues) %>% 
-    select(c("Cancer.Types", "Sample.Names", "Accuracy", selected_signatures)) %>% 
+    select(c("Cancer.Types", "Sample.Names", "Accuracy", all_of(selected_signatures))) %>% 
     mutate(Cancer.Types = gsub("-", "_", Cancer.Types))
 
 saveRDS(TCGA.full.subset, 
