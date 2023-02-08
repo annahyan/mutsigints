@@ -859,44 +859,6 @@ calc_metric = function(dt.sigs, action_func, sample.rate, sample.N, N, seed = NU
         }) }
 }
 
-#' Extracts the interaction metrics of a tissue 
-#' from a list of interaction networks.
-#' @param tissue Tissue to be extracted
-#' @param network.lists The input list
-#' @param filter.list A list of metric values to be filtered out. The list 
-#' element names have the same names as metric names in network.lists. 
-#' The values specify filtering threshold. Everything below the number is 
-#' set to 0. Default: NULL
-#' @return A list with interaction metric matrices. The list element names match
-#' those in the input network.lists.
-
-get_tissue_dataset_networks = function(tissue,
-                                       network.lists, 
-                                       filter.list = NULL) {
-    
-    out.list = lapply(network.lists, function(x) 
-        x[[tissue]])
-    
-    if (is.null(filter.list)) {
-        return(out.list)
-    } 
-    
-    filter.list.absent = setdiff(names(filter.list), names(out.list))
-    
-    if (length( filter.list.absent > 0))  {
-        stop(paste("filter.llist has variable names not present:", 
-                   paste(filter.list.absent, collapse = " ")) )
-    } 
-    
-    for (var in names(filter.list)) {
-        varlim = filter.list[[var]]
-        mat = out.list[[var]]
-        mat[ abs(mat) < varlim ] = 0
-        mat = mat[rowSums(mat) > 0, colSums(mat) > 0]
-        out.list[[var]] = mat
-    }
-    return(out.list)
-}
 
 
 #' Plotting a heatmap for signature networks. Can be a PCAWG-format with first 
@@ -1093,7 +1055,7 @@ plot_multi_network = function(network.lists, tissue, filter.list, layout = "stre
     
     tissue.nets = get_tissue_dataset_networks(
         tissue,
-        network.lists = all.interactions, 
+        network.lists = network.lists, 
         filter.list = list(MI = 0.2))
     
     for (type in names(tissue.nets)) {
@@ -1374,7 +1336,7 @@ survival_for_interactions = function(dataset, clin.df, signatures,
         return(survival.df)
     }
     
-    if (length(tissues) >1 ) {    
+    if (length(tissues) >1 ) { 
         if (with.total.muts) {
             if (tmb.logged) {
                 cox <- coxph(Surv(survival_time, vital_status) ~ age_at_diagnosis + 
@@ -1408,6 +1370,7 @@ survival_for_interactions = function(dataset, clin.df, signatures,
                          data = survival.df, na.action = na.omit)
         }
     }
+    
     temp <- cox.zph(cox) 
     
     summary(cox) 
@@ -1435,6 +1398,7 @@ survival_for_interactions = function(dataset, clin.df, signatures,
     
     return(list(survival.df = survival.df, coxout = cox, survP = P))
 }
+
 
 #' Running batch survival analysis tests for a set of interactions. Returns a
 #' plotlist for all the interaction test which didn't fail.

@@ -47,6 +47,9 @@ all.interactions = list(MI = PCAWG.bcmi.summary.nets,
                         cooccurrence = PCAWG.cooccurrence.summary.nets,
                         CoDa = PCAWG.coda.summary.nets,
                         Spearman = PCAWG.spearman.summary.nets)
+
+tissues = unique(PCAWG.full.subset.ann$Cancer.Types)
+
 ```
 
 ```{r tissue-interaction-network}
@@ -110,7 +113,6 @@ ggsave(filename = file.path(fig.dir, paste0(tissue, "_sig_heatmap.pdf") ),
 ```{r all-tissue-heatmap-networks, include = FALSE}
 plotlist = list()
 i = 1
-tissues = unique(PCAWG.full.subset.ann$Cancer.Types)
 for (tissue in tissues) {
     cat(tissue, " ")
 
@@ -170,7 +172,10 @@ for (tissue in tissues) {
             all.interactions, tissue = tissue, filter.list = list(MI = 0.2))
     })
 }
+```
 
+
+```{r plotting-int-network}
 sig.sig.ints.summary.plot = plot_all_counts(PCAWG.networks.concat, min.abssum = 3,
                                             psize = 4.5, lsize = 1.7, 
                                             expand.mult = c(0.02, 0.02)) + 
