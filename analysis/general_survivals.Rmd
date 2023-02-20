@@ -1,0 +1,79 @@
+---
+title: "General survival analysis"
+author: "Anna Hakobyan"
+date: "2022-11-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+rm(list = ls())
+knitr::opts_chunk$set(comment = '', fig.width = 6, 
+                      fig.height = 6, echo = FALSE, 
+                      warning = FALSE)
+```
+
+
+```{r load-packages}
+library(here)
+library(survival)
+library(survminer)
+
+source(here("R/load_packages.R"))
+library(gridExtra)
+library(ggforestplot)
+
+fig.dir = here("figures/survival_summaries")
+
+input.dir = here("data/RDS/PCAWG/metadata")
+```
+
+### Reading in clinical and signature data
+
+```{r}
+PCAWG.full.subset.ann = readRDS(file = here("data/RDS",
+                                           "PCAWG/signatures/PCAWG.full.subset.ann.RDS"))   
+PCAWG.clin.df = readRDS(file = file.path(input.dir, "PCAWG.clin.df.RDS") )
+
+positive.sig.sig = read.delim(file = here("supp_data", 
+                                        "PCAWG_positive_interaction_tissue_summaries.tsv"),
+                              row.names = 1)
+
+negative.sig.sig = read.delim(file = here("supp_data", 
+                                        "PCAWG_negative_interaction_tissue_summaries.tsv"),
+                            row.names = 1)
+
+PCAWG.tissues = PCAWG.full.subset.ann$Cancer.Types %>% unique()
+```
+
+
+```{r}
+pcawg.all.tissue.models = list()
+for (tissue in PCAWG.tissues) {
+    try({cat(tissue, "\n")
+    out = get_relevant_clin_df(PCAWG.clin.df, PCAWG.full.subset.ann, FALSE, tissue)
+    tissue.subset = out$tissues.subset
+    relevant.clin.df = out$relevant.clin.df
+    tissue.subset$TMB = rowSums(tissue.subset[, 4:ncol(tissue.subset)])
+    tissue.bound = cbind(relevant.clin.df, tissue.subset)
+    
+    tissue.cox = coxph(Surv(survival_time, vital_status) ~ age_at_diagnosis + 
+                                 TMB, 
+                             data = tissue.bound, na.action = na.omit)
+    pcawg.all.tissue.models[[tissue]] = tissue.cox
+    })
+}
+```
+
+```{r}
+pcawg.all.tissue.summary = HR_summary_for_all(pcawg.all.tissue.models)
+```
+
+```{r}
+p = plot_param_piechart(pcawg.all.tissue.summary, param = "age_at_diagnosis")
+```
+
+
+```{r}
+pcawg.sig.sig.pos = readRDS(here("data/RDS/PCAWG/sig_sig_survivals/pos.coxlist.totmut.nonbinary.RDS"))
+```
+
