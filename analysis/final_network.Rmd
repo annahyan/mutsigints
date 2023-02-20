@@ -1,0 +1,92 @@
+---
+title: "Overview of all interactions"
+output: 
+  html_document:
+    df_print: paged
+---
+
+```{r}
+knitr::opts_chunk$set(comment = '', fig.width = 6, 
+                      fig.height = 6, echo = FALSE, 
+                      warning = FALSE)
+```
+
+
+```{r load-packages, message=FALSE}
+library(here)
+fig.dir = here("figures/overview_networks")
+
+if(! file.exists(fig.dir)){
+    dir.create(fig.dir, recursive = TRUE)
+}
+
+source(here("R/load_packages.R"))
+library(igraph)
+library(tidygraph)
+library(pheatmap)
+library(viridis)
+```
+
+
+```{r}
+
+prep_the_data = function(dataset, cnames = "sig2") {
+    dataset %>% rownames_to_column( var = "sig1") %>% 
+        pivot_longer(cols = !sig1, names_to = cnames, values_to = "tissue") %>% 
+        mutate(tissue = strsplit(as.character(tissue), ", ")) %>% 
+        unnest(cols = c(tissue))
+}
+
+pcawg.pos.ints = read.table(
+    file = here("supp_data", "PCAWG_positive_interaction_tissue_summaries.tsv"),
+          row.names = 1, head  = T, sep = "\t")
+
+pcawg.pos.ints  = pcawg.pos.ints %>% prep_the_data() %>% mutate(int.type = "positive")
+
+pcawg.neg.ints = read.table(
+    file = here("supp_data", "PCAWG_negative_interaction_tissue_summaries.tsv"),
+          row.names = 1, head  = T, sep = "\t")
+
+pcawg.neg.ints = pcawg.neg.ints %>% prep_the_data() %>% mutate(int.type = "negative")
+
+pcawg.sig.sig.net = rbind(pcawg.pos.ints, pcawg.neg.ints) %>% 
+    as_tbl_graph() %>% 
+    activate(nodes) %>% 
+    mutate(type = "sig")
+
+pcawg.sig.path.pos = read.table(
+    file = here("supp_data", "PCAWG_sig_pathway_positive_interaction_tissue_summaries.tsv"),
+          row.names = 1, head  = T, sep = "\t")
+
+pcawg.sig.path.pos = pcawg.sig.path.pos %>% prep_the_data(cnames = "path")%>% mutate(int.type = "positive")
+    
+pcawg.sig.path.neg = read.table(
+    file = here("supp_data", "PCAWG_sig_pathway_negative_interaction_tissue_summaries.tsv"),
+          row.names = 1, head  = T, sep = "\t")
+
+pcawg.sig.path.neg = pcawg.sig.path.neg %>% prep_the_data(cnames = "path") %>% mutate(int.type = "negative")
+
+path.names = unique(c(pcawg.sig.path.pos$path, pcawg.sig.path.neg$path))
+    
+pcawg.sig.path = rbind(pcawg.sig.path.pos, pcawg.sig.path.neg) %>% 
+    as_tbl_graph() %>% 
+    activate(nodes) %>% 
+    mutate(type = ifelse(name %in% path.names, "path", "sig"))
+
+all.pcawg.interactions = graph_join(pcawg.sig.sig.net, pcawg.sig.path)
+```
+
+```{r}
+
+all.pcawg.interactions %>% 
+    ggraph(layout = "kk") +
+    geom_edge_link (aes(color = int.type), width = 0.7) +
+    geom_node_label(aes(label = name, fill = type), color = "gray10") +
+    scale_fill_manual(values = c("path" = "thistle3", "sig" = "palegreen3")) +
+    scale_edge_color_manual(values = c("positive" = "red4",
+                                       "negative" = "dodgerblue3")) + 
+    theme_void() +
+        theme(legend.position = "right", legend.title =element_blank() )
+    
+```
+
