@@ -195,36 +195,6 @@ plot_sigint_forest = function(data) {
 ```
 
 
-```{r}
-plot_param_piechart = function(data, param) {
-    data.tissues = data %>% 
-        filter(params == param) %>% 
-        mutate(HR.sign = estimate > 1,
-               significance = ifelse(sig.star != " ", TRUE, FALSE),
-               HR.sign = ifelse(significance == FALSE, FALSE, HR.sign)) %>% 
-        group_by(tissue, significance, HR.sign) %>% 
-        select(tissue, significance, HR.sign) %>% unique() %>% 
-        arrange(-significance, -HR.sign)
-
-    data.tissues = data.tissues[ !(duplicated(data.tissues$tissue)),]
-    
-    p = data.tissues %>% 
-        group_by(significance, HR.sign) %>% 
-        summarize(counts = n()) %>% 
-        mutate(colorcode = ifelse(significance == FALSE, "no effect",
-                                  ifelse(HR.sign, "positive", "negative"))) %>% 
-        ggplot(aes(x = "", y = counts, fill = colorcode)) +
-        geom_col(color = "white") +
-        geom_text(aes(label = counts),
-                  position = position_stack(vjust = 0.5), size =7) +
-        scale_fill_manual(values = c(`no effect` = "gray90",positive = "coral1", negative = "deepskyblue3"),
-                          name = "Effect on HR") +
-        coord_polar(theta = "y") + theme_void() 
-        # theme(legend.position = "none")
-    return(p)
-}
-```
-
 
 ## PCAWG
 #### PCAWG sig-sig interactions

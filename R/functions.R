@@ -1213,6 +1213,47 @@ get_interaction_tissues = function(list.of.int.elems, threshold = 0.1) {
 }
 
 
+#' Get survival data for relevant tissues 
+#' @param dataset Signature-activities for samples. E.g.PCAWG.full.subset.ann. 
+#' The first three columns are Cancer.Types, Sample.Names, Accuracy and fourth on 
+#' signature activities.
+#' @param clin.df Clinical data for samples. E.g. PCAWG.clin.df.
+#' @param tissues A vector of tissues where the interaction of signatures should 
+#' be assessed.
+#' @param is.TCGA 
+get_relevant_clin_df = function(clin.df, dataset, is.TCGA, tissues) {
+    
+    tissues.subset = dataset %>% filter(Cancer.Types %in% tissues)
+    
+    tissues.subset = tissues.subset[ ! duplicated(tissues.subset$Sample.Names), ]
+    
+    if ( ! is.TCGA ) { ### for PCAWG
+        relevant.clin.df = clin.df[ match(tissues.subset$Sample.Names, 
+                                          clin.df$icgc_donor_id), ]
+        
+        non_na.indeces = which(!is.na(relevant.clin.df$icgc_specimen_id))
+        
+        tissues.subset = tissues.subset[non_na.indeces, ]
+        relevant.clin.df = relevant.clin.df[ non_na.indeces, ]
+        
+    } else { ### for TCGA
+        
+        tissues.subset$Sample.Names = substr(tissues.subset$Sample.Names, 1, 12)
+        valid.indeces = which(tissues.subset$Sample.Names %in% clin.df$bcr_patient_barcode)
+        tissues.subset = tissues.subset[valid.indeces, ]
+        
+        relevant.clin.df = clin.df[ match(tissues.subset$Sample.Names, 
+                                          clin.df$bcr_patient_barcode), ]
+        
+        relevant.clin.df = as_tibble(relevant.clin.df)
+        
+        relevant.clin.df = rename(relevant.clin.df, survival_time = times)
+        relevant.clin.df = rename(relevant.clin.df, vital_status = patient.vital_status)
+    }
+    
+    return(list(relevant.clin.df = relevant.clin.df, tissues.subset = tissues.subset))
+}
+
 
 #' Survival analysis for signature-signature interactions with Cox proportional
 #' hazards regression model. 
@@ -1250,6 +1291,7 @@ survival_for_interactions = function(dataset, clin.df, signatures,
     #                                          tissues = c("Ovary-AdenoCA", "Thy-AdenoCA"), 
     #                                          clin.df = PCAWG.clin.df)    
     
+
     #### checking if TCGA 
     TCGA = FALSE
     if ( substr(dataset$Sample.Names[1], 1, 4) == "TCGA") {
@@ -1262,37 +1304,42 @@ survival_for_interactions = function(dataset, clin.df, signatures,
         return(NULL)
     }
     
-    tissues.subset = dataset %>% filter(Cancer.Types %in% tissues)
+    relevant.clin.df.out = get_relevant_clin_df(clin.df = clin.df, dataset = dataset,
+                                            is.TCGA = TCGA, tissues = tissues)
     
-    tissues.subset = tissues.subset[ ! duplicated(tissues.subset$Sample.Names), ]
-    
-    if ( ! TCGA ) { ### for PCAWG
-        adjusted.clin.df = clin.df[ match(tissues.subset$Sample.Names, 
-                                          clin.df$icgc_donor_id), ]
-        
-        non_na.indeces = which(!is.na(adjusted.clin.df$icgc_specimen_id))
-        
-        tissues.subset = tissues.subset[non_na.indeces, ]
-        adjusted.clin.df = adjusted.clin.df[ non_na.indeces, ]
-        
-    } else { ### for TCGA
-        
-        tissues.subset$Sample.Names = substr(tissues.subset$Sample.Names, 1, 12)
-        valid.indeces = which(tissues.subset$Sample.Names %in% clin.df$bcr_patient_barcode)
-        tissues.subset = tissues.subset[valid.indeces, ]
-        
-        adjusted.clin.df = clin.df[ match(tissues.subset$Sample.Names, 
-                                          clin.df$bcr_patient_barcode), ]
-        
-        adjusted.clin.df = as_tibble(adjusted.clin.df)
-        
-        adjusted.clin.df = rename(adjusted.clin.df, survival_time = times)
-        adjusted.clin.df = rename(adjusted.clin.df, vital_status = patient.vital_status)
-        
-    }
+    relevant.clin.df =  relevant.clin.df.out$relevant.clin.df
+    tissues.subset = relevant.clin.df.out$tissues.subset
+    # tissues.subset = dataset %>% filter(Cancer.Types %in% tissues)
+    # 
+    # tissues.subset = tissues.subset[ ! duplicated(tissues.subset$Sample.Names), ]
+    # 
+    # if ( ! TCGA ) { ### for PCAWG
+    #     relevant.clin.df = clin.df[ match(tissues.subset$Sample.Names, 
+    #                                       clin.df$icgc_donor_id), ]
+    #     
+    #     non_na.indeces = which(!is.na(relevant.clin.df$icgc_specimen_id))
+    #     
+    #     tissues.subset = tissues.subset[non_na.indeces, ]
+    #     relevant.clin.df = relevant.clin.df[ non_na.indeces, ]
+    #     
+    # } else { ### for TCGA
+    #     
+    #     tissues.subset$Sample.Names = substr(tissues.subset$Sample.Names, 1, 12)
+    #     valid.indeces = which(tissues.subset$Sample.Names %in% clin.df$bcr_patient_barcode)
+    #     tissues.subset = tissues.subset[valid.indeces, ]
+    #     
+    #     relevant.clin.df = clin.df[ match(tissues.subset$Sample.Names, 
+    #                                       clin.df$bcr_patient_barcode), ]
+    #     
+    #     relevant.clin.df = as_tibble(relevant.clin.df)
+    #     
+    #     relevant.clin.df = rename(relevant.clin.df, survival_time = times)
+    #     relevant.clin.df = rename(relevant.clin.df, vital_status = patient.vital_status)
+    #     
+    # }
     
     survival.df = cbind(tissues.subset[, 1:3], tissues.subset[, signatures], 
-                        adjusted.clin.df[, c("survival_time", "vital_status", 
+                        relevant.clin.df[, c("survival_time", "vital_status", 
                                              "age_at_diagnosis"#, "sex"
                         ) ] )
     
@@ -1922,5 +1969,38 @@ plot_HR_vars = function(all.conds.df, param, average = TRUE, log.HR = FALSE, no_
         coord_cartesian(xlim = xlimits, clip = "off") + 
         theme(plot.margin = margin(0, 0, 0, 0.3, "cm"))
     
+    return(p)
+}
+
+
+#' Creates summaries from survival summaries generated by HR_summary_for_all
+#' @param data summary output created by HR_summary_for_all
+#' @param param the name of the parameter to summarize
+
+plot_param_piechart = function(data, param) {
+    data.tissues = data %>% 
+        filter(params == param) %>% 
+        mutate(HR.sign = estimate > 1,
+               significance = ifelse(sig.star != " ", TRUE, FALSE),
+               HR.sign = ifelse(significance == FALSE, FALSE, HR.sign)) %>% 
+        group_by(tissue, significance, HR.sign) %>% 
+        select(tissue, significance, HR.sign) %>% unique() %>% 
+        arrange(-significance, -HR.sign)
+    
+    data.tissues = data.tissues[ !(duplicated(data.tissues$tissue)),]
+    
+    p = data.tissues %>% 
+        group_by(significance, HR.sign) %>% 
+        summarize(counts = n()) %>% 
+        mutate(colorcode = ifelse(significance == FALSE, "no effect",
+                                  ifelse(HR.sign, "positive", "negative"))) %>% 
+        ggplot(aes(x = "", y = counts, fill = colorcode)) +
+        geom_col(color = "white") +
+        geom_text(aes(label = counts),
+                  position = position_stack(vjust = 0.5), size =7) +
+        scale_fill_manual(values = c(`no effect` = "gray90",positive = "coral1", negative = "deepskyblue3"),
+                          name = "Effect on HR") +
+        coord_polar(theta = "y") + theme_void() 
+    # theme(legend.position = "none")
     return(p)
 }
