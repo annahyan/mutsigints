@@ -14,6 +14,7 @@ knitr::opts_chunk$set(comment = '', fig.width = 6,
 
 ```{r load-packages, message=FALSE}
 library(here)
+library(chrwiseSignatures)
 fig.dir = here("figures/overview_networks")
 
 if(! file.exists(fig.dir)){
@@ -77,16 +78,93 @@ all.pcawg.interactions = graph_join(pcawg.sig.sig.net, pcawg.sig.path)
 ```
 
 ```{r}
-
 all.pcawg.interactions %>% 
     ggraph(layout = "kk") +
-    geom_edge_link (aes(color = int.type), width = 0.7) +
-    geom_node_label(aes(label = name, fill = type), color = "gray10") +
+    geom_edge_link (aes(color = int.type), width = 0.5) +
+    
+    geom_node_label(aes(label = name, fill = type),
+                    color = "gray10", 
+                    label.size = 0, size = 3, 
+                    label.r = unit(0.2, "lines"),
+                    label.padding = unit(0.2, "lines")) +
+    
     scale_fill_manual(values = c("path" = "thistle3", "sig" = "palegreen3")) +
+    
     scale_edge_color_manual(values = c("positive" = "red4",
                                        "negative" = "dodgerblue3")) + 
     theme_void() +
         theme(legend.position = "right", legend.title =element_blank() )
     
+```
+### Playing around with dh layout 
+
+```{r}
+igraph_dh_mod = layout_with_dh()
+layout <- create_layout(all.pcawg.interactions, layout = "dh", 
+                        weight.border = 0.011,
+                        weight.node.dist = 0.4,
+                        weight.edge.crossings = 0.9,
+                        weight.node.edge.dist = 0.4)
+
+# ggraph(graph = layout) +
+all.interactions.network = all.pcawg.interactions %>% ggraph(layout = "kk") +
+    geom_edge_link (width = 0.6, color = "gray90") +
+    
+    # geom_edge_link (aes(color = int.type), width = 0.5) +
+    #  scale_edge_color_manual(values = c("positive" = lighten("firebrick3", amount = 30),
+    #                                    "negative" = lighten("dodgerblue3", amount = 30))) + 
+    # 
+    geom_edge_link (aes(color = int.type), width = 0.5) +
+     scale_edge_color_manual(values = c("positive" = "firebrick3",
+                                       "negative" = "dodgerblue3")) + 
+    
+    geom_node_label(aes(label = name, fill = type, color = type),
+                    # color = "gray30", 
+                    label.size = 0.1, 
+                    size = 4, 
+                    label.r = unit(0.2, "lines"),
+                    label.padding = unit(0.2, "lines")) +
+    
+    scale_color_manual(values = c("path" = "gray30", "sig" = "white")) +
+    
+    scale_fill_manual(values = c("path" = "white", "sig" = "gray30")) +
+    
+    scale_edge_color_manual(values = c("positive" = "firebrick3",
+                                       "negative" = "dodgerblue3")) + 
+    theme_void() +
+        theme(legend.position = "right", legend.title =element_blank())
+
+ggsave( minor_plot(all.interactions.network, expand.factor = 0.05), 
+       file = file.path(fig.dir,
+                        "all.interactions.network.pdf"),
+       width = 7, height = 6)
+```
+
+### Plotting only signatures
+
+```{r}
+layout <- create_layout(pcawg.sig.sig.net, layout = "kk"# , 
+                        # bbox = 0, mds = FALSE
+                        )
+
+
+all.only.sig.network = pcawg.sig.sig.net %>% 
+    ggraph(graph = layout) +
+    geom_edge_link (aes(color = int.type), width = 0.5) +
+    
+    geom_node_label(aes(label = name),
+                    color = "gray10", 
+                    label.size = 0, size = 3, 
+                    label.r = unit(0.2, "lines"),
+                    label.padding = unit(0.1, "lines")) +
+    
+    scale_edge_color_manual(values = c("positive" = "red4",
+                                       "negative" = "dodgerblue3")) + 
+    theme_void() +
+        theme(legend.position = "right", legend.title =element_blank() )
+
+ggsave(all.only.sig.network, file = file.path(fig.dir,
+                                              "all.only.sig.networks.pdf"),
+       width = 6, height = 5)
 ```
 
