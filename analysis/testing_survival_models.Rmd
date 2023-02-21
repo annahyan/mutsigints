@@ -158,7 +158,28 @@ med.fit2 = survival_for_interactions(dataset = PCAWG.full.subset.ann,
                                  tmb.logged = TRUE,
                                  binary.status = FALSE)
 
+med.fit2 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+                                 signatures = c("ROS", "SBS40"), 
+                                 tissues = "CNS_Medullo", 
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = TRUE,
+                                 tmb.logged = TRUE,
+                                 binary.status = FALSE)
 
 aout = anova(med.fit0$coxout, med.fit1$coxout, med.fit2$coxout)
+```
+
+
+```{r}
+all.models = pick_survival_model_int(dataset = PCAWG.full.subset.ann, 
+                          signatures = c("SBS40", "ROS"), 
+                          tissues = "Prost_AdenoCA", 
+                          clin.df = PCAWG.clin.df)
+
+
+all.models = pick_survival_model_int(dataset = PCAWG.full.subset.ann, 
+                          signatures = c("SBS40", "Ageing"), 
+                          tissues = "CNS_GBM", 
+                          clin.df = PCAWG.clin.df)
 ```
 

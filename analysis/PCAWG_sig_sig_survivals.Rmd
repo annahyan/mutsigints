@@ -124,6 +124,18 @@ pos.coxlist = get_surv_coxlist(positive.sig.sig,
 saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.nototmut.nonbinary.RDS"))
 ```
 
+
+```{r}
+pos.picked.models = get_surv_best_model(positive.sig.sig, 
+                                 dataset = PCAWG.full.subset.ann,
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
+                                 binary.status = FALSE)
+saveRDS(pos.picked.models, file = file.path(out.dir, "pcawg.pos.picked.models.RDS"))
+```
+
+
 ### Survival models for negative interactions
 
 ```{r}
@@ -196,9 +208,15 @@ saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.nototmut.nonbinary.R
 
 ```
 
-
-
-
+```{r}
+neg.picked.models = get_surv_best_model(negative.sig.sig, 
+                                 dataset = PCAWG.full.subset.ann,
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
+                                 binary.status = FALSE)
+saveRDS(neg.picked.models, file = file.path(out.dir, "pcawg.neg.picked.models.RDS"))
+```
 
 ```{r}
 mult_tissues_ROS_SBS40 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 

@@ -41,7 +41,6 @@ tcga.sig.path.pos = readRDS(here("data/RDS/TCGA/sig_pathway_survivals/pos.coxlis
 tcga.sig.path.neg = readRDS(here("data/RDS/TCGA/sig_pathway_survivals/neg.coxlist.totmut.nonbinary.RDS"))
 
 
-
 # pcawg.sig.sig.pos = readRDS(here("data/RDS/PCAWG/sig_sig_survivals/pos.coxlist.nototmut.nonbinary.RDS"))
 # pcawg.sig.sig.neg = readRDS(here("data/RDS/PCAWG/sig_sig_survivals/neg.coxlist.nototmut.nonbinary.RDS"))
 # 
@@ -54,7 +53,6 @@ tcga.sig.path.neg = readRDS(here("data/RDS/TCGA/sig_pathway_survivals/neg.coxlis
 # tcga.sig.path.pos = readRDS(here("data/RDS/TCGA/sig_pathway_survivals/pos.coxlist.nototmut.nonbinary.RDS"))
 # tcga.sig.path.neg = readRDS(here("data/RDS/TCGA/sig_pathway_survivals/neg.coxlist.nototmut.nonbinary.RDS"))
 ```
-
 
 ### Forest plot for HR for tissues - Age and TMB
 
@@ -221,7 +219,8 @@ ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.sig.age.piechart.pdf")
 
 
 ```{r}
-pcawg.age.ggforest = plot_HR_vars(all.conds.df = pcawg.sig.sig.comb, param = "age_at_diagnosis",
+pcawg.age.ggforest = plot_HR_vars(
+    all.conds.df = pcawg.sig.sig.comb, param = "age_at_diagnosis",
              average = TRUE, no_stripes = FALSE) + 
     theme(axis.title.y = element_blank())
 
@@ -238,7 +237,8 @@ ggsave(plot = pcawg.age.ggforest.log.HR,
        filename = file.path(fig.dir, "pcawg.age.ggforest.log.HR.pdf"),
        width = 4.5, height = 3)
 
-pcawg.tmb.ggforest = plot_HR_vars(all.conds.df = pcawg.sig.sig.comb, param = "log(total_muts + 1)",
+pcawg.tmb.ggforest = plot_HR_vars(
+    all.conds.df = pcawg.sig.sig.comb, param = "log(total_muts + 1)",
              average = TRUE, no_stripes = FALSE)
 
 ggsave(plot = pcawg.tmb.ggforest, 
@@ -427,4 +427,22 @@ ggsave(plot = both.tmb.ggforest.log.HR,
        width = 4, height = 5)
 ```
  
+
+```{r}
+pcawg.pos.ss.picked.surv.out = readRDS(file = file.path(out.dir, "pcawg.pos.sig.sig.picked.models.RDS"))
+pcawg.pos.ss.picked.models = lapply(pcawg.pos.ss.picked.surv.out, function(x) {x[["model"]]})
+
+pcawg.neg.ss.picked.surv.out = readRDS(file = file.path(out.dir, "pcawg.neg.sig.sig.picked.models.RDS"))
+pcawg.neg.ss.picked.models = lapply(pcawg.neg.ss.picked.surv.out, function(x) {x[["model"]]})
+```
+
+```{r}
+pcawg.pos.ss.picked.summary = HR_summary_for_all(pcawg.pos.ss.picked.models, type = "pos")
+pcawg.neg.ss.picked.summary = HR_summary_for_all(pcawg.neg.ss.picked.models, type = "neg")
+
+pcawg.ss.picked.combined = rbind(pcawg.pos.ss.picked.summary, pcawg.neg.ss.picked.summary)
+
+pp = plot_sigint_forest(pcawg.ss.picked.combined)
+```
+
  
