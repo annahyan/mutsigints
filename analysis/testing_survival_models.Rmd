@@ -1,0 +1,164 @@
+---
+title: "Signalling pathways in PCAWG"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r}
+knitr::opts_chunk$set(comment = '', fig.width = 6, 
+                      fig.height = 6, echo = FALSE, 
+                      warning = FALSE)
+```
+
+
+```{r load-packages, message=FALSE}
+library(here)
+library(survival)
+library(survminer)
+
+source(here("R/load_packages.R"))
+library(gridExtra)
+
+input.dir = here("data/RDS/PCAWG/metadata")
+
+out.dir = here("data/RDS/PCAWG/sig_sig_survivals")
+fig.dir = here("figures/sig_sig_survivals")
+
+for (dir.name in c(fig.dir, out.dir)) {
+    if (! file.exists(dir.name) ) {
+        dir.create(dir.name, recursive = TRUE)
+    }
+}
+```
+
+```{r loading}
+PCAWG.pathways.tissues = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways",
+                                              "pcawg_pathways.RDS"))
+
+PCAWG.full.subset.ann.pathways = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways",
+                                              "PCAWG.full.subset.ann.pathways.RDS"))
+
+PCAWG.full.subset.ann = readRDS(here("data", "RDS", "PCAWG", "signatures",
+                                     "PCAWG.full.subset.ann.RDS"))
+
+PCAWG.clin.df = readRDS(file = file.path(input.dir, "PCAWG.clin.df.RDS") )
+
+PCAWG.active.sig.counts = data.frame(Tissues = PCAWG.full.subset.ann$Cancer.Types,
+                                      active.sig.counts = rowSums(PCAWG.full.subset.ann[4:ncol(PCAWG.full.subset.ann)] > 0))
+```
+
+
+```{r}
+# fit0 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+#                           signatures = c("SBS40", "ROS"), 
+#                           tissues = "Panc_AdenoCA", 
+#                           clin.df = PCAWG.clin.df,
+#                           with.total.muts = FALSE,
+#                           tmb.logged = FALSE,
+#                           binary.status = TRUE)
+# 
+# fit1 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+#                                  signatures = c("SBS40", "ROS"), 
+#                                  tissues = "Panc_AdenoCA", 
+#                                  clin.df = PCAWG.clin.df,
+#                                  with.total.muts = FALSE,
+#                                  tmb.logged = FALSE,
+#                                  binary.status = FALSE)
+# 
+# fit2 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+#                                  signatures = c("SBS40", "ROS"), 
+#                                  tissues = "Panc_AdenoCA", 
+#                                  clin.df = PCAWG.clin.df,
+#                                  with.total.muts = TRUE,
+#                                  tmb.logged = TRUE,
+#                                  binary.status = FALSE)
+
+
+prost.fit0 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+                          signatures = c("SBS40", "ROS"), 
+                          tissues = "Prost_AdenoCA", 
+                          clin.df = PCAWG.clin.df,
+                          with.total.muts = TRUE,
+                          tmb.logged = TRUE,
+                          binary.status = TRUE)
+
+prost.fit1 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+                          signatures = c("SBS40", "ROS"), 
+                          tissues = "Prost_AdenoCA", 
+                          clin.df = PCAWG.clin.df,
+                          with.total.muts = FALSE,
+                          tmb.logged = TRUE,
+                          binary.status = TRUE)
+
+prost.fit2 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+                          signatures = c("SBS40", "ROS"), 
+                          tissues = "Prost_AdenoCA", 
+                          clin.df = PCAWG.clin.df,
+                          with.total.muts = TRUE,
+                          tmb.logged = TRUE,
+                          binary.status = FALSE)
+
+aout = anova(prost.fit0$coxout, prost.fit1$coxout, prost.fit2$coxout)
+
+```
+
+```{r}
+ov.fit0 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+                          signatures = c("SBS40", "ROS"), 
+                          tissues = "Ovary_AdenoCA", 
+                          clin.df = PCAWG.clin.df,
+                          with.total.muts = FALSE,
+                          tmb.logged = FALSE,
+                          binary.status = TRUE)
+
+ov.fit1 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+                                 signatures = c("SBS40", "ROS"), 
+                                 tissues = "Ovary_AdenoCA", 
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = FALSE,
+                                 tmb.logged = FALSE,
+                                 binary.status = FALSE)
+
+ov.fit2 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+                                 signatures = c("SBS40", "ROS"), 
+                                 tissues = "Ovary_AdenoCA", 
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = TRUE,
+                                 tmb.logged = TRUE,
+                                 binary.status = FALSE)
+
+
+aout = anova(ov.fit0$coxout, ov.fit1$coxout, ov.fit2$coxout)
+
+```
+
+```{r}
+med.fit0 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+                          signatures = c("SBS40", "ROS"), 
+                          tissues = "CNS_Medullo", 
+                          clin.df = PCAWG.clin.df,
+                          with.total.muts = FALSE,
+                          tmb.logged = FALSE,
+                          binary.status = TRUE)
+
+med.fit1 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+                                 signatures = c("SBS40", "ROS"), 
+                                 tissues = "CNS_Medullo", 
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = FALSE,
+                                 tmb.logged = FALSE,
+                                 binary.status = FALSE)
+
+med.fit2 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+                                 signatures = c("SBS40", "ROS"), 
+                                 tissues = "CNS_Medullo", 
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = TRUE,
+                                 tmb.logged = TRUE,
+                                 binary.status = FALSE)
+
+
+aout = anova(med.fit0$coxout, med.fit1$coxout, med.fit2$coxout)
+```
+
