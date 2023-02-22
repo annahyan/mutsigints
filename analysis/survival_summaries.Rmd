@@ -430,15 +430,15 @@ ggsave(plot = both.tmb.ggforest.log.HR,
 
 ```{r}
 pcawg.pos.ss.picked.surv.out = readRDS(file = file.path(out.dir, "pcawg.pos.sig.sig.picked.models.RDS"))
-pcawg.pos.ss.picked.models = lapply(pcawg.pos.ss.picked.surv.out, function(x) {x[["model"]]})
+# pcawg.pos.ss.picked.models = lapply(pcawg.pos.ss.picked.surv.out, function(x) {x[["model"]]})
 
 pcawg.neg.ss.picked.surv.out = readRDS(file = file.path(out.dir, "pcawg.neg.sig.sig.picked.models.RDS"))
-pcawg.neg.ss.picked.models = lapply(pcawg.neg.ss.picked.surv.out, function(x) {x[["model"]]})
+# pcawg.neg.ss.picked.models = lapply(pcawg.neg.ss.picked.surv.out, function(x) {x[["model"]]})
 ```
 
 ```{r}
-pcawg.pos.ss.picked.summary = HR_summary_for_all(pcawg.pos.ss.picked.models, type = "pos")
-pcawg.neg.ss.picked.summary = HR_summary_for_all(pcawg.neg.ss.picked.models, type = "neg")
+pcawg.pos.ss.picked.summary = HR_summary_for_all(pcawg.pos.ss.picked.surv.out, type = "pos")
+pcawg.neg.ss.picked.summary = HR_summary_for_all(pcawg.neg.ss.picked.surv.out, type = "neg")
 
 pcawg.ss.picked.combined = rbind(pcawg.pos.ss.picked.summary, pcawg.neg.ss.picked.summary)
 

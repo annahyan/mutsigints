@@ -2040,8 +2040,8 @@ pathways_signatures_heatmap = function(tissue, signatures, pathways,
 #' models and parameters.
 
 HR_summary_for_all = function(interaction.summaries, type = NULL) {
-    
-    get_surv_vector = function(cox.out, cond, param.name = param) {
+
+    get_surv_vector = function(cox.out, cond, model.params = NULL) {
         summary.out = summary(cox.out)
         coeffs = summary.out$coefficients
         conf.int = summary.out$conf.int
@@ -2053,17 +2053,32 @@ HR_summary_for_all = function(interaction.summaries, type = NULL) {
         lower.95 = conf.int[, 3]
         upper.95 = conf.int[, 4]
         estimate = conf.int[, 1]
-        return(data.frame(params = gsub(pattern = "status", "", rownames(conf.int) ), 
+        out.data = data.frame(params = gsub(pattern = "status", "", rownames(conf.int) ), 
                           cond = cond, 
                           estimate = estimate, 
                           lower.95 = lower.95, 
                           upper.95 = upper.95, 
                           P.val = P.val, 
-                          sig.star = sig.star))
+                          sig.star = sig.star)
+        
+        if (!is.null(model.params)) {
+           out.data = cbind(out.data, model.params %>% t() %>% 
+                                as.data.frame() %>% 
+                                slice(rep(1:n(), each = nrow(out.data) ) ) )
+        }
+        return(out.data)
     }
     
-    all.cond.summaries.list = lapply(names(interaction.summaries), function(x)
-        get_surv_vector(interaction.summaries[[x]], x))
+    if (all(c("input.params", "model") %in% names(interaction.summaries[[1]])) ) {
+        models.list = lapply(interaction.summaries, function(x) x[["model"]])
+        model.params.list = lapply(interaction.summaries, function(x) x[["input.params"]])
+    } else {
+        models.list = interaction.summaries
+        model.params.list = NULL
+    }
+        
+    all.cond.summaries.list = lapply(names(models.list), function(x)
+        get_surv_vector(models.list[[x]], x, model.params.list[[x]]))
     all.params.ever = do.call(rbind, all.cond.summaries.list)
     all.params.ever$tissue = sapply(strsplit(all.params.ever$cond, " :: "), function(x) x[1])
     all.params.ever$int = sapply(strsplit(all.params.ever$cond, " :: "), function(x) x[2])
