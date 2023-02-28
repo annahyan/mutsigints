@@ -12,7 +12,7 @@ knitr::opts_chunk$set(comment = '', fig.width = 6,
 ```
 
 
-```{r load-packages, message=FALSE}
+```{r load-packages, message=FALSE, warning= FALSE}
 library(here)
 library(chrwiseSignatures)
 fig.dir = here("figures/overview_networks")
@@ -26,16 +26,18 @@ library(igraph)
 library(tidygraph)
 library(pheatmap)
 library(viridis)
+library(rlang)
 ```
 
 
 ```{r}
-
 prep_the_data = function(dataset, cnames = "sig2") {
     dataset %>% rownames_to_column( var = "sig1") %>% 
         pivot_longer(cols = !sig1, names_to = cnames, values_to = "tissue") %>% 
         mutate(tissue = strsplit(as.character(tissue), ", ")) %>% 
-        unnest(cols = c(tissue))
+        unnest(cols = c(tissue)) %>% 
+        group_by(sig1, (!!sym(cnames))) %>% 
+        summarize(count = n())
 }
 
 pcawg.pos.ints = read.table(
@@ -84,7 +86,7 @@ all.pcawg.interactions %>%
     
     geom_node_label(aes(label = name, fill = type),
                     color = "gray10", 
-                    label.size = 0, size = 3, 
+                    label.size = 0, linewidth = 3, 
                     label.r = unit(0.2, "lines"),
                     label.padding = unit(0.2, "lines")) +
     
@@ -95,6 +97,26 @@ all.pcawg.interactions %>%
     theme_void() +
         theme(legend.position = "right", legend.title =element_blank() )
     
+
+
+all.pcawg.interactions %>% 
+    ggraph(layout = "circle") +
+    geom_edge_link (aes(color = int.type), width = 0.5) +
+    geom_node_point(aes(fill = type)) + 
+    geom_node_label(aes(label = name#, fill = type
+                        ),
+                    color = "gray10", 
+                    label.size = 0, linewidth = 3, 
+                    label.r = unit(0.2, "lines"),
+                    label.padding = unit(0, "lines"),
+                   nudge_y = 0.2) +
+    
+    scale_fill_manual(values = c("path" = "thistle3", "sig" = "palegreen3")) +
+    
+    scale_edge_color_manual(values = c("positive" = "red4",
+                                       "negative" = "dodgerblue3")) + 
+    theme_void() +
+        theme(legend.position = "right", legend.title =element_blank() )
 ```
 ### Playing around with dh layout 
 
@@ -166,5 +188,101 @@ all.only.sig.network = pcawg.sig.sig.net %>%
 ggsave(all.only.sig.network, file = file.path(fig.dir,
                                               "all.only.sig.networks.pdf"),
        width = 6, height = 5)
+```
+
+```{r}
+plot.mixed.layout = function(graph.input, 
+                             central.nodes = c("Ageing" , "SBS5", "SBS40"),
+                             circular.node.order = NULL) {
+    
+    all.nodes = graph.input %>% 
+        activate(nodes) %>% 
+        as.data.frame() %>% 
+        pull(name)
+    
+    graph.input = graph.input %>% 
+        activate(nodes) %>% 
+        mutate(annot.class = node.annotations %>% 
+                   filter(sig.group %in% all.nodes) %>% 
+                   select(Class, sig.group) %>% 
+                   unique() %>% 
+                   arrange(factor(sig.group, levels = all.nodes)) %>% 
+                   pull(Class))
+    
+    circle.nodes = setdiff(all.nodes, central.nodes)
+    # 
+    # lay1 = layout_in_circle(induced_subgraph(graph.input, circle.nodes))
+    # lay2 = layout_nicely(induced_subgraph(graph.input, central.nodes))
+    # lay3 <- rbind(lay1 + 2, lay2 *  10) 
+    # 
+    
+    central.subgraph = graph.input %>% 
+        to_subgraph(name %in% central.nodes, subset_by = "nodes") 
+    
+    circle.subgraph = graph.input %>% 
+        to_subgraph(name %in% circle.nodes, subset_by = "nodes") 
+    
+    lay.central = create_layout(central.subgraph$subgraph,
+                                layout = "stress")
+    
+    if (is.null(circular.node.order)) {
+        lay.circle = create_layout(circle.subgraph$subgraph,
+                                   layout = "circle")
+    } else {
+        lay.circle = create_layout(circle.subgraph$subgraph,
+                                   layout = "circle", order = circular.node.order)
+    }
+        
+    # plot.igraph(pcawg.sig.sig.net, layout=lay3, vertex.size=8)
+    
+    node.coordinates = rbind(lay.central, lay.circle) %>% as.data.frame() %>% 
+        arrange(factor(name, levels = all.nodes)) 
+    
+    pp = graph.input %>% ggraph(x = node.coordinates$x, y = node.coordinates$y) + 
+        geom_edge_link (aes(color = int.type, width = count), alpha = 0.4) +
+        scale_edge_width(breaks = c(1,2,4,13), range = c(0.5,3)) +
+        geom_node_point(aes(fill = annot.class), 
+                        color = "gray30", 
+                        size = 4,
+                        shape = 21,
+                        stroke = 0.6) + 
+        geom_node_label(aes(label = name#, fill = type
+                            ),
+                        color = "gray10", 
+                        label.size = 0,
+                        label.r = unit(0.2, "lines"),
+                        label.padding = unit(0, "lines"),
+                       nudge_y = 0.1) + 
+        scale_edge_color_manual(values = c("positive" = "red4",
+                                           "negative" = "dodgerblue3")) + 
+        scale_fill_manual(values = c("Endogenous" = "#CAE7B9",
+                                      "Environmental" = "#f3de8a",
+                                      # "Clock-like" = "#ff934f",
+                                      "Clock-like" = "white",
+                                      "Unknown" = "#4e6151") ) +
+        theme_void() + 
+        theme(legend.position = "right", legend.title =element_blank() )
+    return(pp)
+}
+
+node.order = c(sort(c("APOBEC", "MMR", "HR", "ROS", "PolH", "PolE")),
+                
+               sort(c("SBS39", "SBS19", "SBS23", "SBS28", "SBS17", "SBS30", 
+                "SBS34", "SBS37", "SBS12", "Technical")),
+               
+               sort(c("Tobacco", "UV", "SBS38", "SBS29")))
+
+node.annotations = data.frame(sig.group = c(node.order, c("Ageing", "SBS5", "SBS40")),
+                              Class = c(rep("Endogenous", 6), 
+                                        rep("Unknown", 10),
+                                        rep("Environmental", 4),
+                                        rep("Clock-like", 3))
+                             )
+
+
+sig.sig.all.network = plot.mixed.layout(pcawg.sig.sig.net, circular.node.order = node.order)
+ggsave(plot = minor_plot(sig.sig.all.network, expand.factor = 0.05), 
+       filename = file.path(fig.dir, "sig.sig.all.network.pdf"),
+       width = 5.5, height = 4.3)
 ```
 

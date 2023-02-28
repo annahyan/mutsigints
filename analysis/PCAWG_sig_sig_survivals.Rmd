@@ -132,7 +132,7 @@ pos.picked.models = get_surv_best_model(positive.sig.sig,
                                  with.total.muts = TRUE, 
                                  tmb.logged = TRUE,
                                  binary.status = FALSE)
-saveRDS(pos.picked.models, file = file.path(out.dir, "pcawg.pos.picked.models.RDS"))
+saveRDS(pos.picked.models, file = file.path(out.dir, "pcawg.pos.sig.sig.picked.models.RDS"))
 ```
 
 
@@ -215,7 +215,7 @@ neg.picked.models = get_surv_best_model(negative.sig.sig,
                                  with.total.muts = TRUE, 
                                  tmb.logged = TRUE,
                                  binary.status = FALSE)
-saveRDS(neg.picked.models, file = file.path(out.dir, "pcawg.neg.picked.models.RDS"))
+saveRDS(neg.picked.models, file = file.path(out.dir, "pcawg.neg.sig.sig.picked.models.RDS"))
 ```
 
 ```{r}
