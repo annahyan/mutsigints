@@ -593,8 +593,11 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.1, min.abssum = 1,
     
     gg.final.dt = as.data.frame(gg.final.dt)
     
-    d <- ggplot(gg.final.dt, aes(x = x, y = y, color = int.type,
-             shape = int.type, label = count, alpha = abs(count)))
+    d <- ggplot(gg.final.dt, aes(x = x, y = y, 
+                                 color = int.type,
+                                 shape = int.type, 
+                                 label = abs(count), 
+                                 alpha = abs(count)))
     
     if (Sys.info()['sysname'] == "Darwin") {
         # d = d + point_with_family(geom_point(size = 5), "wqy-microhei")

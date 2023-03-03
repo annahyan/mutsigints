@@ -59,7 +59,7 @@ tissue.nets = get_tissue_dataset_networks(tissue, all.interactions,
 tissue.multi.graph = tissue_multi_graph(tissue.nets)
 
 pp = print_multi_graphs(tissue.multi.graph, 
-                   layout = "mds")
+                   layout = "dh")
 
 # max.degree.node = tissue.multi.graph %>% 
 #     activate(nodes) %>% 
@@ -145,7 +145,7 @@ for (i in 1:length(plotlist) ) {
 dev.off()
 ```
 
-```{r}
+```{r, include = FALSE}
 for (metric in names(all.interactions)) {
     
     cat("\t metric = ", metric, "\n")

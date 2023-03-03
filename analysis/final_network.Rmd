@@ -29,6 +29,7 @@ library(viridis)
 library(rlang)
 ```
 
+### getting PCAWG summary network
 
 ```{r}
 prep_the_data = function(dataset, cnames = "sig2") {
@@ -79,6 +80,59 @@ pcawg.sig.path = rbind(pcawg.sig.path.pos, pcawg.sig.path.neg) %>%
 all.pcawg.interactions = graph_join(pcawg.sig.sig.net, pcawg.sig.path)
 ```
 
+
+### getting TCGA summary network
+
+```{r}
+prep_the_data = function(dataset, cnames = "sig2") {
+    dataset %>% rownames_to_column( var = "sig1") %>% 
+        pivot_longer(cols = !sig1, names_to = cnames, values_to = "tissue") %>% 
+        mutate(tissue = strsplit(as.character(tissue), ", ")) %>% 
+        unnest(cols = c(tissue)) %>% 
+        group_by(sig1, (!!sym(cnames))) %>% 
+        summarize(count = n())
+}
+
+tcga.pos.ints = read.table(
+    file = here("supp_data", "TCGA_positive_interaction_tissue_summaries.tsv"),
+          row.names = 1, head  = T, sep = "\t")
+
+tcga.pos.ints  = tcga.pos.ints %>% prep_the_data() %>% mutate(int.type = "positive")
+
+tcga.neg.ints = read.table(
+    file = here("supp_data", "TCGA_negative_interaction_tissue_summaries.tsv"),
+          row.names = 1, head  = T, sep = "\t")
+
+tcga.neg.ints = tcga.neg.ints %>% prep_the_data() %>% mutate(int.type = "negative")
+
+tcga.sig.sig.net = rbind(tcga.pos.ints, tcga.neg.ints) %>% 
+    as_tbl_graph() %>% 
+    activate(nodes) %>% 
+    mutate(type = "sig")
+
+tcga.sig.path.pos = read.table(
+    file = here("supp_data", "TCGA_sig_pathway_positive_interaction_tissue_summaries.tsv"),
+          row.names = 1, head  = T, sep = "\t")
+
+tcga.sig.path.pos = tcga.sig.path.pos %>% prep_the_data(cnames = "path")%>% mutate(int.type = "positive")
+    
+tcga.sig.path.neg = read.table(
+    file = here("supp_data", "TCGA_sig_pathway_negative_interaction_tissue_summaries.tsv"),
+          row.names = 1, head  = T, sep = "\t")
+
+tcga.sig.path.neg = tcga.sig.path.neg %>% prep_the_data(cnames = "path") %>% mutate(int.type = "negative")
+
+path.names = unique(c(tcga.sig.path.pos$path, tcga.sig.path.neg$path))
+    
+tcga.sig.path = rbind(tcga.sig.path.pos, tcga.sig.path.neg) %>% 
+    as_tbl_graph() %>% 
+    activate(nodes) %>% 
+    mutate(type = ifelse(name %in% path.names, "path", "sig"))
+
+all.tcga.interactions = graph_join(tcga.sig.sig.net, tcga.sig.path)
+```
+
+
 ```{r}
 all.pcawg.interactions %>% 
     ggraph(layout = "kk") +
@@ -118,6 +172,7 @@ all.pcawg.interactions %>%
     theme_void() +
         theme(legend.position = "right", legend.title =element_blank() )
 ```
+
 ### Playing around with dh layout 
 
 ```{r}
@@ -193,7 +248,7 @@ ggsave(all.only.sig.network, file = file.path(fig.dir,
 ```{r}
 plot.mixed.layout = function(graph.input, 
                              central.nodes = c("Ageing" , "SBS5", "SBS40"),
-                             circular.node.order = NULL) {
+                             circular.node.order = NULL, edge.width.breaks = NULL) {
     
     all.nodes = graph.input %>% 
         activate(nodes) %>% 
@@ -239,7 +294,7 @@ plot.mixed.layout = function(graph.input,
         arrange(factor(name, levels = all.nodes)) 
     pp = graph.input %>% ggraph(x = node.coordinates$x, y = node.coordinates$y) + 
         geom_edge_link (aes(color = int.type, width = count), alpha = 0.4) +
-        scale_edge_width(breaks = c(1,2,4,13), range = c(0.3,3)) +
+        scale_edge_width(edge.width.breaks, range = c(0.3,3)) +
         geom_node_point(aes(fill = annot.class), 
                         color = "gray30", 
                         size = 4,
@@ -267,7 +322,10 @@ plot.mixed.layout = function(graph.input,
         theme(legend.position = "right", legend.title =element_blank() )
     return(pp)
 }
+```
 
+
+```{r pcawg-all-signatures}
 node.order = c(sort(c("APOBEC", "MMR", "HR", "ROS", "PolH", "PolE")),
                 
                sort(c("SBS39", "SBS19", "SBS23", "SBS28", "SBS17", "SBS30", 
@@ -283,11 +341,44 @@ node.annotations = data.frame(sig.group = c(node.order, c("Ageing", "SBS5", "SBS
                              )
 
 
-sig.sig.all.network = plot.mixed.layout(pcawg.sig.sig.net, circular.node.order = node.order)
+pcawg.sig.sig.all.network = plot.mixed.layout(
+    pcawg.sig.sig.net, 
+    circular.node.order = node.order,
+    edge.width.breaks = c(1,2,4,13)
+    )
 
 
-ggsave(plot = minor_plot(sig.sig.all.network, expand.factor = 0.2),
-       filename = file.path(fig.dir, "sig.sig.all.network.pdf"),
+ggsave(plot = minor_plot(pcawg.sig.sig.all.network, expand.factor = 0.2),
+       filename = file.path(fig.dir, "pcawg.sig.sig.all.network.pdf"),
+       width = 6.4, height = 5.3)
+```
+
+
+```{r tcga-all-signatures}
+node.order = c(sort(c("APOBEC", "MMR", "HR", "ROS", "PolH", "PolE")),
+                
+               sort(c("SBS39", "SBS19", "SBS23", "SBS28", "SBS17", "SBS30", 
+                "SBS34", "SBS37", "SBS12", "Technical")),
+               
+               sort(c("Tobacco", "UV", "SBS38", "SBS29")))
+
+node.annotations = data.frame(sig.group = c(node.order, c("Ageing", "SBS5", "SBS40")),
+                              Class = c(rep("Endogenous", 6), 
+                                        rep("Unknown", 10),
+                                        rep("Environmental", 4),
+                                        rep("Clock-like", 3))
+                             )
+
+
+tcga.sig.sig.all.network = plot.mixed.layout(
+    tcga.sig.sig.net, 
+    # circular.node.order = node.order,
+    # edge.width.breaks = c(1,2,4,13)
+    )
+
+
+ggsave(plot = minor_plot(tcga.sig.sig.all.network, expand.factor = 0.2),
+       filename = file.path(fig.dir, "tcga.sig.sig.all.network.pdf"),
        width = 6.4, height = 5.3)
 ```
 
