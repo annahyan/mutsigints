@@ -80,7 +80,6 @@ pcawg.sig.path = rbind(pcawg.sig.path.pos, pcawg.sig.path.neg) %>%
 all.pcawg.interactions = graph_join(pcawg.sig.sig.net, pcawg.sig.path)
 ```
 
-
 ### getting TCGA summary network
 
 ```{r}
@@ -246,7 +245,7 @@ ggsave(all.only.sig.network, file = file.path(fig.dir,
 ```
 
 ```{r}
-plot.mixed.layout = function(graph.input, 
+plot_mixed_layout = function(graph.input, 
                              central.nodes = c("Ageing" , "SBS5", "SBS40"),
                              circular.node.order = NULL, edge.width.breaks = NULL) {
     
@@ -257,12 +256,12 @@ plot.mixed.layout = function(graph.input,
     
     graph.input = graph.input %>% 
         activate(nodes) %>% 
-        mutate(annot.class = node.annotations %>% 
-                   filter(sig.group %in% all.nodes) %>% 
-                   select(Class, sig.group) %>% 
+        mutate(annot.class = signature.annotations %>% 
+                   filter(Annotation %in% all.nodes) %>% 
+                   select(Origin, Annotation) %>% 
                    unique() %>% 
-                   arrange(factor(sig.group, levels = all.nodes)) %>% 
-                   pull(Class))
+                   arrange(factor(Annotation, levels = all.nodes)) %>% 
+                   pull(Origin))
     
     circle.nodes = setdiff(all.nodes, central.nodes)
     # 
@@ -333,15 +332,15 @@ node.order = c(sort(c("APOBEC", "MMR", "HR", "ROS", "PolH", "PolE")),
                
                sort(c("Tobacco", "UV", "SBS38", "SBS29")))
 
-node.annotations = data.frame(sig.group = c(node.order, c("Ageing", "SBS5", "SBS40")),
-                              Class = c(rep("Endogenous", 6), 
-                                        rep("Unknown", 10),
-                                        rep("Environmental", 4),
-                                        rep("Clock-like", 3))
-                             )
+# node.annotations = data.frame(sig.group = c(node.order, c("Ageing", "SBS5", "SBS40")),
+#                               Class = c(rep("Endogenous", 6), 
+#                                         rep("Unknown", 10),
+#                                         rep("Environmental", 4),
+#                                         rep("Clock-like", 3))
+#                              )
 
 
-pcawg.sig.sig.all.network = plot.mixed.layout(
+pcawg.sig.sig.all.network = plot_mixed_layout(
     pcawg.sig.sig.net, 
     circular.node.order = node.order,
     edge.width.breaks = c(1,2,4,13)
@@ -370,7 +369,7 @@ node.annotations = data.frame(sig.group = c(node.order, c("Ageing", "SBS5", "SBS
                              )
 
 
-tcga.sig.sig.all.network = plot.mixed.layout(
+tcga.sig.sig.all.network = plot_mixed_layout(
     tcga.sig.sig.net, 
     # circular.node.order = node.order,
     # edge.width.breaks = c(1,2,4,13)

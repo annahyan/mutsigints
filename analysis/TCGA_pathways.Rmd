@@ -79,7 +79,7 @@ ggsave(file = file.path(fig.dir, "TCGA.mutated.pathways.occurrence.pdf"),
 pathway.summaries.by.tissues = TCGA.pathways.tissues %>% 
     mutate(across(`Cell Cycle`:WNT, ~as.numeric(.x > 0))) %>% 
     group_by(Cancer.Types) %>% 
-    summarize(across(`Cell Cycle`:WNT, sum))
+    summarize(across(`Cell Cycle`:WNT, ~ sum(.x, na.rm = TRUE)))
 
 TCGA.pathway.summaries.gg = pathway.summaries.by.tissues  %>% 
     gather("Pathway", "Activity", -Cancer.Types) %>% 
@@ -230,8 +230,6 @@ ggsave(plot = all.path.sig.heatmap,
 
 <!-- ``` -->
 
-
-
 #### Fisher's exact test between signatures and pathways in individual tissues
 
 ```{r, warning = FALSE}
@@ -317,13 +315,13 @@ ggsave(plot = pp.TCGA.combined.summaries,
 
 ```{r}
 sig.path.int.odds.summary.df = summarize_ints_to_df(tissue.odds.ratio.unadjusted)
-sig.path.oddsratio.bipartite = minor_plot(plot_bipartite(sig.path.int.odds.summary.df),
-                                        expand.factor = 0.14)
+sig.path.oddsratio.bipartite = minor_plot(plot_bipartite2(sig.path.int.odds.summary.df),
+                                       expand.factor = 0.5, expand.factor.y = 0.01)
 
 ggsave(plot = sig.path.oddsratio.bipartite,
        filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
                                     "TCGA_summarized_sig_pathway_unadjusted.bipartite.pdf"),
-       height = 8, width = 5, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
+       height = 5, width = 6, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
 ```
 
 ### Tissues of Odds ratio interactions
@@ -515,7 +513,7 @@ ggsave(plot = pp.logged,
 
 
 
-### Logistic regression predicting pathways from signatures across tissues
+### Logistic regression getting pathways from signatures across tissues
 
 ```{r}
 tissue.log.coefs.mats.log = pcawg_sig_pathway_int(sigs.input = TCGA.full.subset.ann.pathways,

@@ -654,7 +654,6 @@ plot_all_counts = function(list.of.int.elems, threshold = 0.1, min.abssum = 1,
 
 plot_bipartite = function(gg.df) {
     
-    
     df = summarize_ints_to_df(tissue.odds.ratio.unadjusted) %>% filter(count != 0)
     
     # nodes.df
@@ -675,8 +674,8 @@ plot_bipartite = function(gg.df) {
                             sep = unit(0.8, 'mm')) +
         geom_node_label(aes(label = id), fill = "white") + 
         theme_graph(base_family = "Arial") + 
-        scale_edge_color_manual(values = c("pos" = scales::muted("red", 50, 90),
-                                           "neg" = scales::muted("blue", 50, 90))) + 
+        scale_edge_color_manual(values = c("pos" = "red4",
+                                           "neg" = "dodgerblue3") ) + 
         scale_edge_width_continuous(range = c(1,1.7)) #  + 
         # guides(width = "none")
     
@@ -685,6 +684,84 @@ plot_bipartite = function(gg.df) {
     dd$x = pp$data$y
     dd$y = pp$data$x
     
+    pp$data = dd
+    
+    # print(minor_plot(pp, expand.factor = 0.1))
+    return(pp)
+}
+
+
+### bipartite (needs more work)
+#' @param gg.df Dataframe returned by summarize_ints_to_df
+#' @return gggraph with sugiyama layout
+
+plot_bipartite2 = function(gg.df) {
+    
+    df = summarize_ints_to_df(tissue.odds.ratio.unadjusted) %>% filter(count != 0)
+    
+    # nodes.df
+    
+    nodes.df = rbind(data.frame(id = unique(df$rows), type ="Sig"),
+                     data.frame(id = unique(df$cols), type = "Path"))
+    
+    edges.df = df %>% rename(from = rows, to = cols)
+    
+    bipart = tbl_graph(nodes = nodes.df, edges = edges.df)
+    
+    bipart.nodes = bipart %>% 
+        activate(nodes) %>% pull(id) %>% unique() 
+    
+    bipart = bipart %>% 
+        activate(nodes) %>% 
+        mutate(annot.class = ifelse(type == "Path", "Pathway", signature.annotations %>% 
+                   filter(Annotation %in% bipart.nodes) %>% 
+                   select(Origin, Annotation) %>% 
+                   unique() %>% 
+                   arrange(factor(Annotation, levels = bipart.nodes)) %>% 
+                   pull(Origin)) )
+    
+    calc.layout = create_layout(bipart, layout = "sugiyama")
+    
+    pp = ggraph(graph = calc.layout) +
+        geom_edge_parallel(aes(edge_color = int.type, width = abs(count)), 
+                           # width = 0.5,
+                           alpha = 0.7,
+                           start_cap = circle(0), 
+                           end_cap = circle(0), 
+                           sep = unit(0.8, 'mm')) +
+        geom_node_point(aes(fill = annot.class, shape = type), 
+                        color = "gray30", 
+                        size = 4,
+                        stroke = 0.6) + 
+        scale_fill_manual(values = c("Endogenous" = "#CAE7B9",
+                                     "Environmental" = "#f3de8a",
+                                     "Clock-like" = "white",
+                                     "Unknown" = "#4e6151",
+                                     "Pathway" = "gray50") ) +
+        geom_node_label(aes(label = id#, fill = type
+            ),
+            color = "gray10", 
+            label.size = 0,
+            hjust = ifelse(calc.layout[,2] > 1, -0.45, 1.3),
+            label.r = unit(0.2, "lines"),
+            label.padding = unit(0, "lines"),
+            nudge_y = 0) +
+        theme_graph(base_family = "Arial") + 
+        scale_edge_color_manual(values = c("pos" = "red4",
+                                           "neg" = "dodgerblue3"),
+                                labels = c("positive", "negative")) + 
+        scale_shape_manual(values = c("Path" = 22, 
+                                      "Sig" = 21),
+                           labels = c("Pathway", "Signature")) +
+        scale_edge_width_continuous(breaks = c(1, 2), 
+                                    range = c(0.8,1.5), 
+                                    guide = "none") #  + 
+    # guides(width = "none")
+    
+    dd = pp$data
+    dd$x = pp$data$y
+    dd$y = pp$data$x
+
     pp$data = dd
     
     # print(minor_plot(pp, expand.factor = 0.1))
