@@ -737,7 +737,8 @@ plot_bipartite2 = function(gg.df) {
                                      "Environmental" = "#f3de8a",
                                      "Clock-like" = "white",
                                      "Unknown" = "#4e6151",
-                                     "Pathway" = "gray50") ) +
+                                     "Pathway" = "gray50"),
+                          name = "Signature class") +
         geom_node_label(aes(label = id#, fill = type
             ),
             color = "gray10", 
@@ -753,9 +754,13 @@ plot_bipartite2 = function(gg.df) {
         scale_shape_manual(values = c("Path" = 22, 
                                       "Sig" = 21),
                            labels = c("Pathway", "Signature")) +
-        scale_edge_width_continuous(breaks = c(1, 2), 
+        scale_edge_width_continuous(breaks = seq(bipart %>% 
+                                                     activate(edges) %>% 
+                                                     pull(count) %>% 
+                                                     abs %>%max), 
                                     range = c(0.8,1.5), 
-                                    guide = "none") #  + 
+                                    # guide = "none"
+                                    name = "Count") #  + 
     # guides(width = "none")
     
     dd = pp$data
