@@ -161,8 +161,8 @@ immune.tissue.odds.ratio = pcawg_sig_pathway_int(sigs.input = tcga.immune.sigs,
                                  pathways.input = tcga.immune.tissues,
                                  interaction_function = get_sig_path_assocs, 
                                  path.min.tissues = 30,
-                                 p.val.threshold = 0.2,
-                                 p.adjust = TRUE,
+                                 p.val.threshold = 0.05,
+                                 p.adjust = FALSE,
                                  method = "BH")
 
 
@@ -175,7 +175,7 @@ for (tissue in names(immune.tissue.odds.ratio)) {
         
         ggsave(plot = int.heatmap,
                filename = file.path(fig.dir, "immune_to_signature", "by_tissues", "oddsratio",  
-                                    paste0("TCGA", tissue, "_sig_pathway.dotplot.png")),
+                                    paste0("TCGA", tissue, "_sig_pathway.dotplot.tcga.pdf")),
                height = 5, width = 6, bg = "white")
     }
 }
@@ -242,7 +242,95 @@ write.table(as.data.frame(immune.tissues.odds.ratio.lists$neg.tissues),
 ```
 
 
+```{r}
+tcga.immune.state.summary = tcga.immune.states %>% 
+    ggplot(aes(x = Immune.Subtype, y = after_stat(count))) + 
+    geom_bar(fill = "dodgerblue4") + 
+    theme_classic() + 
+    scale_x_discrete(labels = c("C1" = "Wound healing",
+                         "C2" = "INF-\u03B3\ndominant",
+                         "C3" = "Inflammatory",
+                         "C4" = "Lymphocyte\ndepleted",
+                         "C5" = "Immunologically\nquiet",
+                         "C6" = "TGF-\u03B2 dominant",
+                         "CNA" = "CNA")) + 
+    theme(axis.text.x = element_text(angle = 90, v = 0.5, h = 1, size = 13),
+          axis.title.x = element_blank(),
+          plot.margin = margin(1, 0,0,0, "cm") ) + 
+    geom_text(stat='count', aes(label=..count..), vjust=-1) + 
+    ylim(0,1500)
+
+ggsave(plot = tcga.immune.state.summary, 
+       filename = file.path(fig.dir,"tcga.immune.state.summaries.pdf"),
+       width = 4, height = 4, device = cairo_pdf)
+```
  
+### Interaction signatures in individual tissues
  
+```{r}
+tcga.immune.tissues = as.data.frame(tcga.immune.tissues)
+rownames(tcga.immune.tissues) = tcga.immune.tissues$donor_id
+rownames(tcga.immune.sigs) = tcga.immune.sigs$Sample.Names
+
+colnames(tcga.immune.tissues) = sapply( colnames(tcga.immune.tissues), 
+                                          function(x) 
+                                              {
+                                              if (x %in% names(immune.class.mapping )) 
+                                                  {
+                                                  return(immune.class.mapping[x])
+                                                  } else {
+                                                      return(x)}
+                                              }
+                                          )
+```
+ 
+
+```{r}
+tcga.colon.immune.states = pathways_signatures_heatmap(tissue = "ColoRect_AdenoCa", signatures = tcga.immune.sigs, pathways = tcga.immune.tissues, border_color = NA)
+
+ggsave(plot = tcga.colon.immune.states, 
+       filename = file.path(fig.dir, "tcga.colon.immune.states.heatmap.pdf"),
+       width = 4, height = 4, device = cairo_pdf)
+
+```
+
+```{r}
+tcga.uterine.immune.states = pathways_signatures_heatmap(tissue = "Uterus_AdenoCa", signatures = tcga.immune.sigs, pathways = tcga.immune.tissues, border_color = NA)
+
+ggsave(plot = tcga.uterine.immune.states, 
+       filename = file.path(fig.dir, "tcga.uterus.immune.states.heatmap.pdf"),
+       width = 4, height = 4, device = cairo_pdf)
+```
+
+
+```{r}
+tissue = "ColoRect_AdenoCa" 
+
+colnames(immune.tissue.odds.ratio[[tissue]]) = c("Wound\nhealing", "INF-\u03B3\ndominant")
+
+colorectal.heatmap = ggheatmap_wrapper(immune.tissue.odds.ratio[[tissue]], 
+                                        title = tissue)
+
+ggsave(plot = colorectal.heatmap,
+       filename = file.path(fig.dir, "immune_to_signature", "by_tissues", "oddsratio",  
+                            paste0(tissue, "_sig_pathway.dotplot.TCGA.pdf")),
+       height = 4, width = 4, bg = "white", device = cairo_pdf)
+
+```
+
+
+```{r}
+tissue = "Uterus_AdenoCa" 
+
+colnames(immune.tissue.odds.ratio[[tissue]]) = c("Wound\nhealing", "INF-\u03B3\ndominant")
+
+uterine.heatmap = ggheatmap_wrapper(immune.tissue.odds.ratio[[tissue]], 
+                                        title = tissue)
+
+ggsave(plot = colorectal.heatmap,
+       filename = file.path(fig.dir, "immune_to_signature", "by_tissues", "oddsratio",  
+                            paste0(tissue, "_sig_pathway.dotplot.TCGA.pdf")),
+       height = 3.5, width = 4, bg = "white", device = cairo_pdf)
+```
 
  

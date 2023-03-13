@@ -329,3 +329,81 @@ print(colorectal.heatmap)
 dev.off()
 ```
 
+### Venn diagram of immune state prediction with different methods
+
+
+```{r}
+library(ggVennDiagram)
+
+x = list(RandomForest = paste(1:length(immune.states$RF), immune.states$RF, sep = "_"),
+         DNN = paste(1:length(immune.states$DN), immune.states$DN, sep = "_"),
+         XGBoost = paste(1:length(immune.states$XGboost), immune.states$XGboost, sep = "_"))
+
+ggVennDiagram(x)
+
+devtools::install_github("nicolash2/ggvenn")
+
+ggplot() + geom_venn(x)
+
+
+library(eulerr)
+
+euler.calcs = euler(x)
+
+venn.summary = plot(euler.calcs,
+     quantities = TRUE,
+     labels = list(font = 4))
+
+ggsave(plot = venn.summary, filename = file.path(fig.dir, "venn_of_three_methods.pdf"),
+       width = 4, height = 3)
+```
+
+
+
+```{r}
+pcawg.immune.state.summary = immune.states %>% 
+    ggplot(aes(x = Majority, y = after_stat(count))) + 
+    geom_bar(fill = "dodgerblue4") + 
+    theme_classic() + 
+    scale_x_discrete(labels = c("C1" = "Wound healing",
+                         "C2" = "INF-\u03B3\ndominant",
+                         "C3" = "Inflammatory",
+                         "C4" = "Lymphocyte\ndepleted",
+                         "C5" = "Immunologically\nquiet",
+                         "C6" = "TGF-\u03B2 dominant",
+                         "CNA" = "CNA")) + 
+    theme(axis.text.x = element_text(angle = 90, v = 0.5, h = 1, size = 13),
+          axis.title.x = element_blank(),
+          plot.margin = margin(1, 0,0,0, "cm") ) + 
+    geom_text(stat='count', aes(label=..count..), vjust=-1) + 
+    ylim(0,600)
+
+ggsave(plot = pcawg.immune.state.summary, 
+       filename = file.path(fig.dir,"pcawg.immune.state.summaries.pdf"),
+       width = 4, height = 4, device = cairo_pdf)
+```
+
+
+```{r}
+immune.states.tissues = data.frame(immune.states.tissues)
+
+
+colnames(immune.states.tissues) = sapply( colnames(immune.states.tissues), 
+                                          function(x) 
+                                              {
+                                              if (x %in% names(immune.class.mapping )) 
+                                                  {
+                                                  return(immune.class.mapping[x])
+                                                  } else {
+                                                      return(x)}
+                                              }
+                                          )
+
+
+pathways_signatures_heatmap(tissue = "ColoRect_AdenoCA",
+                            signatures = PCAWG.full.subset.ann.immune,
+                            pathways = immune.states.tissues)
+```
+
+
+
