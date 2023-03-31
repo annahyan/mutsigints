@@ -2078,13 +2078,13 @@ pathways_signatures_heatmap = function(tissue, signatures, pathways,
     
     common.samples = intersect(pathways$donor_id, tissue.sigs$Sample.Names)
     
-    tissue.pathways = pathways[common.samples, ]
+    tissue.pathways = pathways %>% arrange(match(donor_id, common.samples))
     
     tissue.pathways = cbind(tissue.pathways["donor_id"], 
                             tissue.pathways[, names(which(colSums(
                                 tissue.pathways[4:ncol(tissue.pathways)], na.rm = TRUE) > 0))])
     
-    tissue.sigs = tissue.sigs[ common.samples, ]
+    tissue.sigs =  tissue.sigs %>% arrange(match(Sample.Names, common.samples))
     
     pp = pheatmap(log(tissue.sigs[4:ncol(tissue.sigs)] + 1), annotation_row = tissue.pathways[, 2:ncol(tissue.pathways)],
                  annotation_legend = FALSE, color = viridis(15),
