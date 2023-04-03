@@ -14,7 +14,7 @@ knitr::opts_chunk$set(comment = '', fig.width = 6,
 
 
 
-```{r load-packages}
+```{r load-packages, include = FALSE}
 library(here)
 library(survival)
 library(survminer)
@@ -24,6 +24,7 @@ library(gridExtra)
 library(ggforestplot)
 
 fig.dir = here("figures/survival_summaries")
+
 ```
 
 
@@ -166,28 +167,30 @@ dev.off()
 ```{r}
 
 plot_sigint_forest = function(data) {
-    pp = data %>% drop_na() %>%
-            filter(P.val < 0.05) %>%
+    pp = data %>% 
+        drop_na() %>%
+        filter(P.val < 0.05, ! is.infinite(lower.95), ! is.infinite(upper.95),
+               ! is.infinite(log(lower.95) ), ! is.infinite(log(upper.95)) ) %>%
         filter(grepl("+", params,fixed = TRUE)) %>% 
-            filter(! params %in% c("age_at_diagnosis", "log(total_muts + 1)")) %>%
-       ggplot(aes(y = params, x = log(estimate), color = tissue, shape = type)) +
-        geom_hline(aes(yintercept = params), alpha = 0.1) +
-          theme_classic(base_size = 15) +
-        geom_point(position=position_dodge(0.7), size = 3) +
-        geom_errorbar(aes(y = params, xmin = log(lower.95), xmax = log(upper.95)),
-                      width=.2,
-                      position=position_dodge(0.7)) +
-        scale_y_discrete(position = "right") +
-        scale_shape_manual(values = c("pos" = 17, "neg" = 19),
-                           labels = c("pos" = "positive", "neg" = "negative"),
-                           name = "Interaction type") +
-        scale_color_discrete(name = "Tissue") +
-        geom_vline(xintercept = 0, linetype="dashed", color = "gray") +
-            xlab("log(HR)") + ylab("") + 
-        # coord_cartesian(xlim = c(-1, 20)) +
-    
-      theme(axis.line.y = element_blank(),
-            axis.ticks.y = element_blank())
+        filter(! params %in% c("age_at_diagnosis", "log(total_muts + 1)")) %>%
+           ggplot(aes(y = params, x = log(estimate), color = tissue, shape = type)) +
+            geom_hline(aes(yintercept = params), alpha = 0.1) +
+              theme_classic(base_size = 15) +
+            geom_point(position=position_dodge(0.7), size = 3) +
+            geom_errorbar(aes(y = params, xmin = log(lower.95), xmax = log(upper.95)),
+                          width=.2,
+                          position=position_dodge(0.7)) +
+            scale_y_discrete(position = "right") +
+            scale_shape_manual(values = c("pos" = 17, "neg" = 19),
+                               labels = c("pos" = "positive", "neg" = "negative"),
+                               name = "Interaction type") +
+            scale_color_discrete(name = "Tissue") +
+            geom_vline(xintercept = 0, linetype="dashed", color = "gray") +
+                xlab("log(HR)") + ylab("") + 
+            # coord_cartesian(xlim = c(-1, 20)) +
+        
+          theme(axis.line.y = element_blank(),
+                axis.ticks.y = element_blank())
     return(pp)
 }
 ```
@@ -429,10 +432,10 @@ ggsave(plot = both.tmb.ggforest.log.HR,
  
 
 ```{r}
-pcawg.pos.ss.picked.surv.out = readRDS(file = file.path(out.dir, "pcawg.pos.sig.sig.picked.models.RDS"))
+pcawg.pos.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig_sig_survivals"), "pcawg.pos.sig.sig.picked.models.RDS"))
 # pcawg.pos.ss.picked.models = lapply(pcawg.pos.ss.picked.surv.out, function(x) {x[["model"]]})
 
-pcawg.neg.ss.picked.surv.out = readRDS(file = file.path(out.dir, "pcawg.neg.sig.sig.picked.models.RDS"))
+pcawg.neg.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig_sig_survivals"), "pcawg.neg.sig.sig.picked.models.RDS"))
 # pcawg.neg.ss.picked.models = lapply(pcawg.neg.ss.picked.surv.out, function(x) {x[["model"]]})
 ```
 
