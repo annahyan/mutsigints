@@ -34,13 +34,14 @@ vignettes/*.pdf
 
 
 # output figures
-/figures/figure0
-/figures/immune_analysis
-/figures/pathways_analysis
-/figures/sig_sig_analysis
-/figures/sig_sig_interactions
+/figures/*
+
 /tmp
 /posters
+
+# data files
+/data*
+/data/RDS/
 
 # Temporary files created by R markdown
 *.utf8.md
@@ -48,3 +49,4 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+

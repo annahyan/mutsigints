@@ -2183,8 +2183,6 @@ HR_summary_for_all = function(interaction.summaries, type = NULL) {
 #' @param average If TRUE the parameter values for a given tissues should be 
 #' averaged. Default:TRUE.
 #' @param log.HR If TRUE the Hazard ratio will be logged. Default: FALSE.
-#' @param no_stripes If TRUE gray/white stripes will be added in the background
-#' for each tissue. If average = FALSE, this value has no effect. Default: TRUE. 
 
 plot_HR_vars = function(all.conds.df, param, average = TRUE, log.HR = FALSE, no_stripes = TRUE) {
     
@@ -2206,25 +2204,32 @@ plot_HR_vars = function(all.conds.df, param, average = TRUE, log.HR = FALSE, no_
             summarize(estimate = mean(estimate), 
                       lower.95 = mean(lower.95), 
                       upper.95 = mean(upper.95), 
-                      P.val = mean(P.val), 
-                      sig.star = get_sig_stars(P.val)) 
-        
+                      P.val = mean(P.val),
+                      sig.star = get_sig_stars(P.val)) %>% 
+            mutate(sig.effect = as.character(sign((upper.95 - 1) * (lower.95 - 1) ) ))
         if (log.HR) {
             df = df %>% mutate(estimate = log(estimate),
                                lower.95 = log(lower.95), 
-                               upper.95 = log(upper.95))
+                               upper.95 = log(upper.95),
+                               sig.effect = as.character(sign(upper.95 * lower.95) ))
         }  
-        p = ggplot(df, aes(y = tissue, x = estimate) )
+
+        p = ggplot(df, aes(y = tissue, x = estimate, alpha = sig.effect) )
+        
     } else {
-        df = all.conds.df 
+        df = all.conds.df %>% 
+            mutate(sig.effect = as.character(sign((upper.95 - 1) * (lower.95 - 1) ) ) ) 
         if (log.HR) {
             df = df %>% mutate(estimate = log(estimate),
                                lower.95 = log(lower.95), 
-                               upper.95 = log(upper.95))
-        }  
-        p = ggplot(df, aes(y = tissue, x = estimate, color = int))    
-        
-    }
+                               upper.95 = log(upper.95),
+                               sig.effect = as.character(sign(upper.95 * lower.95) ) ) 
+            df = df %>% mutate(sig.effect = as.character(sign(upper.95 * lower.95) ) )
+            p = ggplot(df, aes(y = tissue, x = estimate, color = int, alpha = sig.effect) )
+            } 
+        }
+    
+    p = p + scale_alpha_manual(values = c("-1" = 0.4, "1" = 1)) 
     
     
     p = p + geom_point(position=position_dodge(1), shape = 15, size = 3) +
@@ -2241,21 +2246,6 @@ plot_HR_vars = function(all.conds.df, param, average = TRUE, log.HR = FALSE, no_
             xlab("Hazard Ratio")
     }
     
-    p = p + theme_classic(base_size = 15) + 
-        theme(
-            axis.title.y = element_blank(),
-            legend.position = "none", 
-            axis.line.y = element_blank(),
-            axis.ticks.y = element_blank())
-    # Add striped background
-    # geom_stripes(odd = "#33333333", even = "#00000000")  
-    
-    if (!average & no_stripes) {
-        
-    } else {
-        p = p + geom_stripes(odd = "#33333333", even = "#00000000") 
-    }
-    
     tissue.mapping = all.conds.df%>% select(tissue, data) %>% unique()
     tissue.map = setNames(substr(tissue.mapping$data, 1, 1), tissue.mapping$tissue)
     
@@ -2266,9 +2256,23 @@ plot_HR_vars = function(all.conds.df, param, average = TRUE, log.HR = FALSE, no_
     annot.shift = (xlimits[2] - xlimits[1] )/ 10
     
     p = p + 
+        geom_hline(yintercept = (seq(ylimits) - 0.5 )[2:length(ylimits) ],
+                   color = "gray90")  + 
         annotate("text", x = xlimits[1] - annot.shift, y = ylimits, label = tissue.map[ylimits]) + 
         coord_cartesian(xlim = xlimits, clip = "off") + 
-        theme(plot.margin = margin(0, 0, 0, 0.3, "cm"))
+        theme_classic(base_size = 15) + 
+        theme(
+            axis.title.y = element_blank(),
+            legend.position = "none", 
+            axis.line.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            plot.margin = margin(0, 0, 0, 0.7, "cm"))
+    
+    if (log.HR) {
+        p = p + xlab("log(HR)")
+    } else {
+        p = p + xlab("HR")
+    }
     
     return(p)
 }

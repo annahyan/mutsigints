@@ -224,7 +224,7 @@ ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.sig.age.piechart.pdf")
 ```{r}
 pcawg.age.ggforest = plot_HR_vars(
     all.conds.df = pcawg.sig.sig.comb, param = "age_at_diagnosis",
-             average = TRUE, no_stripes = FALSE) + 
+             average = TRUE, no_stripes = FALSE, log.HR = FALSE) + 
     theme(axis.title.y = element_blank())
 
 ggsave(plot = pcawg.age.ggforest, 
