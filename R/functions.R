@@ -2260,7 +2260,7 @@ plot_HR_vars = function(all.conds.df, param, average = TRUE, log.HR = FALSE, no_
                    color = "gray90")  + 
         annotate("text", x = xlimits[1] - annot.shift, y = ylimits, label = tissue.map[ylimits]) + 
         coord_cartesian(xlim = xlimits, clip = "off") + 
-        theme_classic(base_size = 15) + 
+        theme_classic(base_size = 12) + 
         theme(
             axis.title.y = element_blank(),
             legend.position = "none", 
