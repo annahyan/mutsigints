@@ -2309,3 +2309,62 @@ plot_param_piechart = function(data, param) {
     # theme(legend.position = "none")
     return(p)
 }
+
+
+#' Make forest plot for all the significant interaction paramters from the
+#' survival models.
+#' @param data The summary data across tissues and 
+#' models generated with HR_summary_for_all.
+#' @log.HR Indicated whether the hazard ratio is logged or not.
+#' 
+plot_sigint_forest = function(data, log.HR = TRUE) {
+    data.processed = data %>% 
+        drop_na() %>%
+        filter(P.val < 0.05, ! is.infinite(lower.95), ! is.infinite(upper.95),
+               ! is.infinite(log(lower.95) ), ! is.infinite(log(upper.95)) ) %>%
+        filter(grepl("+", params,fixed = TRUE)) %>% 
+        filter(! params %in% c("age_at_diagnosis", "log(total_muts + 1)")) 
+    
+    param.order = data.processed %>%
+        arrange(tissue, estimate) %>%
+        pull(params) %>% unique() %>% rev()
+    
+    data.processed = data.processed %>% 
+        mutate(params = factor(params, levels = param.order))
+    
+    pp = data.processed %>%
+        ggplot(aes(y = params, x = log(estimate), color = tissue, shape = type)) +
+        geom_point(position=position_dodge(0.7), size = 3) +
+        geom_errorbar(aes(y = params, xmin = log(lower.95), xmax = log(upper.95)),
+                      width=.2,
+                      position=position_dodge(0.7)) +
+        scale_y_discrete(position = "right")
+    
+    pgbuild = ggplot_build(pp)
+    xlimits = pgbuild$layout$panel_scales_x[[1]]$range$range
+    ylimits = pgbuild$layout$panel_scales_y[[1]]$range$range
+    
+    pp = pp +
+        geom_hline(yintercept = (seq(ylimits) - 0.5 )[2:length(ylimits) ], alpha = 0.1) +
+        scale_shape_manual(values = c("pos" = 17, "neg" = 19),
+                           labels = c("pos" = "positive", "neg" = "negative"),
+                           name = "Interaction type") +
+        scale_color_discrete(name = "Tissue")
+    
+    if (log.HR) {
+        pp = pp + 
+            geom_vline(xintercept = 0, linetype="dashed", color = "gray") +
+            xlab("log(HR)")
+    } else {
+        pp = pp + 
+            geom_vline(xintercept = 1, linetype="dashed", color = "gray") +
+            xlab("HR")
+    }
+    
+    pp = pp + ylab("") + 
+        # coord_cartesian(xlim = c(-1, 20)) +
+        theme_classic(base_size = 15) +
+        theme(axis.line.y = element_blank(),
+              axis.ticks.y = element_blank())
+    return(pp)
+}
