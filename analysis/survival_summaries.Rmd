@@ -439,14 +439,15 @@ pcawg.pos.sp.picked.summary = HR_summary_for_all(pcawg.pos.sp.picked.surv.out, t
 # pcawg.sp.picked.combined = rbind(pcawg.pos.sp.picked.summary, pcawg.neg.sp.picked.summary)
 pcawg.sp.picked.combined = pcawg.pos.sp.picked.summary
 
-pp = plot_sigint_forest(pcawg.sp.picked.combined)
+pp = plot_sigint_forest(pcawg.sp.picked.combined) + 
+    theme(plot.margin = margin(1, 0,0,0, "cm"))
 
 ggsave(plot = pp, filename = file.path(fig.dir, "pcawg.sig.path.adjusted.models.significant_interaction.pdf"),
-       width = 7, height = 3)
+       width = 7, height = 2)
 ```
 
 
-### TCGA all models with significant interaction between sig-sig or sig-path
+### TCGA all models with significant interaction between sig-sig
 
 ```{r}
 tcga.pos.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/TCGA/sig_sig_survivals"), "tcga.pos.sig.sig.picked.models.RDS"))
@@ -487,10 +488,9 @@ tcga.neg.sp.picked.summary = HR_summary_for_all(tcga.neg.sp.picked.surv.out, typ
 
 tcga.sp.picked.combined = rbind(tcga.pos.sp.picked.summary, tcga.neg.sp.picked.summary)
 
-tcga.sp.picked.combined = tcga.pos.sp.picked.summary
-
 pp = plot_sigint_forest(tcga.sp.picked.combined)
 
 ggsave(plot = pp, filename = file.path(fig.dir, "tcga.sig.path.adjusted.models.significant_interaction.pdf"),
-       width = 7, height = 3)
+       width = 7, height = 3.5)
 ```
+
