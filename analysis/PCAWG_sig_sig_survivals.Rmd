@@ -218,6 +218,8 @@ neg.picked.models = get_surv_best_model(negative.sig.sig,
 saveRDS(neg.picked.models, file = file.path(out.dir, "pcawg.neg.sig.sig.picked.models.RDS"))
 ```
 
+### Specific interactions
+
 ```{r}
 mult_tissues_ROS_SBS40 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
                                                       signatures = c( "SBS40", "ROS"), 

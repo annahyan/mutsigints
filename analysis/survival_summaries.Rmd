@@ -165,7 +165,6 @@ dev.off()
 ### The function for significant interactions
 
 ```{r}
-
 plot_sigint_forest = function(data) {
     pp = data %>% 
         drop_na() %>%
@@ -174,13 +173,18 @@ plot_sigint_forest = function(data) {
         filter(grepl("+", params,fixed = TRUE)) %>% 
         filter(! params %in% c("age_at_diagnosis", "log(total_muts + 1)")) %>%
            ggplot(aes(y = params, x = log(estimate), color = tissue, shape = type)) +
-            geom_hline(aes(yintercept = params), alpha = 0.1) +
-              theme_classic(base_size = 15) +
-            geom_point(position=position_dodge(0.7), size = 3) +
-            geom_errorbar(aes(y = params, xmin = log(lower.95), xmax = log(upper.95)),
+           geom_point(position=position_dodge(0.7), size = 3) +
+           geom_errorbar(aes(y = params, xmin = log(lower.95), xmax = log(upper.95)),
                           width=.2,
                           position=position_dodge(0.7)) +
-            scale_y_discrete(position = "right") +
+           scale_y_discrete(position = "right")
+        
+        pgbuild = ggplot_build(pp)
+        xlimits = pgbuild$layout$panel_scales_x[[1]]$range$range
+        ylimits = pgbuild$layout$panel_scales_y[[1]]$range$range
+        
+        pp = pp +
+            geom_hline(yintercept = (seq(ylimits) - 0.5 )[2:length(ylimits) ], alpha = 0.1) +
             scale_shape_manual(values = c("pos" = 17, "neg" = 19),
                                labels = c("pos" = "positive", "neg" = "negative"),
                                name = "Interaction type") +
@@ -188,7 +192,7 @@ plot_sigint_forest = function(data) {
             geom_vline(xintercept = 0, linetype="dashed", color = "gray") +
                 xlab("log(HR)") + ylab("") + 
             # coord_cartesian(xlim = c(-1, 20)) +
-        
+          theme_classic(base_size = 15) +
           theme(axis.line.y = element_blank(),
                 axis.ticks.y = element_blank())
     return(pp)
@@ -430,6 +434,7 @@ ggsave(plot = both.tmb.ggforest.log.HR,
        width = 4, height = 5)
 ```
  
+### PCAWG all models with significant interaction between sig-sig or sig-path
 
 ```{r}
 pcawg.pos.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig_sig_survivals"), "pcawg.pos.sig.sig.picked.models.RDS"))
@@ -446,6 +451,30 @@ pcawg.neg.ss.picked.summary = HR_summary_for_all(pcawg.neg.ss.picked.surv.out, t
 pcawg.ss.picked.combined = rbind(pcawg.pos.ss.picked.summary, pcawg.neg.ss.picked.summary)
 
 pp = plot_sigint_forest(pcawg.ss.picked.combined)
+
+ggsave(plot = pp, filename = file.path(fig.dir, "pcawg.sig.sig.adjusted.models.significant_interaction.pdf"),
+       width = 7, height = 3)
 ```
 
+### TCGA all models with significant interaction between sig-sig or sig-path
+
+```{r}
+tcga.pos.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/TCGA/sig_sig_survivals"), "tcga.pos.sig.sig.picked.models.RDS"))
+# tcga.pos.ss.picked.models = lapply(tcga.pos.ss.picked.surv.out, function(x) {x[["model"]]})
+
+tcga.neg.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/TCGA/sig_sig_survivals"), "tcga.neg.sig.sig.picked.models.RDS"))
+# tcga.neg.ss.picked.models = lapply(tcga.neg.ss.picked.surv.out, function(x) {x[["model"]]})
+```
+
+```{r}
+tcga.pos.ss.picked.summary = HR_summary_for_all(tcga.pos.ss.picked.surv.out, type = "pos")
+tcga.neg.ss.picked.summary = HR_summary_for_all(tcga.neg.ss.picked.surv.out, type = "neg")
+
+tcga.ss.picked.combined = rbind(tcga.pos.ss.picked.summary, tcga.neg.ss.picked.summary)
+
+pp = plot_sigint_forest(tcga.ss.picked.combined)
+
+ggsave(plot = pp, filename = file.path(fig.dir, "tcga.sig.sig.adjusted.models.significant_interaction.pdf"),
+       width = 7, height = 5)
+```
  

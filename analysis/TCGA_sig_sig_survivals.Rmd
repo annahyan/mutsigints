@@ -125,6 +125,16 @@ saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.nototmut.nonbinary.R
 ```
 
 
+```{r}
+pos.picked.models = get_surv_best_model(positive.sig.sig, 
+                                 dataset = TCGA.full.subset.ann,
+                                 clin.df = TCGA.clin.df,
+                                 with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
+                                 binary.status = FALSE)
+saveRDS(pos.picked.models, file = file.path(out.dir, "tcga.pos.sig.sig.picked.models.RDS"))
+```
+
 ### Survival models for negative interactions
 
 ```{r}
@@ -198,6 +208,17 @@ saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.nototmut.nonbinary.R
 ```
 
 
+```{r}
+neg.picked.models = get_surv_best_model(negative.sig.sig, 
+                                 dataset = TCGA.full.subset.ann,
+                                 clin.df = TCGA.clin.df,
+                                 with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
+                                 binary.status = FALSE)
+saveRDS(neg.picked.models, file = file.path(out.dir, "tcga.neg.sig.sig.picked.models.RDS"))
+```
+
+
 ### Specific interactions
 
 ```{r}
@@ -222,8 +243,6 @@ ggsave(plot = ColoRect_AdenoCa_MMR_SBS40_ggforest,
        filename = file.path(fig.dir, "TCGA_ColoRect_AdenoCa_MMR_SBS40_ggforest.ggforest.pdf"),
        width = 6, height = 2.3)
 ```
-
-
 
 ### Case of Stomach AdenoCa
 
