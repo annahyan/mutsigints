@@ -133,6 +133,24 @@ pos.picked.models = get_surv_best_model(positive.sig.sig,
                                  tmb.logged = TRUE,
                                  binary.status = FALSE)
 saveRDS(pos.picked.models, file = file.path(out.dir, "pcawg.pos.sig.sig.picked.models.RDS"))
+
+
+list("with.total.muts" = c(TRUE, FALSE), 
+                          "tmb.logged" = c(TRUE, FALSE),
+                          "binary.status" = c(TRUE, FALSE))
+
+
+pos.picked.models = get_surv_best_model(positive.sig.sig, 
+                                 dataset = PCAWG.full.subset.ann,
+                                 clin.df = PCAWG.clin.df,
+                                 param.list = list(
+                                     "with.total.muts" = c(TRUE, FALSE), 
+                                     "tmb.logged" = c(TRUE),
+                                     "binary.status" = c(TRUE, FALSE) ),
+                                 min.sample.fraction = 0.2)
+
+
+# pos.picked.models %>% HR_summary_for_all() %>% plot_sigint_forest()
 ```
 
 
@@ -212,10 +230,13 @@ saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.nototmut.nonbinary.R
 neg.picked.models = get_surv_best_model(negative.sig.sig, 
                                  dataset = PCAWG.full.subset.ann,
                                  clin.df = PCAWG.clin.df,
-                                 with.total.muts = TRUE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE)
-saveRDS(neg.picked.models, file = file.path(out.dir, "pcawg.neg.sig.sig.picked.models.RDS"))
+                                 param.list = list(
+                                     "with.total.muts" = c(TRUE, FALSE), 
+                                     "tmb.logged" = c(TRUE),
+                                     "binary.status" = c(TRUE, FALSE) ),
+                                 min.sample.fraction = 0.2)
+# saveRDS(neg.picked.models, file = file.path(out.dir, "pcawg.neg.sig.sig.picked.models.RDS"))
+
 ```
 
 ### Specific interactions

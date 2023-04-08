@@ -141,9 +141,11 @@ saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.nototmut.nonbinary.R
 pos.picked.models = get_surv_best_model(positive.sig.pathway, 
                                  dataset = TCGA.path.sig.aggregate,
                                  clin.df = TCGA.clin.df,
-                                 with.total.muts = TRUE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE)
+                                 param.list = list(
+                                     "with.total.muts" = c(TRUE, FALSE), 
+                                     "tmb.logged" = c(TRUE),
+                                     "binary.status" = c(TRUE, FALSE) ),
+                                 min.sample.fraction = 0.2)
 saveRDS(pos.picked.models, file = file.path(out.dir, "tcga.pos.sig.path.picked.models.RDS"))
 ```
 
@@ -222,9 +224,11 @@ saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.nototmut.nonbinary.R
 neg.picked.models = get_surv_best_model(negative.sig.pathway, 
                                  dataset = TCGA.path.sig.aggregate,
                                  clin.df = TCGA.clin.df,
-                                 with.total.muts = TRUE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE)
+                                 param.list = list(
+                                     "with.total.muts" = c(TRUE, FALSE), 
+                                     "tmb.logged" = c(TRUE),
+                                     "binary.status" = c(TRUE, FALSE) ),
+                                 min.sample.fraction = 0.2)
 saveRDS(neg.picked.models, file = file.path(out.dir, "tcga.neg.sig.path.picked.models.RDS"))
 ```
 

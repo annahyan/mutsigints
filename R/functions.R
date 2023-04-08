@@ -1525,7 +1525,7 @@ survival_for_interactions = function(dataset, clin.df, signatures,
         
         P$plot = P$plot + theme(legend.background = element_rect(fill='transparent'),
                                 legend.box.background = 
-                                    element_rect(fill='transparent', size = 0))
+                                    element_rect(fill='transparent', linewidth = 0))
     }
     
     return(list(survival.df = survival.df, coxout = cox, survP = P))
@@ -1762,7 +1762,8 @@ pick_survival_model_int = function(dataset = dataset,
                                    signatures = c(sig1, sig2), 
                                    tissues = tissue, 
                                    clin.df = clin.df, 
-                                   param.values # ,
+                                   param.values,
+                                   min.sample.fraction = 0
                                    # with.total.muts = with.total.muts,
                                    # tmb.logged = tmb.logged,
                                    # binary.status = binary.status
@@ -1782,6 +1783,7 @@ pick_survival_model_int = function(dataset = dataset,
         mutate(tmb.logged = ifelse(with.total.muts == FALSE, "FALSE", tmb.logged)) %>% 
         unique()
     
+    ### running the survival_for_interactions for given model
     lambda = function(with.total.muts, tmb.logged, binary.status) {
         survival_for_interactions(dataset = dataset, 
                                   signatures = signatures, 
@@ -1798,7 +1800,23 @@ pick_survival_model_int = function(dataset = dataset,
     for (i in 1:nrow(filtered.combinations)) {
         param.input = filtered.combinations[i,, drop = FALSE] %>% as.list
         try({
+            
+            ### Applying the survival_for_interactions
             test.model = do.call(lambda,  param.input)
+            
+            
+            ### Filtering for minimum sample fraction
+            sample.counts = test.model$survival.df$exists__12 %>% table() 
+            sample.fractions = sample.counts / sum(sample.counts)
+            minority.sample.fraction = min(sample.fractions)
+            
+            if (minority.sample.fraction < min.sample.fraction) {
+                cat("For Tissues == ", tissues, " and signatures == ", signatures,
+                    "the minimum sample threshold of ", min.sample.fraction, " has not been met.\n",
+                    "Skipping.\n")
+                break
+            }
+            
             # return(test.model)
             model.coxout = test.model$coxout
             p.val.of.interaction = summary(test.model$coxout)$coefficients[param.of.interactions,5]
@@ -1838,13 +1856,18 @@ pick_survival_model_int = function(dataset = dataset,
 get_surv_best_model = function(sig.sig.tissues.matrix,
                             dataset,
                             clin.df,
-                            with.total.muts = TRUE, 
-                            tmb.logged = TRUE,
-                            binary.status = FALSE) { 
+                            param.list, 
+                            min.sample.fraction = 0) { 
     
     tt <- ttheme_default(colhead=list(fg_params = list(parse=TRUE)),
                          base_size = 10,
                          padding = unit(c(2, 4), "mm"))
+    
+    if (missing(param.list)) {
+        param.list = list("with.total.muts" = c(TRUE, FALSE), 
+                          "tmb.logged" = c(TRUE, FALSE),
+                          "binary.status" = c(TRUE, FALSE))
+    }
     
     if ( all(rownames(sig.sig.tissues.matrix) == colnames(sig.sig.tissues.matrix) ) ) {
         sig.sig.tissues.matrix[lower.tri(sig.sig.tissues.matrix, diag = TRUE)] = NA    
@@ -1866,10 +1889,8 @@ get_surv_best_model = function(sig.sig.tissues.matrix,
                                                       signatures = c(sig1, sig2), 
                                                       tissues = tissue, 
                                                       clin.df = clin.df,
-                                                    param.values = list("with.total.muts" = c(TRUE, FALSE), 
-                                                                        "tmb.logged" = c(TRUE, FALSE),
-                                                                        "binary.status" = c(TRUE, FALSE)
-                                                    ) )
+                                                    param.values = param.list,
+                                                    min.sample.fraction = min.sample.fraction)
             if ( is.null(surv.out$out.model) ) {
                 cat("\tThe interaction is not significant. Skipping.\n")
                 next
