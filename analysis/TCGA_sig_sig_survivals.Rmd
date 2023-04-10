@@ -135,6 +135,8 @@ pos.picked.models = get_surv_best_model(positive.sig.sig,
                                      "binary.status" = c(TRUE, FALSE) ),
                                  min.sample.fraction = 0.2)
 saveRDS(pos.picked.models, file = file.path(out.dir, "tcga.pos.sig.sig.picked.models.RDS"))
+
+# pos.picked.models %>% HR_summary_for_all(type = "pos") %>% plot_sigint_forest()
 ```
 
 ### Survival models for negative interactions
@@ -218,8 +220,10 @@ neg.picked.models = get_surv_best_model(negative.sig.sig,
                                      "with.total.muts" = c(TRUE, FALSE), 
                                      "tmb.logged" = c(TRUE),
                                      "binary.status" = c(TRUE, FALSE) ),
-                                 min.sample.fraction = 0.2)
+                                 min.sample.fraction = 0)
 saveRDS(neg.picked.models, file = file.path(out.dir, "tcga.neg.sig.sig.picked.models.RDS"))
+
+# neg.picked.models %>% HR_summary_for_all(type = "neg") %>% plot_sigint_forest()
 ```
 
 

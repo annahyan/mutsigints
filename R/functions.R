@@ -1824,10 +1824,11 @@ pick_survival_model_int = function(dataset = dataset,
 
             if (p.val.of.interaction < 0.05) {
                 if (test.model$coxout$loglik[2] > best.model.loglik) {
-                    best.model = list(params = param.input, out.model = test.model)
-                    cat("\ntissue = ", tissues, "\n")
-                    print(unlist(param.input) )
-                    cat("\n")
+                    best.model = list(params = param.input, out.model = test.model, 
+                                      minority.smp.fraction = minority.sample.fraction)
+                    # cat("\ntissue = ", tissues, "\n")
+                    # print(unlist(param.input) )
+                    # cat("\n")
                 }
             }
         } )
@@ -1898,7 +1899,9 @@ get_surv_best_model = function(sig.sig.tissues.matrix,
             
             j = j + 1
             out_coxlist[[paste(tissue, "::", sig1, "+", sig2)]] = 
-                list(input.params = unlist(surv.out$params), model = surv.out$out.model$coxout  )} )
+                list(input.params = unlist(surv.out$params), 
+                     model = surv.out$out.model$coxout,
+                     minority.smp.fraction = surv.out$minority.smp.fraction)} )
         }
     }
     return(out_coxlist)

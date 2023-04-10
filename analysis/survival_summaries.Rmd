@@ -264,12 +264,12 @@ ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.path.age.piechart.pdf"
 ```
 
 
-```{r}
-pp = plot_sigint_forest(pcawg.sig.path.comb)
+<!-- ```{r} -->
+<!-- pp = plot_sigint_forest(pcawg.sig.path.comb) -->
 
-ggsave(plot = pp, filename = file.path(fig.dir, "pcawg.sig.path.significant_interaction.pdf"),
-       width = 7, height = 2.3)
-```
+<!-- ggsave(plot = pp, filename = file.path(fig.dir, "pcawg.sig.path.significant_interaction.pdf"), -->
+<!--        width = 7, height = 2.3) -->
+<!-- ``` -->
  
  
 ## TCGA
@@ -433,11 +433,11 @@ pcawg.neg.sp.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig
 ```{r}
 pcawg.pos.sp.picked.summary = HR_summary_for_all(pcawg.pos.sp.picked.surv.out, type = "pos")
 
-# pcawg.neg.sp.picked.summary = HR_summary_for_all(pcawg.neg.sp.picked.surv.out, type = "neg")
+pcawg.neg.sp.picked.summary = HR_summary_for_all(pcawg.neg.sp.picked.surv.out, type = "neg")
 # This list is empty
 
-# pcawg.sp.picked.combined = rbind(pcawg.pos.sp.picked.summary, pcawg.neg.sp.picked.summary)
-pcawg.sp.picked.combined = pcawg.pos.sp.picked.summary
+pcawg.sp.picked.combined = rbind(pcawg.pos.sp.picked.summary, pcawg.neg.sp.picked.summary)
+# pcawg.sp.picked.combined = pcawg.pos.sp.picked.summary
 
 pp = plot_sigint_forest(pcawg.sp.picked.combined) + 
     theme(plot.margin = margin(1, 0,0,0, "cm"))
@@ -466,7 +466,7 @@ tcga.ss.picked.combined = rbind(tcga.pos.ss.picked.summary, tcga.neg.ss.picked.s
 pp = plot_sigint_forest(tcga.ss.picked.combined)
 
 ggsave(plot = pp, filename = file.path(fig.dir, "tcga.sig.sig.adjusted.models.significant_interaction.pdf"),
-       width = 7, height = 5)
+       width = 7, height = 3.2)
 ```
 
 
@@ -491,6 +491,6 @@ tcga.sp.picked.combined = rbind(tcga.pos.sp.picked.summary, tcga.neg.sp.picked.s
 pp = plot_sigint_forest(tcga.sp.picked.combined)
 
 ggsave(plot = pp, filename = file.path(fig.dir, "tcga.sig.path.adjusted.models.significant_interaction.pdf"),
-       width = 7, height = 3.5)
+       width = 7, height = 3.2)
 ```
 
