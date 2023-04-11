@@ -473,7 +473,7 @@ tcga.ss.picked.combined = tcga.ss.picked.combined %>% filter(! int %in% pair.str
 pp = plot_sigint_forest(tcga.ss.picked.combined)
 
 ggsave(plot = pp, filename = file.path(fig.dir, "tcga.sig.sig.adjusted.models.significant_interaction.pdf"),
-       width = 7, height = 2.5)
+       width = 7, height = 3.2)
 ```
 
 
