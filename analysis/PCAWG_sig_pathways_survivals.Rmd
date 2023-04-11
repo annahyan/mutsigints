@@ -144,7 +144,7 @@ pos.picked.models = get_surv_best_model(positive.sig.pathway,
                                      "with.total.muts" = c(TRUE, FALSE), 
                                      "tmb.logged" = c(TRUE),
                                      "binary.status" = c(TRUE, FALSE) ),
-                                 min.sample.fraction = 0.2)
+                                 min.sample.fraction = 0)
 saveRDS(pos.picked.models, file = file.path(out.dir, "pcawg.pos.sig.path.picked.models.RDS"))
 ```
 

@@ -463,10 +463,17 @@ tcga.neg.ss.picked.summary = HR_summary_for_all(tcga.neg.ss.picked.surv.out, typ
 
 tcga.ss.picked.combined = rbind(tcga.pos.ss.picked.summary, tcga.neg.ss.picked.summary)
 
+clock.like = c("Ageing", "SBS40", "SBS5")
+pairs = combn(clock.like, 2)
+pair.strings <- c(paste(pairs[1, ], pairs[2, ], sep = " + "), 
+                  paste(pairs[2, ], pairs[1, ], sep = " + "))
+
+tcga.ss.picked.combined = tcga.ss.picked.combined %>% filter(! int %in% pair.strings )
+
 pp = plot_sigint_forest(tcga.ss.picked.combined)
 
 ggsave(plot = pp, filename = file.path(fig.dir, "tcga.sig.sig.adjusted.models.significant_interaction.pdf"),
-       width = 7, height = 3.2)
+       width = 7, height = 2.5)
 ```
 
 

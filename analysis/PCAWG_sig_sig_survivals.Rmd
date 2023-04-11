@@ -142,7 +142,7 @@ pos.picked.models = get_surv_best_model(positive.sig.sig,
                                      "with.total.muts" = c(TRUE, FALSE), 
                                      "tmb.logged" = c(TRUE),
                                      "binary.status" = c(TRUE, FALSE) ),
-                                 min.sample.fraction = 0.2)
+                                 min.sample.fraction = 0)
 
 saveRDS(pos.picked.models, file = file.path(out.dir, "pcawg.pos.sig.sig.picked.models.RDS"))
 
@@ -327,6 +327,65 @@ eso_APOBEC_SBS40 = survival_for_interactions(dataset = PCAWG.full.subset.ann,
                                                       clin.df = PCAWG.clin.df,
                                                       legend_pos = c(0.8, 0.8),
                                                       with.total.muts = TRUE,
+                                                      tmb.logged = TRUE,
+                                                      binary.status = FALSE,
+                                             conf.int = TRUE)
+```
+
+
+```{r}
+medulo_ROS_SBS40 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+                                                      signatures = c("SBS40", "ROS"), 
+                                                      tissues = "CNS_Medullo", 
+                                                      clin.df = PCAWG.clin.df,
+                                                      legend_pos = c(0.8, 0.8),
+                                                      with.total.muts = TRUE,
+                                                      tmb.logged = TRUE,
+                                                      binary.status = TRUE,
+                                             conf.int = TRUE)
+```
+
+
+```{r}
+eso_ROS_SBS17 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+                                                      signatures = c("SBS17", "ROS"), 
+                                                      tissues = "Eso_AdenoCA", 
+                                                      clin.df = PCAWG.clin.df,
+                                                      legend_pos = c(0.8, 0.8),
+                                                      with.total.muts = TRUE,
+                                                      tmb.logged = TRUE,
+                                                      binary.status = TRUE,
+                                             conf.int = TRUE)
+
+
+eso_ROS_SBS17_forest = ggforest(model = eso_ROS_SBS17$coxout, data = eso_ROS_SBS17$survival.df)
+```
+
+
+
+```{r}
+ov_HR_SBS40 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+                                                      signatures = c("SBS40", "HR"), 
+                                                      tissues = "Ovary_AdenoCA", 
+                                                      clin.df = PCAWG.clin.df,
+                                                      legend_pos = c(0.8, 0.8),
+                                                      with.total.muts = FALSE,
+                                                      tmb.logged = TRUE,
+                                                      binary.status = FALSE,
+                                             conf.int = TRUE)
+
+
+ov_HR_SBS40_forest = ggforest(model = ov_HR_SBS40$coxout, data = ov_HR_SBS40$survival.df)
+```
+
+
+```{r}
+panc_ROS_SBS5 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+                                                      signatures = c("SBS40", "HR"), 
+                                                      tissues = "Ovary_AdenoCA", 
+                                                      clin.df = PCAWG.clin.df,
+                                                      legend_pos = c(0.8, 0.8),
+                                                      with.total.muts = FALSE,
                                                       tmb.logged = TRUE,
                                                       binary.status = FALSE,
                                              conf.int = TRUE)
