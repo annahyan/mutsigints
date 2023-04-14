@@ -104,10 +104,10 @@ get_sig_stars = function(p.val) {
 #' 
 subset_tissue = function(sigs.full.subset, tissue) {
     
-    tissue.signatures = sigs.full.subset[ sigs.full.subset[, 1] == tissue, ]
+    tissue.signatures = sigs.full.subset %>% filter( Cancer.Types == tissue)
     
     signature.matrix = tissue.signatures[, 4:ncol(sigs.full.subset)]
-    signature.matrix = signature.matrix[, colSums(signature.matrix) > 0, 
+    signature.matrix = signature.matrix[, which(colSums(signature.matrix) > 0), 
                                         drop = FALSE]
     out = cbind(tissue.signatures[, 1:3], signature.matrix) 
     return(out)
