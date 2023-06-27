@@ -193,7 +193,6 @@ tbl.G = as_tbl_graph(G, directed = TRUE) %>%
     filter(!node_isolated)
 
 
-
 raw.network = tbl.G  %>% ggraph(layout = "kk") +
     geom_edge_link(arrow = arrow(length = unit(2, units = "mm"), angle = 25),
                    start_cap = circle(3, 'mm'),
@@ -468,6 +467,16 @@ uv.rtkras = skin.concat %>%
     geom_boxplot(width = 0.6) + geom_jitter(width = 0.15, height = 0.15, size = 0.5) +
     theme_bw(base_size = 13) +
     ylab("log(UV)") + coord_flip()
+
+
+# uv.rtkras = skin.concat %>%
+#     mutate (`RTK RAS` = factor(`RTK RAS`, levels = c(0, 1,2,3))) %>%
+#     ggplot(aes(x = `RTK RAS`, y = UV,
+#                            group = `RTK RAS`, fill = `RTK RAS`) ) +
+#     geom_violin() + geom_jitter(width = 0.15, height = 0.15, size = 0.5) +
+#     theme_bw(base_size = 13) +
+#     ylab("log(UV)") + coord_flip()
+
 
 print(uv.rtkras)
 

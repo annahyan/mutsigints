@@ -15,6 +15,8 @@ knitr::opts_chunk$set(comment = '', fig.width = 6,
 ```{r load-packages, message=FALSE, warning= FALSE}
 library(here)
 library(chrwiseSignatures)
+library(ggraph)
+library(igraph)
 fig.dir = here("figures/overview_networks")
 
 if(! file.exists(fig.dir)){
@@ -249,6 +251,7 @@ plot_mixed_layout = function(graph.input,
                              central.nodes = c("Ageing" , "SBS5", "SBS40"),
                              circular.node.order = NULL, edge.width.breaks = NULL) {
     
+
     all.nodes = graph.input %>% 
         activate(nodes) %>% 
         as.data.frame() %>% 
@@ -293,7 +296,7 @@ plot_mixed_layout = function(graph.input,
         arrange(factor(name, levels = all.nodes)) 
     pp = graph.input %>% ggraph(x = node.coordinates$x, y = node.coordinates$y) + 
         geom_edge_link (aes(color = int.type, width = count), alpha = 0.4) +
-        scale_edge_width(edge.width.breaks, range = c(0.3,3)) +
+        scale_edge_width_continuous(breaks = edge.width.breaks, range = c(0.3,3)) +
         geom_node_point(aes(fill = annot.class), 
                         color = "gray30", 
                         size = 4,
@@ -311,7 +314,7 @@ plot_mixed_layout = function(graph.input,
                         label.padding = unit(0, "lines"),
                        nudge_y = 0) + 
         scale_edge_color_manual(values = c("positive" = "red4",
-                                           "negative" = "dodgerblue3")) + 
+                                           "negative" = "dodgerblue3")) +
         scale_fill_manual(values = c("Endogenous" = "#CAE7B9",
                                       "Environmental" = "#f3de8a",
                                       # "Clock-like" = "#ff934f",
@@ -347,7 +350,7 @@ pcawg.sig.sig.all.network = plot_mixed_layout(
     )
 
 
-ggsave(plot = minor_plot(pcawg.sig.sig.all.network, expand.factor = 0.2),
+ggsave(plot = minor_plot(pcawg.sig.sig.all.network, expand.factor = 0.3),
        filename = file.path(fig.dir, "pcawg.sig.sig.all.network.pdf"),
        width = 6.4, height = 5.3)
 ```
