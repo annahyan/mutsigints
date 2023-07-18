@@ -344,8 +344,6 @@ get_tissue_pathway_activities = function(tissue,
     return(list(sigs = tissue.sig.subset, paths = tissue.path.subset))
 }
 
-
-
 #' Assess signature-pathway interactions across tissues for PCAWG with a custom
 #' function
 #' @param sigs.input Signature activities. The rows correspond to samples, the 
@@ -449,7 +447,7 @@ ggheatmap_wrapper = function(metric.matrix,
 
 
 #' For a list of interaction metrics this function summarizes the positive and
-#' negative interactions in a dataframe which can then be fed into plotting functions.
+#' negative interactions into a dataframe which can then be fed into plotting functions.
 #' 
 #' @param list.of.int.elems A list with matrix elements.
 #' @param threshold All the values below the threshold are discarded.

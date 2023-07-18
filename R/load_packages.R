@@ -2,7 +2,7 @@
 
 library(openxlsx)
 library(data.table)
-library(chrwiseSignatures)
+# library(chrwiseSignatures)
 library(tidyverse)
 library(ggpubr)
 library(tidygraph)
@@ -14,7 +14,7 @@ library(viridis)
 
 source(here("R/functions.R"))
 
-signature.annotations = read.delim(here("data/raw", "signature_annotations.tsv"))
+# signature.annotations = read.delim(here("data/raw", "signature_annotations.tsv"))
 
 ### Some project invariants
 

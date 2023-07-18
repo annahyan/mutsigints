@@ -14,21 +14,21 @@ knitr::opts_chunk$set(comment = '', fig.width = 6,
 
 ```{r load-packages, message=FALSE, warning= FALSE}
 library(here)
-library(chrwiseSignatures)
+library(mutsigintsKit)
 library(ggraph)
 library(igraph)
-fig.dir = here("figures/overview_networks")
-
-if(! file.exists(fig.dir)){
-    dir.create(fig.dir, recursive = TRUE)
-}
-
 source(here("R/load_packages.R"))
 library(igraph)
 library(tidygraph)
 library(pheatmap)
 library(viridis)
 library(rlang)
+
+fig.dir = here("figures/overview_networks")
+
+if(! file.exists(fig.dir)){
+    dir.create(fig.dir, recursive = TRUE)
+}
 ```
 
 ### getting PCAWG summary network
@@ -38,11 +38,12 @@ prep_the_data = function(dataset, cnames = "sig2") {
     dataset %>% rownames_to_column( var = "sig1") %>% 
         pivot_longer(cols = !sig1, names_to = cnames, values_to = "tissue") %>% 
         mutate(tissue = strsplit(as.character(tissue), ", ")) %>% 
-        unnest(cols = c(tissue)) %>% 
-        group_by(sig1, (!!sym(cnames))) %>% 
-        summarize(count = n())
+        unnest(cols = c(tissue)) 
 }
+```
 
+
+```{r}
 pcawg.pos.ints = read.table(
     file = here("supp_data", "PCAWG_positive_interaction_tissue_summaries.tsv"),
           row.names = 1, head  = T, sep = "\t")
@@ -85,14 +86,6 @@ all.pcawg.interactions = graph_join(pcawg.sig.sig.net, pcawg.sig.path)
 ### getting TCGA summary network
 
 ```{r}
-prep_the_data = function(dataset, cnames = "sig2") {
-    dataset %>% rownames_to_column( var = "sig1") %>% 
-        pivot_longer(cols = !sig1, names_to = cnames, values_to = "tissue") %>% 
-        mutate(tissue = strsplit(as.character(tissue), ", ")) %>% 
-        unnest(cols = c(tissue)) %>% 
-        group_by(sig1, (!!sym(cnames))) %>% 
-        summarize(count = n())
-}
 
 tcga.pos.ints = read.table(
     file = here("supp_data", "TCGA_positive_interaction_tissue_summaries.tsv"),
@@ -177,7 +170,7 @@ all.pcawg.interactions %>%
 ### Playing around with dh layout 
 
 ```{r}
-igraph_dh_mod = layout_with_dh()
+# igraph_dh_mod = layout_with_dh()
 layout <- create_layout(all.pcawg.interactions, layout = "dh", 
                         weight.border = 0.011,
                         weight.node.dist = 0.4,
@@ -246,85 +239,6 @@ ggsave(all.only.sig.network, file = file.path(fig.dir,
        width = 6, height = 5)
 ```
 
-```{r}
-plot_mixed_layout = function(graph.input, 
-                             central.nodes = c("Ageing" , "SBS5", "SBS40"),
-                             circular.node.order = NULL, edge.width.breaks = NULL) {
-    
-
-    all.nodes = graph.input %>% 
-        activate(nodes) %>% 
-        as.data.frame() %>% 
-        pull(name)
-    
-    graph.input = graph.input %>% 
-        activate(nodes) %>% 
-        mutate(annot.class = signature.annotations %>% 
-                   filter(Annotation %in% all.nodes) %>% 
-                   select(Origin, Annotation) %>% 
-                   unique() %>% 
-                   arrange(factor(Annotation, levels = all.nodes)) %>% 
-                   pull(Origin))
-    
-    circle.nodes = setdiff(all.nodes, central.nodes)
-    # 
-    # lay1 = layout_in_circle(induced_subgraph(graph.input, circle.nodes))
-    # lay2 = layout_nicely(induced_subgraph(graph.input, central.nodes))
-    # lay3 <- rbind(lay1 + 2, lay2 *  10) 
-    # 
-    
-    central.subgraph = graph.input %>% 
-        to_subgraph(name %in% central.nodes, subset_by = "nodes") 
-    
-    circle.subgraph = graph.input %>% 
-        to_subgraph(name %in% circle.nodes, subset_by = "nodes") 
-    
-    lay.central = create_layout(central.subgraph$subgraph,
-                                layout = "stress")
-    
-    if (is.null(circular.node.order)) {
-        lay.circle = create_layout(circle.subgraph$subgraph,
-                                   layout = "circle")
-    } else {
-        lay.circle = create_layout(circle.subgraph$subgraph,
-                                   layout = "circle", order = circular.node.order)
-    }
-        
-    # plot.igraph(pcawg.sig.sig.net, layout=lay3, vertex.size=8)
-    
-    node.coordinates = rbind(lay.central, lay.circle) %>% as.data.frame() %>% 
-        arrange(factor(name, levels = all.nodes)) 
-    pp = graph.input %>% ggraph(x = node.coordinates$x, y = node.coordinates$y) + 
-        geom_edge_link (aes(color = int.type, width = count), alpha = 0.4) +
-        scale_edge_width_continuous(breaks = edge.width.breaks, range = c(0.3,3)) +
-        geom_node_point(aes(fill = annot.class), 
-                        color = "gray30", 
-                        size = 4,
-                        shape = 21,
-                        stroke = 0.6) + 
-        geom_node_label(aes(label = name#, fill = type
-                            ),
-                        color = "gray10", 
-                        label.size = 0,
-                        hjust = ifelse(node.coordinates[,1] > 0, -0.25, 1.25),
-                        vjust = ifelse(node.coordinates[,2] > 0, -0.3, 1.15),
-                        # hjust = node.coordinates[ ,1] * 1.1,
-                        # vjust = node.coordinates[ ,2] * 1.1,
-                        label.r = unit(0.2, "lines"),
-                        label.padding = unit(0, "lines"),
-                       nudge_y = 0) + 
-        scale_edge_color_manual(values = c("positive" = "red4",
-                                           "negative" = "dodgerblue3")) +
-        scale_fill_manual(values = c("Endogenous" = "#CAE7B9",
-                                      "Environmental" = "#f3de8a",
-                                      # "Clock-like" = "#ff934f",
-                                      "Clock-like" = "white",
-                                      "Unknown" = "#4e6151") ) +
-        theme_void() + 
-        theme(legend.position = "right", legend.title =element_blank() )
-    return(pp)
-}
-```
 
 
 ```{r pcawg-all-signatures}
@@ -343,6 +257,8 @@ node.order = c(sort(c("APOBEC", "MMR", "HR", "ROS", "PolH", "PolE")),
 #                              )
 
 
+pcawg.sig.sig.net = graph_unique_edges(pcawg.sig.sig.net, summary.col = "tissue")
+
 pcawg.sig.sig.all.network = plot_mixed_layout(
     pcawg.sig.sig.net, 
     circular.node.order = node.order,
@@ -350,7 +266,7 @@ pcawg.sig.sig.all.network = plot_mixed_layout(
     )
 
 
-ggsave(plot = minor_plot(pcawg.sig.sig.all.network, expand.factor = 0.3),
+ggsave(plot = minor_plot(pcawg.sig.sig.all.network, expand.factor = 0.2),
        filename = file.path(fig.dir, "pcawg.sig.sig.all.network.pdf"),
        width = 6.4, height = 5.3)
 ```
