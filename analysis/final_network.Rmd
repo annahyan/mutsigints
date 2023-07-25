@@ -257,16 +257,16 @@ node.order = c(sort(c("APOBEC", "MMR", "HR", "ROS", "PolH", "PolE")),
 #                              )
 
 
-pcawg.sig.sig.net = graph_unique_edges(pcawg.sig.sig.net, summary.col = "tissue")
+pcawg.sig.sig.net.sum = graph_unique_edges(pcawg.sig.sig.net, summary.col = "tissue")
 
 pcawg.sig.sig.all.network = plot_mixed_layout(
-    pcawg.sig.sig.net, 
+    pcawg.sig.sig.net.sum, 
     circular.node.order = node.order,
     edge.width.breaks = c(1,2,4,13)
     )
 
 
-ggsave(plot = minor_plot(pcawg.sig.sig.all.network, expand.factor = 0.2),
+ggsave(plot = minor_plot(pcawg.sig.sig.all.network$pp, expand.factor = 0.2),
        filename = file.path(fig.dir, "pcawg.sig.sig.all.network.pdf"),
        width = 6.4, height = 5.3)
 ```
@@ -287,15 +287,20 @@ node.annotations = data.frame(sig.group = c(node.order, c("Ageing", "SBS5", "SBS
                                         rep("Clock-like", 3))
                              )
 
+tcga.sig.sig.net.sum = graph_unique_edges(tcga.sig.sig.net, summary.col = "tissue")
+
+network.nodes = tcga.sig.sig.net.sum %>% activate(nodes) %>% pull(name)
+
+circular.node.order = circular.node.order[ circular.node.order %in% network.nodes]
 
 tcga.sig.sig.all.network = plot_mixed_layout(
-    tcga.sig.sig.net, 
-    # circular.node.order = node.order,
-    # edge.width.breaks = c(1,2,4,13)
+    tcga.sig.sig.net.sum, 
+    circular.node.order = circular.node.order,
+    edge.width.breaks = c(1,2,4,13)
     )
 
 
-ggsave(plot = minor_plot(tcga.sig.sig.all.network, expand.factor = 0.2),
+ggsave(plot = minor_plot(tcga.sig.sig.all.network$pp, expand.factor = 0.2),
        filename = file.path(fig.dir, "tcga.sig.sig.all.network.pdf"),
        width = 6.4, height = 5.3)
 ```
