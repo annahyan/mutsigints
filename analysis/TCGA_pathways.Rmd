@@ -314,8 +314,7 @@ ggsave(plot = pp.TCGA.combined.summaries,
 ### Bipartite graph - not used 
 
 ```{r}
-sig.path.int.odds.summary.df = summarize_ints_to_df(tissue.odds.ratio.unadjusted)
-sig.path.oddsratio.bipartite = minor_plot(plot_bipartite2(sig.path.int.odds.summary.df),
+sig.path.oddsratio.bipartite = minor_plot(plot_bipartite2(tissue.odds.ratio.unadjusted),
                                        expand.factor = 0.5, expand.factor.y = 0.01)
 
 ggsave(plot = sig.path.oddsratio.bipartite,
