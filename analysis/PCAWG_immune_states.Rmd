@@ -220,7 +220,7 @@ immune.states.tissues = immune.states %>%
 
 
 ```{r}
-immune.tissue.odds.ratio = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.immune,
+immune.tissue.odds.ratio = sig_pathway_int(sigs.input = PCAWG.full.subset.ann.immune,
                                  pathways.input = immune.states.tissues,
                                  interaction_function = get_sig_path_assocs, 
                                  path.min.tissues = 30,
@@ -245,7 +245,7 @@ for (tissue in names(immune.tissue.odds.ratio)) {
 ```
 
 ```{r}
-immune.tissue.odds.ratio.unadjusted = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.immune,
+immune.tissue.odds.ratio.unadjusted = sig_pathway_int(sigs.input = PCAWG.full.subset.ann.immune,
                                  pathways.input = immune.states.tissues,
                                  interaction_function = get_sig_path_assocs, 
                                  path.min.tissues = 30,

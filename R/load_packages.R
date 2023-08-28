@@ -12,7 +12,7 @@ library(grid)
 library(pheatmap)
 library(viridis)
 
-source(here("R/functions.R"))
+# source(here("R/functions.R"))
 
 # signature.annotations = read.delim(here("data/raw", "signature_annotations.tsv"))
 

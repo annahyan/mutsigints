@@ -224,7 +224,7 @@ comp.network =ggarrange(logged.network, raw.network)
 #### Fisher's exact test between signatures and pathways in individual tissues
 
 ```{r, warning = FALSE}
-tissue.odds.ratio = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
+tissue.odds.ratio = sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
                                  pathways.input = PCAWG.pathways.tissues,
                                  interaction_function = get_sig_path_assocs, 
                                  path.min.tissues = 30,
@@ -250,7 +250,7 @@ for (tissue in names(tissue.odds.ratio)) {
 
 
 ```{r}
-tissue.odds.ratio.unadjusted = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
+tissue.odds.ratio.unadjusted = sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
                                  pathways.input = PCAWG.pathways.tissues,
                                  interaction_function = get_sig_path_assocs, 
                                  path.min.tissues = 30,
@@ -318,7 +318,7 @@ In this first case, I tried logging.
 
 
 ```{r, warning = FALSE}
-tissue.lm.coefs.mats.log = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
+tissue.lm.coefs.mats.log = sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
                                  pathways.input = PCAWG.pathways.tissues,
                                  interaction_function = get_sig_path_lms,
                                  robust = FALSE,
@@ -347,7 +347,7 @@ for (tissue in abundant.tissues) {
 <!-- In the example below I'm trying with raw counts. -->
 
 <!-- ```{r, warning = FALSE} -->
-<!-- tissue.lm.coefs.mats = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways, -->
+<!-- tissue.lm.coefs.mats = sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways, -->
 <!--                                  pathways.input = PCAWG.pathways.tissues, -->
 <!--                                  interaction_function = get_sig_path_lms,  -->
 <!--                                  robust = FALSE, -->
@@ -529,7 +529,7 @@ ggsave(filename = file.path(fig.dir, paste0(tissue, "rev_uv_rtkras_relationship.
 ### Logistic regression predicting pathways from signatures across tissues
 
 ```{r}
-tissue.log.coefs.mats.log = pcawg_sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
+tissue.log.coefs.mats.log = sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
                                  pathways.input = PCAWG.pathways.tissues,
                                  interaction_function = get_sig_path_lms,
                                  path.min.tissues = 30,

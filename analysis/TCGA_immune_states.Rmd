@@ -157,7 +157,7 @@ tcga.immune.sigs$Cancer.Types %in% abundant.tissues %>% sum()
 ### Interactions between TCGA signatures and immune states
 
 ```{r}
-immune.tissue.odds.ratio = pcawg_sig_pathway_int(sigs.input = tcga.immune.sigs,
+immune.tissue.odds.ratio = sig_pathway_int(sigs.input = tcga.immune.sigs,
                                  pathways.input = tcga.immune.tissues,
                                  interaction_function = get_sig_path_assocs, 
                                  path.min.tissues = 30,
@@ -211,7 +211,7 @@ ggsave(plot = int.heatmap,
 
 ```{r}
 
-immune.tissue.odds.ratio.unadjusted = pcawg_sig_pathway_int(sigs.input = tcga.immune.sigs,
+immune.tissue.odds.ratio.unadjusted = sig_pathway_int(sigs.input = tcga.immune.sigs,
                                  pathways.input = tcga.immune.tissues,
                                  interaction_function = get_sig_path_assocs, 
                                  path.min.tissues = 30,

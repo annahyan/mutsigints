@@ -362,7 +362,7 @@ get_tissue_pathway_activities = function(tissue,
 #' @return A list with the length of abundant tissues in the datasets, 
 #' where each element is the interaction matrix
 
-pcawg_sig_pathway_int = function(sigs.input,
+sig_pathway_int = function(sigs.input,
                                  pathways.input,
                                  interaction_function, 
                                  path.min.tissues = 30,
