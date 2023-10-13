@@ -14,15 +14,15 @@ knitr::opts_chunk$set(comment = '', fig.width = 6,
 
 ```{r load-packages, message=FALSE, warning= FALSE}
 library(here)
-library(mutsigintsKit)
 library(ggraph)
 library(igraph)
-source(here("R/load_packages.R"))
 library(igraph)
-library(tidygraph)
 library(pheatmap)
 library(viridis)
 library(rlang)
+
+### loads common packages, sets the variables 
+source(here("R/load_packages.R"))
 
 fig.dir = here("figures/overview_networks")
 

@@ -293,7 +293,6 @@ ggsave(plot = sig.path.oddsratio.bipartite,
        filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
                                     "PCAWG_summarized_sig_pathway_unadjusted.bipartite.pdf"),
        height = 5, width = 5.5, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
-
 ```
 
 ### Tissues of Odds ratio interactions
