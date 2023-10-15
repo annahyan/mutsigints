@@ -1,0 +1,90 @@
+---
+title: "Checking SBS40 clonality"
+author: "Anna Hakobyan"
+date: "2023-10-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+``` {r load, include=FALSE}
+library(here)
+library(survival)
+library(survminer)
+source(here("R/load_packages.R"))
+library(gridExtra)
+library(ggforestplot)
+
+fig.dir = here("figures/survival_summaries")
+```
+
+```{r}
+source(here("R/process_sigs_PCAWG.R"))
+```
+
+```{r}
+signature.clonality = read.delim(here("data/evolution_and_heterogeneity/2018-07-25-allSignatureChanges.txt"))
+sample.names = signature.clonality$samplename %>% unique()
+
+columns.to.add = c("icgc_donor_id")
+
+clonality = signature.clonality %>%
+  left_join(PCAWG.sample.sheet %>% select("icgc_donor_id", "aliquot_id"), 
+            by = c("samplename" = "aliquot_id")) %>% # Merge data frames 
+    left_join(PCAWG.full.subset %>% select("Cancer.Types", "Sample.Names"),
+              by = c("icgc_donor_id" = "Sample.Names")) %>% 
+    filter(! is.na(Cancer.Types ))
+```
+
+
+```{r}
+SBS40.clonality = clonality %>% 
+    filter(signature == "SBS40") %>% 
+    select(wt_clonal, wt_early, Cancer.Types) %>% 
+    pivot_longer(cols = wt_clonal:wt_early, names_to = "clonality", values_to = "level") %>% 
+    ggplot(aes(x = Cancer.Types, y = level, color = clonality)) +
+        geom_boxplot(width = 0.4, outlier.size = 0) + 
+        geom_point(position=position_jitterdodge(jitter.width = 0.2, dodge.width = 0.4), size = 0.1) +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5), axis.title = element_blank()) +
+    ggtitle("SBS40 clonality")
+
+SBS5.clonality = clonality %>% 
+    filter(signature == "SBS5") %>% 
+    select(wt_clonal, wt_early, Cancer.Types) %>% 
+    pivot_longer(cols = wt_clonal:wt_early, names_to = "clonality", values_to = "level") %>% 
+    ggplot(aes(x = Cancer.Types, y = level, color = clonality)) +
+        geom_boxplot(width = 0.4, outlier.size = 0) + 
+        geom_point(position=position_jitterdodge(jitter.width = 0.2, dodge.width = 0.4), size = 0.1) +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5), axis.title = element_blank()) 
+
+ggarrange(SBS40.clonality, SBS5.clonality, nrow = 2)
+
+```
+
+
+```{r}
+sbs40.lf = clonality %>% filter(signature  == "SBS40") %>% 
+    ggplot(aes(x = Cancer.Types, y = log2fc_clonalSubclonal)) +
+    geom_boxplot(outlier.size = 0) + geom_jitter(size = 0.1) +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5), axis.title = element_blank()) 
+
+sbs5.lf = clonality %>% filter(signature  == "SBS5") %>% 
+    ggplot(aes(x = Cancer.Types, y = log2fc_clonalSubclonal)) +
+    geom_boxplot(outlier.size = 0) + geom_jitter(size = 0.1) +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5), axis.title = element_blank()) 
+
+ggarrange(sbs40.lf, sbs5.lf, nrow = 2)
+
+```
+
+```{r}
+sbs5vs40.lfc = clonality %>% filter(signature  %in% c("SBS5", "SBS40") ) %>% 
+    ggplot(aes(x = Cancer.Types, y = log2fc_clonalSubclonal, color = signature)) +
+    geom_boxplot(outlier.size = 0, width = 0.4) + 
+    geom_point(position=position_jitterdodge(jitter.width = 0.2, dodge.width = 0.4), size = 0.1) +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5), axis.title = element_blank()) 
+```
+
