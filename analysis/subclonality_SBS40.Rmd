@@ -17,9 +17,12 @@ library(survminer)
 source(here("R/load_packages.R"))
 library(gridExtra)
 library(ggforestplot)
-library(gginnards)
 
-fig.dir = here("figures/survival_summaries")
+fig.dir = here("figures/clonality")
+
+if(!dir.exists(fig.dir)) {
+    dir.create(fig.dir)
+}
 ```
 
 ```{r}
@@ -27,7 +30,7 @@ source(here("R/process_sigs_PCAWG.R"))
 ```
 
 ```{r}
-signature.clonality = read.delim(here("data/evolution_and_heterogeneity/2018-07-25-allSignatureChanges.txt"))
+signature.clonality = read.delim(here("data/evolution_and_heterogeneity/2018-07-25-allSignatureChanges.tsv"))
 sample.names = signature.clonality$samplename %>% unique()
 
 columns.to.add = c("icgc_donor_id")
@@ -95,15 +98,17 @@ dd = clonality %>% filter(signature  %in% c("SBS5", "SBS40") ) %>%
     mutate(signature = factor(signature, levels = c("SBS5", "SBS40"))) 
 
 bs5vs40.lfc = ggboxplot(data = dd, x = "Cancer.Types", y = "log2fc_clonalSubclonal",
-          color = "signature", palette = "jco", add = "jitter", add_params = list(size = 0.1))+
-  stat_compare_means(aes(group = signature), label = "p.signif") +
-    geom_hline(yintercept = 0) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5), axis.title = element_blank())  
+          color = "signature", palette = "aaas", add = "jitter", add_params = list(size = 0.1))+
+  stat_compare_means(aes(group = signature), label = "p.signif", size = 3) +
+    geom_hline(yintercept = 0) + ylab("log2fc_clonalSubclonal") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5), axis.title.x = element_blank())  
 
 ph = bs5vs40.lfc$layers[[1]]
 bs5vs40.lfc$layers[[1]] = bs5vs40.lfc$layers[[4]]
 bs5vs40.lfc$layers[[4]] = ph
+bs5vs40.lfc
 
-
+ggsave(filename = file.path(fig.dir, "sbs5_vs_sbs40.pdf"), 
+       plot = bs5vs40.lfc, width = 8, height = 6)
 ```
 
