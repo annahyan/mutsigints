@@ -1,0 +1,37 @@
+---
+title: "The notebook explores mutation types of TP53 pathway genes in PAAD, PRAD, CLL"
+output: html_notebook
+---
+
+
+```{r}
+knitr::opts_chunk$set(comment = '', fig.width = 6, 
+                      fig.height = 6, echo = FALSE, 
+                      warning = FALSE)
+```
+
+
+```{r load-packages, message=FALSE}
+library(here)
+fig.dir = here("figures/TP53_path_muts")
+
+if(! file.exists(fig.dir)){
+    dir.create(fig.dir, recursive = TRUE)
+}
+
+source(here("R/load_packages.R"))
+```
+
+```{r}
+input.dir = here("data/TP53_mutations")
+
+tissues = list.dirs(input.dir, recursive = FALSE, full.names = FALSE)
+```
+
+```{r}
+tissue_gene_dist_files = function(tissue) {
+    gd.files = list.files(path = file.path(input.dir, tissue), 
+                          pattern = "Distribution-[A-Z0-9]+-[A-Z]+.tsv")
+}
+```
+
