@@ -23,7 +23,6 @@ source(here("R/load_packages.R"))
 library(igraph)
 library(tidygraph)
 library(pheatmap)
-library(viridis)
 
 data.out.dir = here("data/RDS/PCAWG", "sig_sig_ints")
 
@@ -31,6 +30,9 @@ output.dir = here("output/sig_sig_int_motifs")
 ```
 
 ```{r loading-precalc-interactions}
+
+### These data is generated in here("R/sig_sig_interactions.PCAWG.R")
+
 PCAWG.cooccurrence.summary.nets = readRDS(file = file.path(data.out.dir, "PCAWG.cooccurrence.summary.nets.RDS") )
 PCAWG.bcmi.summary.nets = readRDS(file = file.path(data.out.dir, "PCAWG.bcmi.summary.nets.RDS") )
 PCAWG.pearson.summary.nets = readRDS(file = file.path(data.out.dir, "PCAWG.pearson.summary.nets.RDS") )

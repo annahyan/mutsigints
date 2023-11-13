@@ -20,6 +20,12 @@ if(! file.exists(fig.dir)){
 }
 
 source(here("R/load_packages.R"))
+
+
+ref_genome <- "BSgenome.Hsapiens.UCSC.hg38"
+library(ref_genome, character.only = TRUE)
+
+library(MutationalPatterns)
 ```
 
 ```{r}
@@ -29,9 +35,48 @@ tissues = list.dirs(input.dir, recursive = FALSE, full.names = FALSE)
 ```
 
 ```{r}
-tissue_gene_dist_files = function(tissue) {
+get_tissue_mut_dist = function(tissue) {
     gd.files = list.files(path = file.path(input.dir, tissue), 
-                          pattern = "Distribution-[A-Z0-9]+-[A-Z]+.tsv")
+                          pattern = "Distribution-[A-Z0-9]+-[A-Z]+.tsv", full.names = TRUE)
+    
+    mut.types = list()
+    
+    for (f in gd.files) {
+        
+        gene.name = gsub(".*Distribution-([A-Z0-9]+)-[A-Z]+.tsv", "\\1", f)
+        
+        f.muts = read.delim(f)
+        
+        f.muts = f.muts %>% 
+            mutate(chr = paste0("chr", stringr::str_split(Mutation..GRCh38., ":") %>% 
+                       map_chr(., 1)),
+                   position = as.numeric(stringr::str_split(Mutation..GRCh38., ":") %>% 
+                       map_chr(., 2)),
+                   mutation = stringr::str_split(Mutation..GRCh38., ":") %>% 
+                       map_chr(., 3)) %>% 
+            filter(grepl("[ACTG]>[ACTG]", mutation)) %>% 
+            mutate(REF = stringr::str_split(mutation, ">") %>% 
+                       map_chr(., 1),
+                   ALT = stringr::str_split(mutation, ">") %>% 
+                       map_chr(., 2))
+        
+        f.granges = GRanges(seqnames = f.muts$chr, 
+                           ranges = IRanges(start = f.muts$position, 
+                                            end = f.muts$position + 1), 
+                           seqinfo = seqinfo(BSgenome::getBSgenome(ref_genome)), 
+                           REF = f.muts$REF, ALT = f.muts$ALT)
+        
+        f.mut.type = mut_type_occurrences(f.granges, ref_genome)
+        
+        mut.types[[gene.name]] = f.mut.type
+    }
+    
+    return(mut.types)
 }
+
+```
+
+```{r}
+paad.types = get_tissue_mut_dist("PAAD")
 ```
 

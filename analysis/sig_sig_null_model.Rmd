@@ -1,0 +1,107 @@
+---
+title: "Signature-signature interaction null model"
+author: "Anna Hakobyan"
+date: "2023-11-13"
+output: html_document
+---
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(comment = '', fig.width = 6, 
+                      fig.height = 6, include = FALSE, message = FALSE)
+```
+
+```{r load-packages, message=FALSE}
+library(here)
+fig.dir = here("figures/sig_sig_interactions/null_model")
+
+if(! file.exists(fig.dir)){
+    dir.create(fig.dir, recursive = TRUE)
+}
+
+source(here("R/load_packages.R"))
+library(igraph)
+library(tidygraph)
+library(pheatmap)
+
+# data.out.dir = here("data/RDS/PCAWG", "sig_sig_ints")
+
+# output.dir = here("output/sig_sig_int_motifs")
+```
+
+
+```{r}
+PCAWG.full.subset.ann = readRDS(here("data", "RDS", "PCAWG", "signatures",
+                                     "PCAWG.full.subset.ann.RDS"))
+
+
+tissues = PCAWG.full.subset.ann %>% pull(Cancer.Types) %>% unique()
+tissue_counts = PCAWG.full.subset.ann %>% pull(Cancer.Types) %>% table() %>% 
+    sort(decreasing = TRUE)
+```
+
+## Functions for calculating interaction metrics
+
+```{r functions}
+metric_functions = list(CoDa = cor_coda,
+                        cooccurrence = cooccurrence,
+                        MI = bcmi,
+                        Spearman = function(x) {cor_sigs(x, method = "spearman")})
+
+shuffle_df = function(df) {
+    sapply(df, sample)   
+}
+
+get_boot_metrics = function(fun, dt) {
+    replicate(1000, expr = { x = fun( shuffle_df(dt) ) ;
+    x[upper.tri(x, diag = FALSE)]} )
+}
+
+shuffle_qunatiles_plot = function(tissue, quantiles, metric_functions) {
+    
+    tissue_set = subset_tissue(PCAWG.full.subset.ann, tissue = tissue) %>% 
+        select(4:ncol(.))
+
+    shuffled_metrics = lapply(metric_functions, function(x)
+        get_boot_metrics(x, tissue_set) )
+
+    plotlist = lapply(names(shuffled_metrics), function(x) {
+        metric = shuffled_metrics[[x]] %>% 
+            as.numeric() %>% 
+            quantile(probs = quantiles)
+        
+        p = cbind(quantiles, metric) %>% 
+            as.data.frame() %>% 
+            ggplot(aes(x = quantiles, y = metric)) + 
+            geom_line() + 
+            geom_point() + ggtitle(x) +theme_classic() 
+    })
+    
+    pp = ggarrange(plotlist = plotlist)
+    
+    pp = annotate_figure(pp, top = text_grob(tissue, 
+                    size = 14))
+    return(list(pp = pp, metrics = shuffled_metrics))
+}
+```
+
+
+```{r, warning=FALSE}
+quantiles = seq(0, 1, 0.01)
+liver_shuffle_out = shuffle_qunatiles_plot(tissue_counts[1] %>% names, 
+                                           quantiles = quantiles,
+                                           metric_functions = metric_functions )
+
+ggsave(liver_shuffle_out$pp, filename = file.path(fig.dir, 'liver_shuffle_metric_outs.pdf'),
+       width = 5, height = 5)
+```
+
+
+```{r}
+prost_shuffle_out = shuffle_qunatiles_plot(tissue_counts[2] %>% names, 
+                                           quantiles = quantiles,
+                                           metric_functions = metric_functions )
+
+ggsave(prost_shuffle_out$pp, filename = file.path(fig.dir, 'prost_shuffle_metric_outs.pdf'),
+       width = 5, height = 5)
+```
+
