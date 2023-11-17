@@ -38,7 +38,7 @@ PCAWG.tissue.counts = PCAWG.full.subset.ann %>% pull(Cancer.Types) %>% table() %
 
 
 TCGA.full.subset.ann = readRDS(here("data", "RDS", "TCGA", "signatures",
-                                     "TCGA.full.subset.ann.RDS"))
+                                    "TCGA.full.subset.ann.RDS"))
 TCGA.tissues = TCGA.full.subset.ann %>% pull(Cancer.Types) %>% unique()
 TCGA.tissue.counts = TCGA.full.subset.ann %>% pull(Cancer.Types) %>% table() %>% 
     sort(decreasing = TRUE)
@@ -56,201 +56,124 @@ shuffle_df = function(df) {
     sapply(df, sample)   
 }
 
-get_boot_metrics = function(fun, dt) {
-    replicate(1000, expr = { x = fun( shuffle_df(dt) ) ;
-    x[upper.tri(x, diag = FALSE)]} )
-}
+# get_boot_metrics = function(fun, dt) {
+#     replicate(1000, expr = { x = fun( shuffle_df(dt) ) ;
+#     x[upper.tri(x, diag = FALSE)]} )
+# }
 
-shuffle_qunatiles_plot = function(tissue, dataset, quantiles, metric_functions) {
+shuffled_metric_quantiles = function(tissue, dataset, quantiles, metric_functions, N = 1000) {
     
-    tissue_set = subset_tissue(dataset, tissue = tissue) %>% 
+    tissue.set = subset_tissue(dataset, tissue = tissue) %>% 
         select(4:ncol(.))
-
-    shuffled_metrics = lapply(metric_functions, function(x)
-        get_boot_metrics(x, tissue_set) )
-
-    plotlist = lapply(names(shuffled_metrics), function(x) {
+    
+    shuffled.df = replicate(N, shuffle_df(tissue.set), simplify = FALSE)
+    
+    shuffled_metrics = lapply(metric_functions, 
+                              function(xf) {
+                                  lapply(shuffled.df, function(x) {
+                                      
+                                      metric.out = xf(x) 
+                                      return(metric.out[upper.tri(metric.out, diag = FALSE)])
+                                      
+                                      })
+                              })
+    quantile.out.list = lapply(names(shuffled_metrics), function(x) {
         metric = shuffled_metrics[[x]] %>% 
+            unlist() %>% 
             as.numeric() %>% 
             quantile(probs = quantiles)
         
-        p = cbind(quantiles, metric) %>% 
-            as.data.frame() %>% 
-            ggplot(aes(x = quantiles, y = metric)) + 
-            geom_line() + 
-            geom_point() + ggtitle(x) +theme_classic() 
+        out = cbind(quantiles, metric)
+        return(out)
     })
     
-    pp = ggarrange(plotlist = plotlist)
+    names(quantile.out.list) = names(metric_functions)
+    return(quantile.out.list)
+}
+
+
+plot_shuffled_quantiles = function(quantiles.list, tissue) {
     
-    pp = annotate_figure(pp, top = text_grob(tissue, 
-                    size = 14))
-    return(list(pp = pp, metrics = shuffled_metrics))
+    tissue.dt = quantiles.list[[tissue]]
+    plotlist = lapply(
+        names(tissue.dt), 
+        function(x) {
+            p = quantiles.list[[x]] %>% 
+                as.data.frame() %>% 
+                ggplot(aes(x = quantiles, y = metric)) + 
+                geom_line() + 
+                geom_point() +
+                ggtitle(x) +
+                theme_classic() 
+            return(p)
+        })
+    return(plotlist)
+}
+
+
+get_tissue_null_quantiles = function( tissue, dataset, metric_functions_list, 
+                                      quant = 0.95, N = 1000) {
+    
+    tissue.set = subset_tissue(dataset, tissue = tissue) %>% 
+        select(4:ncol(.))
+    
+    shuffled.df = replicate(N, shuffle_df(tissue.set), simplify = FALSE)
+    
+    shuffled.metrics = lapply(metric_functions_list, 
+                              function(xf) {
+                                  lapply(shuffled.df, function(x) {
+                                      
+                                      metric.out = xf(x) 
+                                      return(metric.out[upper.tri(metric.out, diag = FALSE)])
+                                      
+                                  })
+                              })
+    
+    tissue.quantiles = list()
+    
+    for (metric in names(shuffled.metrics)) {
+        
+        quantiles.mat = do.call(rbind, shuffled.metrics[[metric]])
+        quants = apply(quantiles.mat, MARGIN = 2, function(x)
+            quantile(abs(x), probs = quant))    
+        
+        mat = matrix(0, ncol = ncol(tissue.set),
+                     nrow = ncol(tissue.set), 
+                     dimnames = list(colnames(tissue.set), colnames(tissue.set)) )
+        
+        mat[upper.tri(mat, diag = FALSE)] = quants
+        
+        tissue.quantiles[[metric]] = mat
+    }
 }
 ```
 
+### Metrics null model in PCAWG  
 
-```{r, warning=FALSE}
-quantiles = seq(0, 1, 0.01)
-liver_shuffle_out = shuffle_qunatiles_plot(PCAWG.tissue.counts[1] %>% names, 
-                                           quantiles = quantiles,
-                                           metric_functions = metric_functions )
+```{r, warning = FALSE}
+PCAWG.tissue.null.quantiles.95 = list()
 
-ggsave(liver_shuffle_out$pp, filename = file.path(fig.dir, 'liver_shuffle_metric_outs.pdf'),
-       width = 5, height = 5)
-```
-
-
-```{r}
-prost_shuffle_out = shuffle_qunatiles_plot(PCAWG.tissue.counts[2] %>% names, 
-                                           quantiles = quantiles,
-                                           metric_functions = metric_functions )
-
-ggsave(prost_shuffle_out$pp, filename = file.path(fig.dir, 'prost_shuffle_metric_outs.pdf'),
-       width = 5, height = 5)
-```
-
-### PCAWG distributions
-
-```{r}
-quantiles = seq(0, 1, 0.01)
-PCAWG.MI.list = list()
-for (tissue in names(PCAWG.tissue.counts )) {
-    PCAWG.MI.list[[tissue]] = shuffle_qunatiles_plot(
-        tissue, 
-        PCAWG.full.subset.ann,
-        quantiles = quantiles,
-        metric_functions = list(MI = metric_functions$MI) )
+PCAWG.out.dir = here("data", "RDS", "PCAWG", "signatures") 
+for (tissue in names(PCAWG.tissue.counts) ) {
+    
+    cat(tissue, "\n")
+    PCAWG.tissue.null.quantiles.95[[tissue]] = get_tissue_null_quantiles(tissue, PCAWG.full.subset.ann, metric_functions)
+        
 }
-
-MI.quantiles = do.call(c, lapply(PCAWG.MI.list, function(x) x$metrics$MI)) %>% as.numeric() %>% 
-            quantile(probs = quantiles)
-
-PCAWG.MI.quantiles = lapply(PCAWG.MI.list, function(x) x$metrics$MI %>% as.numeric() %>% 
-            quantile(probs = quantiles) ) 
-
-pcawg.98.quantile = sapply(PCAWG.MI.quantiles, function(x) unname(x[99] )) 
-
-pcawg.df= data.frame(tissue = names(PCAWG.tissue.counts),
-            tissue.counts = PCAWG.tissue.counts[names(PCAWG.tissue.counts)] %>% as.numeric(),
-           quantiles.98 = pcawg.98.quantile[names(PCAWG.tissue.counts)])
-
-pcawg.df %>%
-    ggplot(aes(x = tissue, y = quantiles.98, color = tissue.counts)) + 
-    geom_point() + 
-    theme(axis.text.x = element_text(angle = 90))
-
-
+saveRDS(PCAWG.tissue.null.quantiles.95, file = file.path(PCAWG.out.dir, "null.model.95.quants.RDS"))
 ```
 
-```{r}
-quantiles = seq(0, 1, 0.01)
-PCAWG.CoDa.list = list()
-for (tissue in names(PCAWG.tissue.counts )) {
-    PCAWG.CoDa.list[[tissue]] = shuffle_qunatiles_plot(
-        tissue, 
-        PCAWG.full.subset.ann,
-        quantiles = quantiles,
-        metric_functions = list(CoDa = metric_functions$CoDa) )
+### Metrics null model in PCAWG  
+
+```{r, warning = FALSE}
+TCGA.tissue.null.quantiles.95 = list()
+
+TCGA.out.dir = here("data", "RDS", "TCGA", "signatures") 
+for (tissue in names(TCGA.tissue.counts) ) {
+    
+    cat(tissue, "\n")
+    TCGA.tissue.null.quantiles.95[[tissue]] = get_tissue_null_quantiles(tissue, TCGA.full.subset.ann, metric_functions)
+        
 }
-
-CoDa.quantiles = do.call(c, lapply(PCAWG.CoDa.list, function(x) x$metrics$CoDa)) %>% as.numeric() %>% 
-            quantile(probs = quantiles)
-```
-
-
-```{r}
-quantiles = seq(0, 1, 0.01)
-PCAWG.cooc.list = list()
-for (tissue in names(PCAWG.tissue.counts )) {
-    PCAWG.cooc.list[[tissue]] = shuffle_qunatiles_plot(
-        tissue, 
-        PCAWG.full.subset.ann,
-        quantiles = quantiles,
-        metric_functions = list(cooc = metric_functions$cooccurrence) )
-}
-
-cooc.quantiles = do.call(c, lapply(PCAWG.cooc.list, function(x) x$metrics$cooc)) %>% as.numeric() %>% 
-            quantile(probs = quantiles)
-```
-
-
-```{r}
-quantiles = seq(0, 1, 0.01)
-PCAWG.Spearman.list = list()
-for (tissue in names(PCAWG.tissue.counts )) {
-    PCAWG.Spearman.list[[tissue]] = shuffle_qunatiles_plot(
-        tissue, 
-        PCAWG.full.subset.ann,
-        quantiles = quantiles,
-        metric_functions = list(Spearman = metric_functions$Spearman) )
-}
-
-Spearman.quantiles = do.call(c, lapply(PCAWG.Spearman.list, function(x) x$metrics$Spearman)) %>% as.numeric() %>% 
-            quantile(probs = quantiles)
-```
-
-
-### TCGA distributions
-
-```{r}
-quantiles = seq(0, 1, 0.01)
-TCGA.MI.list = list()
-for (tissue in names(TCGA.tissue.counts )) {
-    TCGA.MI.list[[tissue]] = shuffle_qunatiles_plot(
-        tissue, 
-        TCGA.full.subset.ann,
-        quantiles = quantiles,
-        metric_functions = list(MI = metric_functions$MI) )
-}
-
-MI.quantiles = do.call(c, lapply(TCGA.MI.list, function(x) x$metrics$MI)) %>% as.numeric() %>% 
-            quantile(probs = quantiles)
-```
-
-```{r}
-quantiles = seq(0, 1, 0.01)
-TCGA.CoDa.list = list()
-for (tissue in names(TCGA.tissue.counts )) {
-    TCGA.CoDa.list[[tissue]] = shuffle_qunatiles_plot(
-        tissue, 
-        TCGA.full.subset.ann,
-        quantiles = quantiles,
-        metric_functions = list(CoDa = metric_functions$CoDa) )
-}
-
-CoDa.quantiles = do.call(c, lapply(TCGA.CoDa.list, function(x) x$metrics$CoDa)) %>% as.numeric() %>% 
-            quantile(probs = quantiles)
-```
-
-
-```{r}
-quantiles = seq(0, 1, 0.01)
-TCGA.cooc.list = list()
-for (tissue in names(TCGA.tissue.counts )) {
-    TCGA.cooc.list[[tissue]] = shuffle_qunatiles_plot(
-        tissue, 
-        TCGA.full.subset.ann,
-        quantiles = quantiles,
-        metric_functions = list(cooc = metric_functions$cooccurrence) )
-}
-
-cooc.quantiles = do.call(c, lapply(TCGA.cooc.list, function(x) x$metrics$cooc)) %>% as.numeric() %>% 
-            quantile(probs = quantiles)
-```
-
-
-```{r}
-quantiles = seq(0, 1, 0.01)
-TCGA.Spearman.list = list()
-for (tissue in names(TCGA.tissue.counts )) {
-    TCGA.Spearman.list[[tissue]] = shuffle_qunatiles_plot(
-        tissue, 
-        TCGA.full.subset.ann,
-        quantiles = quantiles,
-        metric_functions = list(Spearman = metric_functions$Spearman) )
-}
-
-Spearman.quantiles = do.call(c, lapply(TCGA.Spearman.list, function(x) x$metrics$Spearman)) %>% as.numeric() %>% 
-            quantile(probs = quantiles)
+saveRDS(TCGA.tissue.null.quantiles.95, file = file.path(TCGA.out.dir, "null.model.95.quants.RDS"))
 ```
