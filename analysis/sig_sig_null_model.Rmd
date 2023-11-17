@@ -110,7 +110,6 @@ plot_shuffled_quantiles = function(quantiles.list, tissue) {
     return(plotlist)
 }
 
-
 get_tissue_null_quantiles = function( tissue, dataset, metric_functions_list, 
                                       quant = 0.95, N = 1000) {
     
@@ -145,6 +144,7 @@ get_tissue_null_quantiles = function( tissue, dataset, metric_functions_list,
         
         tissue.quantiles[[metric]] = mat
     }
+    return(tissue.quantiles)
 }
 ```
 
@@ -154,10 +154,11 @@ get_tissue_null_quantiles = function( tissue, dataset, metric_functions_list,
 PCAWG.tissue.null.quantiles.95 = list()
 
 PCAWG.out.dir = here("data", "RDS", "PCAWG", "signatures") 
-for (tissue in names(PCAWG.tissue.counts) ) {
+for (tissue in names(PCAWG.tissue.counts)) {
     
     cat(tissue, "\n")
-    PCAWG.tissue.null.quantiles.95[[tissue]] = get_tissue_null_quantiles(tissue, PCAWG.full.subset.ann, metric_functions)
+    pcawg.quants = get_tissue_null_quantiles(tissue, PCAWG.full.subset.ann, metric_functions, quant = 0.95)
+    PCAWG.tissue.null.quantiles.95[[tissue]] = pcawg.quants
         
 }
 saveRDS(PCAWG.tissue.null.quantiles.95, file = file.path(PCAWG.out.dir, "null.model.95.quants.RDS"))
@@ -172,7 +173,8 @@ TCGA.out.dir = here("data", "RDS", "TCGA", "signatures")
 for (tissue in names(TCGA.tissue.counts) ) {
     
     cat(tissue, "\n")
-    TCGA.tissue.null.quantiles.95[[tissue]] = get_tissue_null_quantiles(tissue, TCGA.full.subset.ann, metric_functions)
+    tissue.quants = get_tissue_null_quantiles(tissue, TCGA.full.subset.ann, metric_functions)
+    TCGA.tissue.null.quantiles.95[[tissue]] = tissue.quants
         
 }
 saveRDS(TCGA.tissue.null.quantiles.95, file = file.path(TCGA.out.dir, "null.model.95.quants.RDS"))

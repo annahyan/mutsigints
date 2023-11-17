@@ -864,11 +864,11 @@ get_metrics_list = function(data.input, metric_func,
     int.metric.list = list()
     
     for (tissue in tissues) {
-
+        
         #### Filtering for tissues with enough samples
         tissue.signatures = list()
         cat("Processing tissue ", tissue, "\n")
-            
+        
         dt = data.input
         tissue.sig = dt %>% filter(Cancer.Types == tissue) %>%
             dplyr::select(4:ncol(dt))
@@ -876,13 +876,13 @@ get_metrics_list = function(data.input, metric_func,
         tissue.sig = tissue.sig[, colSums(tissue.sig) > 10,
                                 drop = FALSE]
         
-            if (nrow(tissue.sig) < min.tissue.samples) {
-                cat("Tissue:", tissue , " has <", min.tissue.samples,
-                    "samples in ", dataset, ". Skipping.\n")
-                tissue.signatures = NULL
-            } else {
-                tissue.signatures = tissue.sig
-            }
+        if (nrow(tissue.sig) < min.tissue.samples) {
+            cat("Tissue:", tissue , " has <", min.tissue.samples,
+                "samples in ", dataset, ". Skipping.\n")
+            tissue.signatures = NULL
+        } else {
+            tissue.signatures = tissue.sig
+        }
         
         metric_out = run_calc_metrics(tissue.signatures, action_func,
                                       sample.rate, sample.N, N, seed)

@@ -27,6 +27,7 @@ library(pheatmap)
 data.out.dir = here("data/RDS/PCAWG", "sig_sig_ints")
 
 output.dir = here("output/sig_sig_int_motifs")
+
 ```
 
 ```{r loading-precalc-interactions}
@@ -42,6 +43,8 @@ PCAWG.coda.summary.nets = readRDS(file = file.path(data.out.dir, "PCAWG.coda.sum
 PCAWG.full.subset.ann = readRDS(here("data", "RDS", "PCAWG", "signatures",
                                      "PCAWG.full.subset.ann.RDS"))
 
+PCAWG.null.quants = readRDS(file.path(here("data", "RDS", "PCAWG", "signatures"),
+                              "null.model.95.quants.RDS"))
 ```
 
 ```{r }
