@@ -44,7 +44,15 @@ PCAWG.full.subset.ann = readRDS(here("data", "RDS", "PCAWG", "signatures",
                                      "PCAWG.full.subset.ann.RDS"))
 
 PCAWG.null.quants = readRDS(file.path(here("data", "RDS", "PCAWG", "signatures"),
-                              "null.model.95.quants.RDS"))
+                              "PCAWG.null.model.95.quants.RDS"))
+
+for (tissue in names(PCAWG.null.quants)) {
+    
+    for (metric.name in names(PCAWG.null.quants[[tissue]])) {
+        PCAWG.null.quants[[tissue]][[metric.name]] = 
+            PCAWG.null.quants[[tissue]][[metric.name]] + t(PCAWG.null.quants[[tissue]][[metric.name]])
+    }
+}
 ```
 
 ```{r }
@@ -60,7 +68,8 @@ tissues = unique(PCAWG.full.subset.ann$Cancer.Types)
 ```{r tissue-interaction-network}
 tissue = "Panc_AdenoCA"
 tissue.nets = get_tissue_dataset_networks(tissue, all.interactions, 
-                                          filter.list = list(MI = 0.2) )
+                                          filter.list = list(MI = 0.2),
+                                          filter.mat = PCAWG.null.quants[[tissue]])
 tissue.multi.graph = tissue_multi_graph(tissue.nets)
 
 pp = print_multi_graphs(tissue.multi.graph, 
@@ -127,7 +136,9 @@ for (tissue in tissues) {
         # print(pp)
         
         pp = plot_multi_network(network.lists = all.interactions, 
-                                tissue = tissue, filter.list = list(MI = 0.2),
+                                tissue = tissue, 
+                                filter.list = list(MI = 0.2),
+                                filter.mat = PCAWG.null.quants[[tissue]],
                                 layout = "stress")
         
         
@@ -174,14 +185,22 @@ for (tissue in tissues) {
     
     try({
         PCAWG.networks.concat[[tissue]] = concat_networks(
-            all.interactions, tissue = tissue, filter.list = list(MI = 0.2))
+            all.interactions, 
+            tissue = tissue, 
+            filter.list = list(MI = 0.2), 
+            filter.mat = PCAWG.null.quants[[tissue]])
     })
 }
 ```
 
 
 ```{r plotting-int-network}
-sig.sig.ints.summary.plot = plot_all_counts(PCAWG.networks.concat, min.abssum = 3,
+sig.sig.ints.summary.plot.1 = plot_all_counts(PCAWG.networks.concat, min.abssum = 1,
+                                            psize = 4.5, lsize = 1.7, 
+                                            expand.mult = c(0.02, 0.02)) + 
+    coord_cartesian(x = c(1, 20), clip = "off")
+
+sig.sig.ints.summary.plot.3 = plot_all_counts(PCAWG.networks.concat, min.abssum = 3,
                                             psize = 4.5, lsize = 1.7, 
                                             expand.mult = c(0.02, 0.02)) + 
     coord_cartesian(x = c(1, 20), clip = "off")
@@ -191,7 +210,18 @@ ggsave(filename = file.path(fig.dir, paste0("PCAWG_sig_sig_ints_summary_plot_lim
        width = 3.7, height = 3.5)
 
 
-sig.sig.ints.summary.plot = plot_all_counts(PCAWG.networks.concat, min.abssum = 5,
+sig.sig.ints.summary.plot.4 = plot_all_counts(PCAWG.networks.concat, min.abssum = 4,
+                                            psize = 6, lsize = 2, 
+                                            expand.mult = c(0.02, 0.02)) + 
+    coord_cartesian(x = c(1, 16), clip = "off")
+
+cairo_pdf(filename = file.path(fig.dir, paste0("PCAWG_sig_sig_ints_summary_plot_lim4_cairo.pdf") ),
+          width = 3.8, height = 3.6)
+print(sig.sig.ints.summary.plot.4)
+dev.off()
+
+
+sig.sig.ints.summary.plot.5 = plot_all_counts(PCAWG.networks.concat, min.abssum = 5,
                                             psize = 6, lsize = 2, 
                                             expand.mult = c(0.02, 0.02)) + 
     coord_cartesian(x = c(1, 13), clip = "off")
