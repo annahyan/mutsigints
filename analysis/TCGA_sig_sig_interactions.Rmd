@@ -11,7 +11,7 @@ knitr::opts_chunk$set(comment = '', fig.width = 6,
                       warning = FALSE)
 ```
 
-```{r load-packages}
+```{r load-packages, echo = FALSE}
 library(here)
 fig.dir = here("figures/sig_sig_interactions")
 
@@ -40,6 +40,17 @@ TCGA.coda.summary.nets = readRDS(file = file.path(data.out.dir, "TCGA.coda.summa
 TCGA.full.subset.ann = readRDS(here("data", "RDS", "TCGA", "signatures",
                                      "TCGA.full.subset.ann.RDS"))
 
+
+TCGA.null.quants = readRDS(file.path(here("data", "RDS", "TCGA", "signatures"),
+                              "TCGA.null.model.95.quants.RDS"))
+
+for (tissue in names(TCGA.null.quants)) {
+    
+    for (metric.name in names(TCGA.null.quants[[tissue]])) {
+        TCGA.null.quants[[tissue]][[metric.name]] = 
+            TCGA.null.quants[[tissue]][[metric.name]] + t(TCGA.null.quants[[tissue]][[metric.name]])
+    }
+}
 ```
 
 ```{r }
@@ -52,7 +63,8 @@ all.interactions = list(MI = TCGA.bcmi.summary.nets,
 ```{r tissue-interaction-network}
 tissue = "Breast_cancer"
 tissue.nets = get_tissue_dataset_networks(tissue, all.interactions, 
-                                          filter.list = list(MI = 0.2) )
+                                          filter.list = list(MI = 0.2),
+                                           filter.mat = TCGA.null.quants[[tissue]])
 tissue.multi.graph = tissue_multi_graph(tissue.nets)
 
 pp = print_multi_graphs(tissue.multi.graph, 
@@ -97,7 +109,9 @@ for (tissue in tissues) {
         # print(pp)
         
         pp = plot_multi_network(network.lists = all.interactions, 
-                                tissue = tissue, filter.list = list(MI = 0.2),
+                                tissue = tissue, 
+                                filter.list = list(MI = 0.2),
+                                filter.mat = TCGA.null.quants[[tissue]],
                                 layout = "stress")
         
         
@@ -140,14 +154,17 @@ for (tissue in tissues) {
     
     try({
         TCGA.networks.concat[[tissue]] = concat_networks(
-            all.interactions, tissue = tissue, filter.list = list(MI = 0.2))
+            all.interactions, 
+            tissue = tissue, 
+            filter.list = list(MI = 0.2),
+            filter.mat = TCGA.null.quants[[tissue]])
     })
 }
 
-sig.sig.ints.summary.plot = plot_all_counts(TCGA.networks.concat, min.abssum = 3,
+sig.sig.ints.summary.plot = plot_all_counts(TCGA.networks.concat, min.abssum = 1,
                                             psize = 6, lsize = 2, 
                                             expand.mult = c(0.04, 0.02)) + 
-    coord_cartesian(x = c(1, 13), clip = "off")
+    coord_cartesian(x = c(1, 15), clip = "off")
 
 ggsave(filename = file.path(fig.dir, paste0("TCGA_sig_sig_ints_summary_plot.png") ),
        plot = sig.sig.ints.summary.plot,
