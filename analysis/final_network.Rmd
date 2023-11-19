@@ -249,6 +249,7 @@ node.order = c(sort(c("APOBEC", "MMR", "HR", "ROS", "PolH", "PolE")),
                
                sort(c("Tobacco", "UV", "SBS38", "SBS29")))
 
+
 # node.annotations = data.frame(sig.group = c(node.order, c("Ageing", "SBS5", "SBS40")),
 #                               Class = c(rep("Endogenous", 6), 
 #                                         rep("Unknown", 10),
@@ -266,14 +267,14 @@ pcawg.sig.sig.all.network = plot_mixed_layout(
     )
 
 
-ggsave(plot = minor_plot(pcawg.sig.sig.all.network$pp, expand.factor = 0.2),
+ggsave(plot = minor_plot(pcawg.sig.sig.all.network, expand.factor = 0.17),
        filename = file.path(fig.dir, "pcawg.sig.sig.all.network.pdf"),
-       width = 6.4, height = 5.3)
+       width = 7.3, height = 5)
 ```
 
 
 ```{r tcga-all-signatures}
-node.order = c(sort(c("APOBEC", "MMR", "HR", "ROS", "PolH", "PolE")),
+node.order = c(sort(c( "HR", "APOBEC", "MMR", "ROS", "PolH", "PolE")),
                 
                sort(c("SBS39", "SBS19", "SBS23", "SBS28", "SBS17", "SBS30", 
                 "SBS34", "SBS37", "SBS12", "Technical")),
@@ -291,17 +292,19 @@ tcga.sig.sig.net.sum = graph_unique_edges(tcga.sig.sig.net, summary.col = "tissu
 
 network.nodes = tcga.sig.sig.net.sum %>% activate(nodes) %>% pull(name)
 
-circular.node.order = circular.node.order[ circular.node.order %in% network.nodes]
+circular.node.order = node.order[ node.order %in% network.nodes]
 
+circular.node.order = c(circular.node.order[2], circular.node.order[1], circular.node.order[3: length(circular.node.order)])
+ 
 tcga.sig.sig.all.network = plot_mixed_layout(
     tcga.sig.sig.net.sum, 
     circular.node.order = circular.node.order,
-    edge.width.breaks = c(1,2,4,13)
-    )
+    edge.width.breaks = c(1,2,4,7)
+)
 
 
-ggsave(plot = minor_plot(tcga.sig.sig.all.network$pp, expand.factor = 0.2),
+ggsave(plot = minor_plot(tcga.sig.sig.all.network, expand.factor = 0.1),
        filename = file.path(fig.dir, "tcga.sig.sig.all.network.pdf"),
-       width = 6.4, height = 5.3)
+       width = 8, height = 5.3)
 ```
 

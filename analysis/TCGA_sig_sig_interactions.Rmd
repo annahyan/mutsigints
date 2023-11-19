@@ -58,6 +58,8 @@ all.interactions = list(MI = TCGA.bcmi.summary.nets,
                         cooccurrence = TCGA.cooccurrence.summary.nets,
                         CoDa = TCGA.coda.summary.nets,
                         Spearman = TCGA.spearman.summary.nets)
+
+tissues = unique(TCGA.full.subset.ann$Cancer.Types)
 ```
 
 ```{r tissue-interaction-network}
@@ -99,7 +101,7 @@ ggsave(filename = file.path(fig.dir, paste0(tissue, "_sig_heatmap.png") ),
 ```{r all-tissue-heatmap-networks, include = FALSE}
 plotlist = list()
 i = 1
-tissues = unique(TCGA.full.subset.ann$Cancer.Types)
+
 for (tissue in tissues) {
     cat(tissue, " ")
 
@@ -161,6 +163,9 @@ for (tissue in tissues) {
     })
 }
 
+```
+
+```{r}
 sig.sig.ints.summary.plot = plot_all_counts(TCGA.networks.concat, min.abssum = 1,
                                             psize = 6, lsize = 2, 
                                             expand.mult = c(0.04, 0.02)) + 
