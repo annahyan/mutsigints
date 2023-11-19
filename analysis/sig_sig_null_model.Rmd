@@ -161,7 +161,7 @@ for (tissue in names(PCAWG.tissue.counts)) {
     PCAWG.tissue.null.quantiles.95[[tissue]] = pcawg.quants
         
 }
-saveRDS(PCAWG.tissue.null.quantiles.95, file = file.path(PCAWG.out.dir, "null.model.95.quants.RDS"))
+saveRDS(PCAWG.tissue.null.quantiles.95, file = file.path(PCAWG.out.dir, "PCAWG.null.model.95.quants.RDS"))
 ```
 
 ### Metrics null model in PCAWG  
@@ -177,5 +177,5 @@ for (tissue in names(TCGA.tissue.counts) ) {
     TCGA.tissue.null.quantiles.95[[tissue]] = tissue.quants
         
 }
-saveRDS(TCGA.tissue.null.quantiles.95, file = file.path(TCGA.out.dir, "null.model.95.quants.RDS"))
+saveRDS(TCGA.tissue.null.quantiles.95, file = file.path(TCGA.out.dir, "TCGA.null.model.95.quants.RDS"))
 ```
