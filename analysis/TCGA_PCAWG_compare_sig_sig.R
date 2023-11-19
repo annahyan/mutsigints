@@ -4,7 +4,7 @@ library(igraph)
 library(ggraph)
 library(chrwiseSignatures)
 
-source(here("R/functions.R"))
+source(here("R/load_packages.R"))
 
 fig.dir = here("figures/sig_sig_interactions")
 
