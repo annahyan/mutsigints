@@ -249,16 +249,80 @@ for (tissue in names(tissue.odds.ratio)) {
 ```
 
 
-```{r}
-tissue.odds.ratio.unadjusted = sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
+```{r, echo = FALSE, include=FALSE}
+tissue.odds.ratios.null = sig_pathway_int_null(sigs.input = PCAWG.full.subset.ann.pathways,
                                  pathways.input = PCAWG.pathways.tissues,
                                  interaction_function = get_sig_path_assocs, 
                                  path.min.tissues = 30,
                                  p.val.threshold = 0.05,
                                  p.adjust = FALSE,
-                                 method = "BH")
+                                 method = "BH",
+                                 N = 1000)
+```
 
-for (tissue in names(tissue.odds.ratio.unadjusted)) {
+```{r}
+quant = 0.95
+tissue.quantiles = list()
+
+for (tissue in names(tissue.odds.ratios.null)) {
+    
+    
+    tissue.elems = get_tissue_pathway_activities(tissue,
+                                                 PCAWG.full.subset.ann.pathways,
+                                                 PCAWG.pathways.tissues)
+    
+    zero.mat = matrix(0, ncol = ncol(tissue.elems$paths),
+                      nrow = ncol(tissue.elems$sigs),
+                      dimnames = list(colnames(tissue.elems$sigs), 
+                                      sub("-", ".", sub(" ", ".", colnames(tissue.elems$paths) ) ) ) )
+    
+    quantiles.mat = do.call(rbind, 
+                            lapply(tissue.odds.ratios.null[[tissue]], function(x) {
+                                if(length(x) == 0) {
+                                    return(as.vector(zero.mat))
+                                } else {
+                                    out = zero.mat
+                                    out[rownames(x),colnames(x)] = out[rownames(x),colnames(x)] +
+                                        as.matrix(x)
+                                    return(as.vector(unlist(out)))
+                                }
+                                
+                            }
+                            ) )
+    quants = apply(quantiles.mat, MARGIN = 2, function(x)
+        quantile(abs(x), probs = quant))    
+    
+    out = zero.mat + matrix(quants, nrow = nrow(zero.mat), ncol = ncol(zero.mat))
+    
+    tissue.quantiles[[tissue]] = out
+}
+```
+
+
+```{r}
+tissue.odds.ratio.unadjusted = sig_pathway_int(
+    sigs.input = PCAWG.full.subset.ann.pathways,
+    pathways.input = PCAWG.pathways.tissues,
+    interaction_function = get_sig_path_assocs, 
+    path.min.tissues = 30,
+    p.val.threshold = 0.05,
+    p.adjust = FALSE,
+    method = "BH")
+
+tissue.odds.ratio.null.adjusted = setNames(
+    lapply(names(tissue.odds.ratio.unadjusted),
+           function(tissue) {
+               observed = tissue.odds.ratio.unadjusted[[tissue]]
+               colnames(observed) = sub("-", ".", sub(" ", ".", colnames(observed) ) )
+               nm = tissue.odds.ratios.null[[tissue]]
+               nm = observed[rownames(observed), colnames(observed)]
+               
+               observed[abs(observed) < nm] = 0
+               return(observed)
+           }
+    ), names(tissue.odds.ratio.unadjusted) )
+
+for (tissue in names(tissue.odds.ratio.null.adjusted)) {
    
     if (any(abs(tissue.odds.ratio.unadjusted[[tissue]]) > 0) ) {
         cat(tissue, "\n")
@@ -275,7 +339,7 @@ for (tissue in names(tissue.odds.ratio.unadjusted)) {
 ```
 
 ```{r}
-pp.odds.ratio.unadjusted = plot_all_counts(tissue.odds.ratio.unadjusted, threshold = 0.2, psize = 5)
+pp.odds.ratio.unadjusted = plot_all_counts(tissue.odds.ratio.null.adjusted, threshold = 0.2, psize = 5)
 
 ggsave(plot = pp.odds.ratio.unadjusted,
                filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
@@ -286,7 +350,7 @@ ggsave(plot = pp.odds.ratio.unadjusted,
 ### Bipartite graph - not used 
 
 ```{r}
-sig.path.oddsratio.bipartite = minor_plot(plot_bipartite2(tissue.odds.ratio.unadjusted),
+sig.path.oddsratio.bipartite = minor_plot(plot_bipartite2(tissue.odds.ratio.null.adjusted),
                                         expand.factor = 0.5, expand.factor.y = 0.01)
 
 ggsave(plot = sig.path.oddsratio.bipartite,
@@ -298,7 +362,7 @@ ggsave(plot = sig.path.oddsratio.bipartite,
 ### Tissues of Odds ratio interactions
 
 ```{r}
-tissues.odds.ratio.lists = get_interaction_tissues(tissue.odds.ratio.unadjusted)
+tissues.odds.ratio.lists = get_interaction_tissues(tissue.odds.ratio.null.adjusted)
 
 write.table(as.data.frame(tissues.odds.ratio.lists$pos.tissues), 
           file = here("supp_data", "PCAWG_sig_pathway_positive_interaction_tissue_summaries.tsv"),
