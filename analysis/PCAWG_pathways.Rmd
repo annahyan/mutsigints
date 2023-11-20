@@ -79,7 +79,6 @@ get_quants_from_null = function(null.list, sigs, paths, quant.lim) {
     }
     return(out.list)
 }
-
 ```
 
 
@@ -361,7 +360,7 @@ pp.odds.ratio.null.adjusted = plot_all_counts(tissue.odds.ratio.null.adjusted,
                                               threshold = 0.2, psize = 5,
                                               expand.mult = c(0.13, 0.13))
 
-ggsave(plot = pp.odds.ratio.unadjusted,
+ggsave(plot = pp.odds.ratio.null.adjusted,
                filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
                                     "PCAWG_summarized_sig_pathway_null_adjusted.dotplot.pdf"),
                height = 2.4, width = 3.4, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
@@ -654,7 +653,7 @@ tissue.glm.null.adjusted = setNames(
            function(tissue) {
                observed = tissue.log.coefs.mats.log[[tissue]]
                colnames(observed) = sub("-", ".", sub(" ", ".", colnames(observed) ) )
-               nm = tissue.glm.ratios.null[[tissue]]
+               nm = tissue.glm.quantiles[[tissue]]
                nm = observed[rownames(observed), colnames(observed)]
                
                observed[abs(observed) < nm] = 0
