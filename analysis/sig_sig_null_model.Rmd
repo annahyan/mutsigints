@@ -92,23 +92,24 @@ shuffled_metric_quantiles = function(tissue, dataset, quantiles, metric_function
 }
 
 
-plot_shuffled_quantiles = function(quantiles.list, tissue) {
-    
-    tissue.dt = quantiles.list[[tissue]]
-    plotlist = lapply(
-        names(tissue.dt), 
-        function(x) {
-            p = quantiles.list[[x]] %>% 
-                as.data.frame() %>% 
-                ggplot(aes(x = quantiles, y = metric)) + 
-                geom_line() + 
-                geom_point() +
-                ggtitle(x) +
-                theme_classic() 
-            return(p)
-        })
-    return(plotlist)
-}
+# plot_shuffled_quantiles = function(quantiles.list, tissue) {
+#     
+#     tissue.dt = quantiles.list[[tissue]]
+#     plotlist = lapply(
+#         names(tissue.dt), 
+#         function(x) {
+#             p = quantiles.list[[x]] %>% 
+#                 as.data.frame() %>% 
+#                 ggplot(aes(x = quantiles, y = metric)) + 
+#                 geom_line() + 
+#                 geom_point() +
+#                 ggtitle(x) +
+#                 theme_classic() 
+#             return(p)
+#         })
+#     return(plotlist)
+# }
+
 
 get_tissue_null_quantiles = function( tissue, dataset, metric_functions_list, 
                                       quant = 0.95, N = 1000) {
@@ -146,7 +147,65 @@ get_tissue_null_quantiles = function( tissue, dataset, metric_functions_list,
     }
     return(tissue.quantiles)
 }
+
+get_tissue_null_metrics_dist = function( tissue, dataset, metric_functions_list, 
+                                      N = 1000) {
+    
+    tissue.set = subset_tissue(dataset, tissue = tissue) %>% 
+        select(4:ncol(.))
+    
+    shuffled.df = replicate(N, shuffle_df(tissue.set), simplify = FALSE)
+    cooc.zero = function(x) {
+        cooccurrence(x = x, p.adjust = FALSE, p.val = 1)    
+    }
+    
+    spearman.zero = function(x) {
+        cor_sigs(x = x, p.adjust = FALSE, p.val = 1)
+    }
+    
+    coda.zero = function(x) {
+        cor_coda(x = x, p.adjust = FALSE, p.val = 1)
+    }
+    
+    MI.zero = function(x) {
+        bcmi(x = x, p.adjust = FALSE, p.val = 1)
+    }
+    
+    metrics.zero = list(CoDa = coda.zero,
+                        cooccurrence = cooc.zero,
+                        MI = MI.zero,
+                        Spearman = spearman.zero)
+    
+    
+    
+    shuffled.metrics = lapply(metrics.zero, 
+                              function(xf) {
+                                  lapply(shuffled.df, function(x) {
+                                      
+                                      metric.out = xf(x) 
+                                      metric.out[lower.tri(metric.out, diag = TRUE)] = 0
+                                      return(metric.out)
+                                      
+                                  })
+                              })
+    
+    
+    tissue.metric.dists = list()
+    
+    for (metric in names(shuffled.metrics)) {
+        tissue.metric.dists[[metric]] = simplify2array(shuffled.metrics[[metric]])
+    }
+    
+    return(tissue.metric.dists)
+}
 ```
+
+
+```{r, warning = FALSE}
+a = get_tissue_null_metrics_dist (tissue, PCAWG.full.subset.ann, 
+        metric_functions, N = 10)
+```
+
 
 ### Metrics null model in PCAWG  
 
@@ -157,12 +216,34 @@ PCAWG.out.dir = here("data", "RDS", "PCAWG", "signatures")
 for (tissue in names(PCAWG.tissue.counts)) {
     
     cat(tissue, "\n")
-    pcawg.quants = get_tissue_null_quantiles(tissue, PCAWG.full.subset.ann, metric_functions, quant = 0.95)
+    pcawg.quants = get_tissue_null_quantiles(
+        tissue, PCAWG.full.subset.ann, 
+        metric_functions, 
+        quant = 0.95)
     PCAWG.tissue.null.quantiles.95[[tissue]] = pcawg.quants
         
 }
 saveRDS(PCAWG.tissue.null.quantiles.95, file = file.path(PCAWG.out.dir, "PCAWG.null.model.95.quants.RDS"))
 ```
+
+
+```{r, warning=FALSE}
+PCAWG.tissue.null.metrics.dist = list()
+
+PCAWG.out.dir = here("data", "RDS", "PCAWG", "signatures") 
+for (tissue in names(PCAWG.tissue.counts)) {
+    
+    cat(tissue, "\n")
+    pcawg.quants = get_tissue_null_metrics_dist(
+        tissue, PCAWG.full.subset.ann, 
+        metric_functions, N = 1000)
+    PCAWG.tissue.null.metrics.dist[[tissue]] = pcawg.quants
+        
+}
+saveRDS(PCAWG.tissue.null.metrics.dist, 
+        file = file.path(PCAWG.out.dir, "PCAWG.null.model.metrics.dist.RDS"))
+```
+
 
 ### Metrics null model in PCAWG  
 
@@ -178,4 +259,22 @@ for (tissue in names(TCGA.tissue.counts) ) {
         
 }
 saveRDS(TCGA.tissue.null.quantiles.95, file = file.path(TCGA.out.dir, "TCGA.null.model.95.quants.RDS"))
+```
+
+
+```{r, warning=FALSE}
+TCGA.tissue.null.metrics.dist = list()
+
+TCGA.out.dir = here("data", "RDS", "TCGA", "signatures") 
+for (tissue in names(TCGA.tissue.counts)) {
+    
+    cat(tissue, "\n")
+    TCGA.quants = get_tissue_null_metrics_dist(
+        tissue, TCGA.full.subset.ann, 
+        metric_functions, N = 1000)
+    TCGA.tissue.null.metrics.dist[[tissue]] = TCGA.quants
+        
+}
+saveRDS(TCGA.tissue.null.metrics.dist, 
+        file = file.path(TCGA.out.dir, "TCGA.null.model.metrics.dist.RDS"))
 ```
