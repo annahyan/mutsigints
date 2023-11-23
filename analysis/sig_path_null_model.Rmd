@@ -1,0 +1,174 @@
+---
+title: "Signature-pathway interaction null models"
+author: "Anna Hakobyan"
+date: "2023-11-13"
+output: html_document
+---
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(comment = '', fig.width = 6, 
+                      fig.height = 6, include = FALSE, message = FALSE)
+```
+
+
+```{r load-packages, message=FALSE}
+library(here)
+fig.dir = here("figures/sig_sig_interactions/null_model")
+
+if(! file.exists(fig.dir)){
+    dir.create(fig.dir, recursive = TRUE)
+}
+
+source(here("R/load_packages.R"))
+library(igraph)
+library(tidygraph)
+library(pheatmap)
+```
+
+### The functions
+
+```{r}
+
+sig_pathway_int_null = function(sigs.input,
+                                pathways.input,
+                                interaction.functions,
+                                path.min.tissues = 30,
+                                N = 1000) {
+
+  abundant.tissues = which(sigs.input$Cancer.Types %>%
+                             table() > path.min.tissues) %>% names()
+
+  tissue.odds.mats.null = list()
+
+  shuffle_df = function(df) {
+    out = data.frame(sapply(df, sample))
+    rownames(out) = rownames(df)
+    return(out)
+  }
+
+  for (tissue in abundant.tissues){
+    cat(tissue, "\n")
+
+    tissue.elems = get_tissue_pathway_activities(tissue,
+                                                 sigs.input,
+                                                 pathways.input)
+
+    shuffled.sigs = replicate(N, shuffle_df(tissue.elems$sigs),
+                              simplify = FALSE)
+    ### no need to shuffled the pathways, since the sigs are already
+
+
+
+    shuffled.metrics = lapply(
+      interaction.functions,
+      function(xf) {
+        lapply(1:N, function(ind) {
+          metric.out = xf(sigs = shuffled.sigs[[ind]],
+                          paths = tissue.elems$paths)
+          return(metric.out)
+        })
+      })
+    
+    metric.dists = list()
+    for(metric.name in names(shuffled.metrics)) {
+      metric.dists[[metric.name]] = simplify2array(shuffled.metrics[[metric.name]])
+    }
+
+    tissue.odds.mats.null[[tissue]] = metric.dists
+  }
+  return(tissue.odds.mats.null)
+}
+
+
+```
+
+### Signature-pathway interaction functions
+
+```{r}
+OR.func.null = function(sigs, paths) {
+    get_sig_path_assocs(sigs.df = sigs, pathways.df = paths, 
+                        p.val.threshold = 1, 
+                        p.adjust = FALSE)
+}
+    
+### pathway to signature linear model
+PTS.null = function (sigs, paths) {
+    get_sig_path_lms(sigs.df = sigs, pathways.df = paths, 
+                            sig.log = TRUE, 
+                            robust = FALSE,
+                            path.to.sig = TRUE,
+                            p.val.threshold = 1, 
+                            p.adjust = FALSE)
+}
+
+### signature to pathway linear model
+STP.null = function (sigs, paths) {
+    get_sig_path_lms(sigs.df = sigs, pathways.df = paths, 
+                            sig.log = TRUE, 
+                            robust = FALSE,
+                            path.to.sig = FALSE,
+                            p.val.threshold = 1, 
+                            p.adjust = FALSE)
+}
+
+sig.path.int.funcs = list(
+    OR = OR.func.null,
+    STP = STP.null,
+    PTS = PTS.null
+)
+```
+
+### PCAWG sig-path interaction null models 
+
+```{r loading-pcawg-files}
+PCAWG.pathways.tissues = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways",
+                                              "pcawg_pathways.RDS"))
+
+PCAWG.full.subset.ann.pathways = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways",
+                                              "PCAWG.full.subset.ann.pathways.RDS"))
+
+PCAWG.full.subset.ann = readRDS(here("data", "RDS", "PCAWG", "signatures",
+                                     "PCAWG.full.subset.ann.RDS"))
+```
+
+
+```{r, warning=FALSE}
+PCAWG.sig.path.nulls = sig_pathway_int_null(
+    sigs.input = PCAWG.full.subset.ann.pathways,
+    pathways.input = PCAWG.pathways.tissues,
+    sig.path.int.funcs,
+    path.min.tissues = 30,
+    N = 1000)
+
+saveRDS(PCAWG.sig.path.nulls, file = here("data/RDS/PCAWG/10_onco_pathways",
+                                              "PCAWG.sig.path.null.dists.RDS"))
+```
+
+
+### TCGA sig-path null models
+
+```{r}
+TCGA.pathways.tissues = readRDS(file = here("data/RDS/TCGA/10_onco_pathways",
+                                              "tcga_pathways.RDS"))
+
+TCGA.full.subset.ann.pathways = readRDS(file = here("data/RDS/TCGA/10_onco_pathways",
+                                              "TCGA.full.subset.ann.pathways.RDS"))
+
+TCGA.full.subset.ann.pathways$Sample.Names = rownames(TCGA.full.subset.ann.pathways)
+
+```
+
+
+```{r, warning=FALSE}
+TCGA.sig.path.nulls = sig_pathway_int_null(
+    sigs.input = TCGA.full.subset.ann.pathways,
+    pathways.input = TCGA.pathways.tissues,
+    sig.path.int.funcs,
+    path.min.tissues = 30,
+    N = 1000)
+
+saveRDS(TCGA.sig.path.nulls, file = here("data/RDS/TCGA/10_onco_pathways",
+                                              "TCGA.sig.path.null.dists.RDS"))
+```
+
+
