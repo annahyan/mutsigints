@@ -11,7 +11,7 @@ knitr::opts_chunk$set(comment = '', fig.width = 6,
                       warning = FALSE)
 ```
 
-```{r load-packages, echo = FALSE}
+```{r load-packages, echo = FALSE, include = FALSE}
 library(here)
 fig.dir = here("figures/sig_sig_interactions")
 
@@ -31,42 +31,25 @@ output.dir = here("output/sig_sig_int_motifs")
 ```
 
 ```{r loading-precalc-interactions}
-TCGA.cooccurrence.summary.nets = readRDS(file = file.path(data.out.dir, "TCGA.cooccurrence.summary.nets.RDS") )
-TCGA.bcmi.summary.nets = readRDS(file = file.path(data.out.dir, "TCGA.bcmi.summary.nets.RDS") )
-TCGA.pearson.summary.nets = readRDS(file = file.path(data.out.dir, "TCGA.pearson.summary.nets.RDS") )
-TCGA.spearman.summary.nets = readRDS(file = file.path(data.out.dir, "TCGA.spearman.summary.nets.RDS") )
-TCGA.coda.summary.nets = readRDS(file = file.path(data.out.dir, "TCGA.coda.summary.nets.RDS") )
+
+### These interactions have been filtered for significance 
+### Check sig_sig_interactions_TCGA.R under R/ folder
+
+all.interactions = readRDS(file = here("data/RDS/TCGA/signatures/",
+                                       "TCGA.all.significant.interactions.RDS")) 
+
 
 TCGA.full.subset.ann = readRDS(here("data", "RDS", "TCGA", "signatures",
                                      "TCGA.full.subset.ann.RDS"))
 
-
-TCGA.null.quants = readRDS(file.path(here("data", "RDS", "TCGA", "signatures"),
-                              "TCGA.null.model.95.quants.RDS"))
-
-for (tissue in names(TCGA.null.quants)) {
-    
-    for (metric.name in names(TCGA.null.quants[[tissue]])) {
-        TCGA.null.quants[[tissue]][[metric.name]] = 
-            TCGA.null.quants[[tissue]][[metric.name]] + t(TCGA.null.quants[[tissue]][[metric.name]])
-    }
-}
-```
-
-```{r }
-all.interactions = list(MI = TCGA.bcmi.summary.nets,
-                        cooccurrence = TCGA.cooccurrence.summary.nets,
-                        CoDa = TCGA.coda.summary.nets,
-                        Spearman = TCGA.spearman.summary.nets)
-
 tissues = unique(TCGA.full.subset.ann$Cancer.Types)
 ```
+
 
 ```{r tissue-interaction-network}
 tissue = "Breast_cancer"
 tissue.nets = get_tissue_dataset_networks(tissue, all.interactions, 
-                                          filter.list = list(MI = 0.2),
-                                           filter.mat = TCGA.null.quants[[tissue]])
+                                          filter.list = list(MI = 0.2))
 tissue.multi.graph = tissue_multi_graph(tissue.nets)
 
 pp = print_multi_graphs(tissue.multi.graph, 
@@ -113,7 +96,6 @@ for (tissue in tissues) {
         pp = plot_multi_network(network.lists = all.interactions, 
                                 tissue = tissue, 
                                 filter.list = list(MI = 0.2),
-                                filter.mat = TCGA.null.quants[[tissue]],
                                 layout = "stress")
         
         
@@ -158,8 +140,7 @@ for (tissue in tissues) {
         TCGA.networks.concat[[tissue]] = concat_networks(
             all.interactions, 
             tissue = tissue, 
-            filter.list = list(MI = 0.2),
-            filter.mat = TCGA.null.quants[[tissue]])
+            filter.list = list(MI = 0.2))
     })
 }
 

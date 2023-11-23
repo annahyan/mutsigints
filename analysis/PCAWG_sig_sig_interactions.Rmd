@@ -32,44 +32,24 @@ output.dir = here("output/sig_sig_int_motifs")
 
 ```{r loading-precalc-interactions}
 
-### These data is generated in here("R/sig_sig_interactions.PCAWG.R")
+### These interactions have been filtered for significance 
+### Check sig_sig_interactions_PCAWG.R under R/ folder
 
-PCAWG.cooccurrence.summary.nets = readRDS(file = file.path(data.out.dir, "PCAWG.cooccurrence.summary.nets.RDS") )
-PCAWG.bcmi.summary.nets = readRDS(file = file.path(data.out.dir, "PCAWG.bcmi.summary.nets.RDS") )
-PCAWG.pearson.summary.nets = readRDS(file = file.path(data.out.dir, "PCAWG.pearson.summary.nets.RDS") )
-PCAWG.spearman.summary.nets = readRDS(file = file.path(data.out.dir, "PCAWG.spearman.summary.nets.RDS") )
-PCAWG.coda.summary.nets = readRDS(file = file.path(data.out.dir, "PCAWG.coda.summary.nets.RDS") )
+all.interactions = readRDS(file = here("data/RDS/PCAWG/signatures/",
+                                       "PCAWG.all.significant.interactions.RDS")) 
+
 
 PCAWG.full.subset.ann = readRDS(here("data", "RDS", "PCAWG", "signatures",
                                      "PCAWG.full.subset.ann.RDS"))
 
-PCAWG.null.quants = readRDS(file.path(here("data", "RDS", "PCAWG", "signatures"),
-                              "PCAWG.null.model.95.quants.RDS"))
-
-for (tissue in names(PCAWG.null.quants)) {
-    
-    for (metric.name in names(PCAWG.null.quants[[tissue]])) {
-        PCAWG.null.quants[[tissue]][[metric.name]] = 
-            PCAWG.null.quants[[tissue]][[metric.name]] + t(PCAWG.null.quants[[tissue]][[metric.name]])
-    }
-}
-```
-
-```{r }
-all.interactions = list(MI = PCAWG.bcmi.summary.nets,
-                        cooccurrence = PCAWG.cooccurrence.summary.nets,
-                        CoDa = PCAWG.coda.summary.nets,
-                        Spearman = PCAWG.spearman.summary.nets)
-
 tissues = unique(PCAWG.full.subset.ann$Cancer.Types)
-
 ```
+
 
 ```{r tissue-interaction-network}
 tissue = "Panc_AdenoCA"
 tissue.nets = get_tissue_dataset_networks(tissue, all.interactions, 
-                                          filter.list = list(MI = 0.2),
-                                          filter.mat = PCAWG.null.quants[[tissue]])
+                                          filter.list = list(MI = 0.2))
 tissue.multi.graph = tissue_multi_graph(tissue.nets)
 
 pp = print_multi_graphs(tissue.multi.graph, 
@@ -138,7 +118,6 @@ for (tissue in tissues) {
         pp = plot_multi_network(network.lists = all.interactions, 
                                 tissue = tissue, 
                                 filter.list = list(MI = 0.2),
-                                filter.mat = PCAWG.null.quants[[tissue]],
                                 layout = "stress")
         
         
@@ -187,8 +166,7 @@ for (tissue in tissues) {
         PCAWG.networks.concat[[tissue]] = concat_networks(
             all.interactions, 
             tissue = tissue, 
-            filter.list = list(MI = 0.2), 
-            filter.mat = PCAWG.null.quants[[tissue]])
+            filter.list = list(MI = 0.2))
     })
 }
 ```
@@ -198,7 +176,7 @@ for (tissue in tissues) {
 sig.sig.ints.summary.plot.1 = plot_all_counts(PCAWG.networks.concat, min.abssum = 1,
                                             psize = 4.5, lsize = 1.7, 
                                             expand.mult = c(0.02, 0.02)) + 
-    coord_cartesian(x = c(1, 20), clip = "off")
+    coord_cartesian(x = c(1, 23), clip = "off")
 
 sig.sig.ints.summary.plot.3 = plot_all_counts(PCAWG.networks.concat, min.abssum = 3,
                                             psize = 4.5, lsize = 1.7, 
@@ -246,7 +224,6 @@ dev.off()
 
 ```{r tissues-with-interactions}
 PCAWG.int.tissues = get_interaction_tissues(PCAWG.networks.concat)
-
 
 write.table(as.data.frame(PCAWG.int.tissues$pos.tissues), 
           file = here("supp_data", "PCAWG_positive_interaction_tissue_summaries.tsv"),
