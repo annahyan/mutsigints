@@ -242,9 +242,9 @@ ggsave(all.only.sig.network, file = file.path(fig.dir,
 
 
 ```{r pcawg-all-signatures}
-node.order = c(sort(c("APOBEC", "MMR", "HR", "ROS", "PolH", "PolE")),
+node.order = c(sort(c("APOBEC", "MMR", "HR", "SBS30",  "ROS", "PolH", "PolE")),
                 
-               sort(c("SBS39", "SBS19", "SBS23", "SBS28", "SBS17", "SBS30", 
+               sort(c("SBS39", "SBS19", "SBS23", "SBS28", "SBS17", 
                 "SBS34", "SBS37", "SBS12", "Technical")),
                
                sort(c("Tobacco", "UV", "SBS38", "SBS29")))
