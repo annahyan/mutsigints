@@ -36,49 +36,13 @@ PCAWG.full.subset.ann.pathways = readRDS(file = here("data/RDS/PCAWG/10_onco_pat
 PCAWG.full.subset.ann = readRDS(here("data", "RDS", "PCAWG", "signatures",
                                      "PCAWG.full.subset.ann.RDS"))
 
-PCAWG.active.sig.counts = data.frame(Tissues = PCAWG.full.subset.ann$Cancer.Types,
-                                      active.sig.counts = rowSums(PCAWG.full.subset.ann[4:ncol(PCAWG.full.subset.ann)] > 0))
-```
+PCAWG.active.sig.counts = data.frame(
+    Tissues = PCAWG.full.subset.ann$Cancer.Types,
+    active.sig.counts = rowSums(
+        PCAWG.full.subset.ann[4:ncol(PCAWG.full.subset.ann)] > 0))
 
-### Getting the quantiles 
-
-```{r}
-get_quants_from_null = function(null.list, sigs, paths, quant.lim) {
-
-    out.list = list()
-    
-    for (tissue in names(null.list)) {
-        
-        
-        tissue.elems = get_tissue_pathway_activities(tissue, sigs, paths)
-        
-        zero.mat = matrix(0, ncol = ncol(tissue.elems$paths),
-                          nrow = ncol(tissue.elems$sigs),
-                          dimnames = list(colnames(tissue.elems$sigs), 
-                                          sub("-", ".", sub(" ", ".", colnames(tissue.elems$paths) ) ) ) )
-        
-        quantiles.mat = do.call(rbind, 
-                                lapply(null.list[[tissue]], function(x) {
-                                    if(length(x) == 0) {
-                                        return(as.vector(zero.mat))
-                                    } else {
-                                        out = zero.mat
-                                        out[rownames(x),colnames(x)] = out[rownames(x),colnames(x)] +
-                                            as.matrix(x)
-                                        return(as.vector(unlist(out)))
-                                    }
-                                    
-                                }
-                                ) )
-        quants = apply(quantiles.mat, MARGIN = 2, function(x)
-            quantile(abs(x), probs = quant.lim))    
-        
-        out = zero.mat + matrix(quants, nrow = nrow(zero.mat), ncol = ncol(zero.mat))
-        
-        out.list[[tissue]] = out
-    }
-    return(out.list)
-}
+PCAWG.sig.path.nulls = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways",
+                                              "PCAWG.sig.path.null.dists.RDS"))
 ```
 
 
@@ -264,57 +228,7 @@ comp.network =ggarrange(logged.network, raw.network)
 
 ```
 
-#### Fisher's exact test between signatures and pathways in individual tissues
-
-```{r, warning = FALSE}
-tissue.odds.ratio = sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
-                                 pathways.input = PCAWG.pathways.tissues,
-                                 interaction_function = get_sig_path_assocs, 
-                                 path.min.tissues = 30,
-                                 p.val.threshold = 0.1,
-                                 p.adjust = TRUE,
-                                 method = "BH")
-
-for (tissue in names(tissue.odds.ratio)) {
-   
-    if (any(abs(tissue.odds.ratio[[tissue]]) > 0) ) {
-        cat(tissue, "\n")
-        int.heatmap = ggheatmap_wrapper(tissue.odds.ratio[[tissue]], 
-                                        title = tissue)
-        
-        print(int.heatmap)
-        ggsave(plot = int.heatmap,
-               filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
-                                    paste0("PCAWG_", tissue, "_sig_pathway.dotplot.png")),
-               height = 5, width = 6, bg = "white")
-    }
-}
-```
-
-### Setting the null model for the OR
-
-```{r, echo = FALSE, include=FALSE}
-# tissue.odds.ratios.null = sig_pathway_int_null(sigs.input = PCAWG.full.subset.ann.pathways,
-#                                  pathways.input = PCAWG.pathways.tissues,
-#                                  interaction_function = get_sig_path_assocs, 
-#                                  path.min.tissues = 30,
-#                                  p.val.threshold = 0.05,
-#                                  p.adjust = FALSE,
-#                                  method = "BH",
-#                                  N = 1000)
-# 
-# saveRDS(tissue.odds.ratios.null, file = file.path(out.dir, "PCAWG.sig.path.OR.nulls.RDS"))
-tissue.odds.ratios.null = readRDS(file = file.path(out.dir, "PCAWG.sig.path.OR.nulls.RDS"))
-```
-
-```{r}
-quant = 0.95
-tissue.OR.quantiles = get_quants_from_null(tissue.odds.ratios.null, 
-                                           PCAWG.full.subset.ann.pathways,
-                                           PCAWG.pathways.tissues, 
-                                           quant)
-```
-
+### Type of signature-pathway interactions in PCAWG
 
 ```{r}
 tissue.odds.ratio.unadjusted = sig_pathway_int(
@@ -326,50 +240,211 @@ tissue.odds.ratio.unadjusted = sig_pathway_int(
     p.adjust = FALSE,
     method = "BH")
 
-tissue.odds.ratio.null.adjusted = setNames(
-    lapply(names(tissue.odds.ratio.unadjusted),
-           function(tissue) {
-               observed = tissue.odds.ratio.unadjusted[[tissue]]
-               colnames(observed) = sub("-", ".", sub(" ", ".", colnames(observed) ) )
-               nm = tissue.OR.quantiles[[tissue]]
-               nm = observed[rownames(observed), colnames(observed)]
-               
-               observed[abs(observed) < nm] = 0
-               return(observed)
-           }
-    ), names(tissue.odds.ratio.unadjusted) )
 
-for (tissue in names(tissue.odds.ratio.null.adjusted)) {
-   
-    if (any(abs(tissue.odds.ratio.unadjusted[[tissue]]) > 0) ) {
-        cat(tissue, "\n")
-        int.heatmap = ggheatmap_wrapper(tissue.odds.ratio.unadjusted[[tissue]], 
-                                        title = tissue)
-        
-        print(int.heatmap)
-        ggsave(plot = int.heatmap,
-               filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
-                                    paste0("PCAWG_", tissue, "_sig_pathway_null_adjusted.dotplot.png")),
-               height = 5, width = 6, bg = "white")
-    }
+tissue.lm.coefs.mats.log = sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
+                                 pathways.input = PCAWG.pathways.tissues,
+                                 interaction_function = get_sig_path_lms,
+                                 robust = FALSE,
+                                 path.min.tissues = 30,
+                                 p.val.threshold = 0.05,
+                                 p.adjust = FALSE,
+                                 method = "BH",
+                                 sig.log = TRUE,
+                                 path.to.sig = TRUE)
+
+tissue.log.coefs.mats.log = sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
+                                 pathways.input = PCAWG.pathways.tissues,
+                                 interaction_function = get_sig_path_lms,
+                                 path.min.tissues = 30,
+                                 p.val.threshold = 0.05,
+                                 p.adjust = FALSE,
+                                 method = "BH",
+                                 sig.log = TRUE,
+                                 robust = FALSE,
+                                 path.to.sig = FALSE)
+# 
+# sig.path.int.funcs = list(
+#     OR = OR.func.null,
+#     STP = STP.null,
+#     PTS = PTS.null
+# )
+PCAWG.sig.path.interactions = list()
+
+for (tissue in names(tissue.odds.ratio.unadjusted)) {
+    int.list = list(OR = tissue.odds.ratio.unadjusted[[tissue]],
+                    STP = tissue.log.coefs.mats.log[[tissue]],
+                    PTS = tissue.lm.coefs.mats.log[[tissue]])
+    PCAWG.sig.path.interactions[[tissue]] = int.list
 }
+
+
+
 ```
 
+### Filter the interactions based on the null distributions
+
 ```{r}
-pp.odds.ratio.null.adjusted = plot_all_counts(tissue.odds.ratio.null.adjusted, 
+sig.threshold = 0.05
+PCAWG.sig.path.interactions.significant = PCAWG.sig.path.interactions
+
+metric.name.mapping = list(OP = "Fisher's exact test",
+                           STP = "glm(pathway ~ signature)",
+                           PTS = "lm(signature ~ pathway)")
+
+out.file = here("supp_data", "PCAWG.sig.pathway.significant.interactions.xlsx")
+file.remove(out.file)
+for(tissue in names(PCAWG.sig.path.interactions)) {
+    
+    for (metric.name in names(PCAWG.sig.path.interactions[[tissue]])) {
+        cat(tissue, "\t", metric.name, "\n")
+        out =  PCAWG.sig.path.interactions[[tissue]][[metric.name]]
+        
+        if (length(out) == 0 ) {
+            next
+        }
+        metric.values = out %>% rm_zeros()
+        if (length(metric.values) == 0) {next} 
+        
+        p.values = matrix(NA, nrow = nrow(metric.values), 
+                          ncol = ncol(metric.values), 
+                          dimnames = (dimnames(metric.values)))
+        
+        non.zero.values = which(metric.values != 0, arr.ind = TRUE)
+        
+        for(i in 1:nrow(non.zero.values)) {
+            sig = rownames(metric.values)[non.zero.values[i, 1]]
+            path = colnames(metric.values)[non.zero.values[i, 2]]
+            
+            p.values[sig, path] = min(percentile(PCAWG.sig.path.nulls[[tissue]][[metric.name]][sig, path, ] ,
+                                                  metric.values[sig, path]),
+                                      1 - percentile(PCAWG.sig.path.nulls[[tissue]][[metric.name]][sig, path, ] ,
+                                                  metric.values[sig, path]))
+            
+            if(p.values[sig, path] > sig.threshold) {
+                out[sig, path] = 0
+                p.values[sig, path] = 1
+            }
+        }
+        PCAWG.sig.path.interactions.significant[[tissue]][[metric.name]] = out
+        
+        
+        
+        if (!file.exists(out.file)) {
+            wb <- createWorkbook()
+            cat("File doesn't exist.\n")
+        } else { 
+            wb = loadWorkbook(out.file)
+        }
+        
+        if (!(tissue %in% names(wb))) {
+            cat("Sheet doesn't exist.\n")
+            addWorksheet(wb, tissue)
+            # writeData(wb = wb, 
+            #           sheet = tissue,
+            #           x = metric.name.mapping[[metric.name]])
+            start.row = 2
+        } else {
+            cat("Sheet exists.\n")
+            start.row = nrow(readWorkbook(out.file, 
+                                          sheet = tissue, 
+                                          colNames = FALSE, 
+                                          skipEmptyRows = FALSE))+5
+        }
+        
+        writeData(wb = wb, 
+                  sheet = tissue,
+                  x = metric.name.mapping[[metric.name]],
+                  colNames = TRUE,
+                  startRow = start.row - 1,
+                  startCol = 1) 
+        cat("File exists.\n")
+        
+        
+        cat(metric.name, "\t", start.row, "\n") 
+        
+        ### Write the metric values
+        writeData(wb = wb, 
+                  sheet = tissue,
+                  x = metric.values,
+                  colNames = TRUE,
+                  rowNames = TRUE,
+                  startRow = start.row)
+        
+        ### Write the p-values annotation
+        writeData(wb = wb, 
+                  sheet = tissue,
+                  x = "p-values",
+                  colNames = TRUE,
+                  startRow = start.row - 1,
+                  startCol = ncol(metric.values)+4) 
+        
+        ### Write the p-values matrix
+        
+        p.values =  ## replace NA's with 1 in upper.tri
+            pmin(1, p.values, na.rm = TRUE)
+        
+        writeData(wb = wb, 
+                  sheet = tissue,
+                  x = p.values,
+                  colNames = TRUE,
+                  rowNames = TRUE,
+                  startRow = start.row,
+                  startCol = ncol(metric.values)+4)
+        
+        saveWorkbook(wb, file = out.file, overwrite = TRUE)
+
+    }
+}
+
+
+saveRDS(PCAWG.sig.path.interactions.significant, here("data/RDS/PCAWG/10_onco_pathways",
+                                              "PCAWG.sig.path.interactions.significant.RDS"))
+```
+
+
+```{r}
+pp.OR = plot_all_counts(lapply(PCAWG.sig.path.interactions.significant, function(x) x$OR), 
+                                              threshold = 0.1, psize = 5,
+                                              expand.mult = c(0.13, 0.13))
+
+ggsave(plot = pp.OR,
+               filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
+                                    "PCAWG_summarized_sig_pathway_OR_null_adjusted.pdf"),
+               height = 2.4, width = 3.4, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
+
+
+
+
+
+pp.STP = plot_all_counts(lapply(PCAWG.sig.path.interactions.significant, function(x) x$STP), 
+                                              threshold = 0.1, psize = 5,
+                                              expand.mult = c(0.13, 0.13))
+
+ggsave(plot = pp.STP,
+               filename = file.path(fig.dir, "signature_to_pathway",
+                                    "by_tissues", "log_log",
+                                    "PCAWG_logged_glm_null_adjusted_summarized.pdf"),
+               height = 1.15, width = 1.6, bg = "white")
+
+
+
+
+pp.PTS = plot_all_counts(lapply(PCAWG.sig.path.interactions.significant, function(x) x$PTS), 
                                               threshold = 0.2, psize = 5,
                                               expand.mult = c(0.13, 0.13))
 
-ggsave(plot = pp.odds.ratio.null.adjusted,
-               filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
-                                    "PCAWG_summarized_sig_pathway_null_adjusted.dotplot.pdf"),
-               height = 2.4, width = 3.4, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
+ggsave(plot = pp.PTS,
+               filename = file.path(fig.dir, "pathway_to_signature",
+                                    "by_tissues", "lm_log", "PCAWG_logged_summarized_OLS_path_to_sigs.pdf"),
+               height = 2.7, width = 4.4, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
 ```
+
 
 ### Bipartite graph - not used 
 
 ```{r}
-sig.path.oddsratio.bipartite = minor_plot(plot_bipartite2(tissue.odds.ratio.null.adjusted),
+sig.path.oddsratio.bipartite = minor_plot(plot_bipartite2(
+    lapply(PCAWG.sig.path.interactions.significant, function(x) x$OR)),
                                         expand.factor = 0.5, expand.factor.y = 0.01)
 
 ggsave(plot = sig.path.oddsratio.bipartite,
@@ -381,7 +456,8 @@ ggsave(plot = sig.path.oddsratio.bipartite,
 ### Tissues of Odds ratio interactions
 
 ```{r}
-tissues.odds.ratio.lists = get_interaction_tissues(tissue.odds.ratio.null.adjusted)
+tissues.odds.ratio.lists = get_interaction_tissues(
+    lapply(PCAWG.sig.path.interactions.significant, function(x) x$OR))
 
 write.table(as.data.frame(tissues.odds.ratio.lists$pos.tissues), 
           file = here("supp_data", "PCAWG_sig_pathway_positive_interaction_tissue_summaries.tsv"),
@@ -392,72 +468,30 @@ write.table(as.data.frame(tissues.odds.ratio.lists$neg.tissues),
 
 ```
 
-
-### Linear regression predicting signatures from pathways across tissues
-
-I tried logging the signatures before the linear regression or using raw counts.
-In this first case, I tried logging.
-
-
-```{r, warning = FALSE}
-tissue.lm.coefs.mats.log = sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
-                                 pathways.input = PCAWG.pathways.tissues,
-                                 interaction_function = get_sig_path_lms,
-                                 robust = FALSE,
-                                 path.min.tissues = 30,
-                                 p.val.threshold = 0.05,
-                                 p.adjust = FALSE,
-                                 method = "BH",
-                                 sig.log = TRUE,
-                                 path.to.sig = TRUE)
-```
-
-### Setting the null model for the LM for sig ~ path
-
-```{r, echo = FALSE, include=FALSE}
-# tissue.lm.ratios.null = sig_pathway_int_null(sigs.input = PCAWG.full.subset.ann.pathways,
-#                                  pathways.input = PCAWG.pathways.tissues,
-#                                  interaction_function = get_sig_path_lms, 
-#                                  robust = FALSE,
-#                                  path.min.tissues = 30,
-#                                  p.val.threshold = 0.05,
-#                                  p.adjust = FALSE,
-#                                  method = "BH",
-#                                  sig.log = TRUE,
-#                                  path.to.sig = TRUE,
-#                                  N = 1000)
-# 
-# saveRDS(tissue.lm.ratios.null, file = file.path(out.dir, "PCAWG.sig.path.lm.nulls.RDS"))
-tissue.lm.ratios.null = readRDS(file = file.path(out.dir, "PCAWG.sig.path.lm.nulls.RDS"))
-```
+### Plotting the heatmaps
 
 ```{r}
-quant = 0.95
-tissue.lm.quantiles = get_quants_from_null(tissue.lm.ratios.null,
-                                           PCAWG.full.subset.ann.pathways,
-                                           PCAWG.pathways.tissues, 
-                                           quant)
-```
-
-### Applying the filter
-
-```{r}
-tissue.lm.null.adjusted = setNames(
-    lapply(names(tissue.lm.coefs.mats.log),
-           function(tissue) {
-               observed = tissue.lm.coefs.mats.log[[tissue]]
-               colnames(observed) = sub("-", ".", sub(" ", ".", colnames(observed) ) )
-               nm = tissue.lm.quantiles[[tissue]]
-               nm = observed[rownames(observed), colnames(observed)]
-               
-               observed[abs(observed) < nm] = 0
-               return(observed)
-           }
-    ), names(tissue.lm.coefs.mats.log) )
-```
+tissue.odds.ratio.null.adjusted = lapply(PCAWG.sig.path.interactions.significant, function(x)
+    x$OR)
+for (tissue in names(tissue.odds.ratio.null.adjusted)) {
+   
+    if (any(abs(tissue.odds.ratio.null.adjusted[[tissue]]) > 0) ) {
+        cat(tissue, "\n")
+        int.heatmap = ggheatmap_wrapper(tissue.odds.ratio.adjusted[[tissue]], 
+                                        title = tissue)
+        
+        print(int.heatmap)
+        ggsave(plot = int.heatmap,
+               filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
+                                    paste0("PCAWG_", tissue, "_sig_pathway_null_adjusted.dotplot.png")),
+               height = 5, width = 6, bg = "white")
+    }
+}
 
 
-```{r}
+
+tissue.lm.null.adjusted = lapply(PCAWG.sig.path.interactions.significant, function(x)
+    x$PTS)
 for (tissue in abundant.tissues) {
     cat(tissue, "\n")
     if (any(abs(tissue.lm.null.adjusted[[tissue]]) > 0) ) {
@@ -467,10 +501,29 @@ for (tissue in abundant.tissues) {
         ggsave(plot = int.heatmap,
                filename = file.path(fig.dir, "pathway_to_signature",
                                     "by_tissues", "lm_log",
-                                    paste0("PCAWG_", tissue, "_sig_tilde_pathway.dotplot.png")),
+                                    paste0("PCAWG_", tissue, "_sig_tilde_pathway.lm.null.adjusted.dotplot.png")),
                height = 5, width = 6, bg = "white")
     }
 }
+
+
+
+tissue.glm.null.adjusted = lapply(PCAWG.sig.path.interactions.significant, 
+                                  function(x) x$STP)
+for (tissue in abundant.tissues) {
+    if (any(abs(tissue.glm.null.adjusted[[tissue]]) > 0) ) {
+        cat(tissue, "\n")
+        int.heatmap = ggheatmap_wrapper(tissue.log.coefs.mats.log[[tissue]],
+                                        title = tissue)
+
+        ggsave(plot = int.heatmap,
+               filename = file.path(fig.dir, "signature_to_pathway",
+                                    "by_tissues", "log_log",
+                                    paste0("PCAWG_", tissue, "_path_tilde_sig.glm.null.adjusted.dotplot.png")),
+               height = 5, width = 6, bg = "white")
+    }
+}
+
 ```
 
 <!-- In the example below I'm trying with raw counts. -->
@@ -501,26 +554,6 @@ for (tissue in abundant.tissues) {
 <!--     } -->
 <!-- } -->
 <!-- ``` -->
-
-#### Summarizing the regression of signatures ~ pathways
-
-```{r, fig.width=6, fig.height=4, warning= FALSE}
-pp.logged = plot_all_counts(tissue.lm.null.adjusted, threshold = 0.2, psize = 4.5,
-                            expand.mult = c(0.03, 0.03))
-print(pp.logged)
-
-# ggsave(plot = pp.logged,
-#                filename = file.path(fig.dir, "pathway_to_signature",
-#                                     "by_tissues", "lm_log",
-#                                     "PCAWG_logged_summarized_OLS.png"),
-#                height = 2.3, width = 2.9, bg = "white")
-
-ggsave(plot = pp.logged,
-               filename = file.path(fig.dir, "pathway_to_signature",
-                                    "by_tissues", "lm_log", "PCAWG_logged_summarized_OLS_path_to_sigs.pdf"),
-               height = 2.7, width = 4.4, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
-
-```
 
 
 ### Case inspection of melanoma
@@ -601,106 +634,12 @@ ggsave(filename = file.path(fig.dir, paste0(tissue, "rev_uv_rtkras_relationship.
 
 
 
-
-### Logistic regression predicting pathways from signatures across tissues
-
-```{r}
-tissue.log.coefs.mats.log = sig_pathway_int(sigs.input = PCAWG.full.subset.ann.pathways,
-                                 pathways.input = PCAWG.pathways.tissues,
-                                 interaction_function = get_sig_path_lms,
-                                 path.min.tissues = 30,
-                                 p.val.threshold = 0.05,
-                                 p.adjust = FALSE,
-                                 method = "BH",
-                                 sig.log = TRUE,
-                                 robust = FALSE,
-                                 path.to.sig = FALSE)
-
-```
-
-### Null model for glm(pathway ~ signature)
-
-
-```{r, echo = FALSE, include=FALSE, warning = FALSE}
-tissue.glm.ratios.null = sig_pathway_int_null(sigs.input = PCAWG.full.subset.ann.pathways,
-                                 pathways.input = PCAWG.pathways.tissues,
-                                 interaction_function = get_sig_path_lms,
-                                 path.min.tissues = 30,
-                                 p.val.threshold = 0.05,
-                                 p.adjust = FALSE,
-                                 method = "BH",
-                                 sig.log = TRUE,
-                                 robust = FALSE,
-                                 path.to.sig = FALSE,
-                                 N = 1000)
-
-saveRDS(tissue.glm.ratios.null, file = file.path(out.dir, "PCAWG.sig.path.glm.nulls.RDS"))
-tissue.glm.ratios.null = readRDS(file = file.path(out.dir, "PCAWG.sig.path.glm.nulls.RDS"))
-```
-
-```{r}
-quant = 0.95
-tissue.glm.quantiles = get_quants_from_null(tissue.glm.ratios.null,
-                                           PCAWG.full.subset.ann.pathways,
-                                           PCAWG.pathways.tissues, 
-                                           quant)
-```
-
-
-```{r}
-tissue.glm.null.adjusted = setNames(
-    lapply(names(tissue.log.coefs.mats.log),
-           function(tissue) {
-               observed = tissue.log.coefs.mats.log[[tissue]]
-               colnames(observed) = sub("-", ".", sub(" ", ".", colnames(observed) ) )
-               nm = tissue.glm.quantiles[[tissue]]
-               nm = observed[rownames(observed), colnames(observed)]
-               
-               observed[abs(observed) < nm] = 0
-               return(observed)
-           }
-    ), names(tissue.log.coefs.mats.log) )
-```
-
-
-```{r}
-for (tissue in abundant.tissues) {
-    if (any(abs(tissue.glm.null.adjusted[[tissue]]) > 0) ) {
-        cat(tissue, "\n")
-        int.heatmap = ggheatmap_wrapper(tissue.log.coefs.mats.log[[tissue]],
-                                        title = tissue)
-
-        ggsave(plot = int.heatmap,
-               filename = file.path(fig.dir, "signature_to_pathway",
-                                    "by_tissues", "log_log",
-                                    paste0("PCAWG_", tissue, "_path_tilde_sig.glm.null.adjusted.dotplot.png")),
-               height = 5, width = 6, bg = "white")
-    }
-}
-
-```
-
-#### Summarizing the regression of pathways ~ signatures
-
-```{r}
-pp.log.log = plot_all_counts(tissue.glm.null.adjusted, threshold = 0.1, psize = 5,
-                             expand.mult = c(0.05, 0.05))
-print(pp.log.log)
-
-ggsave(plot = pp.log.log,
-               filename = file.path(fig.dir, "signature_to_pathway",
-                                    "by_tissues", "log_log",
-                                    "PCAWG_logged_glm_null_adjusted_summarized.png"),
-               height = 1.15, width = 1.6, bg = "white")
-```
-
-
 ### Three summaries together
 
 ```{r}
-pp.PCAWG.combined.summaries = ggarrange(pp.odds.ratio.null.adjusted + ggtitle("Co-occurrence"), 
-          pp.logged + ggtitle("lm(signature ~ pathway)"), 
-          pp.log.log + ggtitle("glm(pathway ~ signature)"), 
+pp.PCAWG.combined.summaries = ggarrange(pp.OR + ggtitle("Co-occurrence"), 
+          pp.PTS + ggtitle("lm(signature ~ pathway)"), 
+          pp.STP + ggtitle("glm(pathway ~ signature)"), 
           # widths = c(0.5, 0.7, 12),
           heights = c(1, 0.9, 1),
           nrow = 3)
@@ -718,9 +657,9 @@ ggsave(plot = pp.PCAWG.combined.summaries,
 ```{r}
 
 pp.PCAWG.combined.summaries = ggdraw() +
-  draw_plot(pp.odds.ratio.unadjusted + ggtitle("Co-occurrence"), x = 0, y = 0.61, width = 1, height = .4) +
-  draw_plot(pp.logged + ggtitle("lm(signature ~ pathway)"), x = 0, y = .22, width = 1, height = .4) +
-  draw_plot(pp.log.log + ggtitle("glm(pathway ~ signature)"), x = 0, y = 0, width = 0.42, height = 0.22) 
+  draw_plot(pp.OR + ggtitle("Co-occurrence"), x = 0, y = 0.61, width = 1, height = .4) +
+  draw_plot(pp.PTS + ggtitle("lm(signature ~ pathway)"), x = 0, y = .22, width = 1, height = .4) +
+  draw_plot(pp.STP + ggtitle("glm(pathway ~ signature)"), x = 0, y = 0, width = 0.42, height = 0.22) 
 
 ggsave(plot = pp.PCAWG.combined.summaries,
                filename = file.path(fig.dir, "PCAWG_combined_summaries_sig_pathway.pdf"),
@@ -728,9 +667,13 @@ ggsave(plot = pp.PCAWG.combined.summaries,
 ```
 
 
-### All signatures and pathway mutation heatmaps
+### All signatures and pathway mutation OR interaction heatmaps
 
 ```{r}
+
+tissue.odds.ratio.adjusted = lapply(PCAWG.sig.path.interactions.significant, 
+                                      function(x) x$OR)
+
 plotlist = list()
 for (tissue in abundant.tissues) {
     path.heatmap = pathways_signatures_heatmap(
@@ -738,9 +681,9 @@ for (tissue in abundant.tissues) {
         signatures = PCAWG.full.subset.ann.pathways, border_color = NA,
         pathways = PCAWG.pathways.tissues, main = tissue)
     
-    if (any(abs(tissue.odds.ratio.unadjusted[[tissue]]) > 0) ) {
+    if (any(abs(tissue.odds.ratio.adjusted[[tissue]]) > 0) ) {
         cat(tissue, "\n")
-        int.heatmap = ggheatmap_wrapper(tissue.odds.ratio.unadjusted[[tissue]], 
+        int.heatmap = ggheatmap_wrapper(tissue.odds.ratio.adjusted[[tissue]], 
                                         title = tissue)
     } else {
         int.heatmap = grob()
