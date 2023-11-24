@@ -391,8 +391,7 @@ for(tissue in names(TCGA.sig.path.interactions)) {
         
         ### Write the p-values matrix
         
-        p.values =  ## replace NA's with 1 in upper.tri
-            pmin(1, p.values, na.rm = TRUE)
+        p.values[is.na(p.values)] = 1
         
         writeData(wb = wb, 
                   sheet = tissue,
