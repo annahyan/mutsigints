@@ -25,63 +25,6 @@ library(tidygraph)
 library(pheatmap)
 ```
 
-### The functions
-
-```{r}
-
-sig_pathway_int_null = function(sigs.input,
-                                pathways.input,
-                                interaction.functions,
-                                path.min.tissues = 30,
-                                N = 1000) {
-
-  abundant.tissues = which(sigs.input$Cancer.Types %>%
-                             table() > path.min.tissues) %>% names()
-
-  tissue.odds.mats.null = list()
-
-  shuffle_df = function(df) {
-    out = data.frame(sapply(df, sample))
-    rownames(out) = rownames(df)
-    return(out)
-  }
-
-  for (tissue in abundant.tissues){
-    cat(tissue, "\n")
-
-    tissue.elems = get_tissue_pathway_activities(tissue,
-                                                 sigs.input,
-                                                 pathways.input)
-
-    shuffled.sigs = replicate(N, shuffle_df(tissue.elems$sigs),
-                              simplify = FALSE)
-    ### no need to shuffled the pathways, since the sigs are already
-
-
-
-    shuffled.metrics = lapply(
-      interaction.functions,
-      function(xf) {
-        lapply(1:N, function(ind) {
-          metric.out = xf(sigs = shuffled.sigs[[ind]],
-                          paths = tissue.elems$paths)
-          return(metric.out)
-        })
-      })
-    
-    metric.dists = list()
-    for(metric.name in names(shuffled.metrics)) {
-      metric.dists[[metric.name]] = simplify2array(shuffled.metrics[[metric.name]])
-    }
-
-    tissue.odds.mats.null[[tissue]] = metric.dists
-  }
-  return(tissue.odds.mats.null)
-}
-
-
-```
-
 ### Signature-pathway interaction functions
 
 ```{r}
@@ -166,6 +109,7 @@ TCGA.sig.path.nulls = sig_pathway_int_null(
     sig.path.int.funcs,
     path.min.tissues = 30,
     N = 1000)
+
 
 saveRDS(TCGA.sig.path.nulls, file = here("data/RDS/TCGA/10_onco_pathways",
                                               "TCGA.sig.path.null.dists.RDS"))
