@@ -2,7 +2,6 @@ library(here)
 library(tidygraph)
 library(igraph)
 library(ggraph)
-library(chrwiseSignatures)
 
 source(here("R/load_packages.R"))
 
@@ -63,14 +62,14 @@ pos.ints = compare_PCAWG_TCGA_tissues(PCAWG.int.tissues$pos.tissues,
                                       TCGA.int.tissues$pos.tissues)
 
 write.table(as.data.frame(order_matrix_rc(pos.ints$common.tissues)), 
-            file = here("supp_data", "common_positive_interaction_tissue_summaries.tsv"),
+            file = here("supp_data", "common_positive_sig_sig_interaction_tissue_summaries.tsv"),
             row.names = TRUE, col.names = NA, sep = "\t", quote = FALSE)
 
 neg.ints = compare_PCAWG_TCGA_tissues(PCAWG.int.tissues$neg.tissues,
                                       TCGA.int.tissues$neg.tissues)
 
 write.table(as.data.frame(order_matrix_rc(neg.ints$common.tissues)), 
-            file = here("supp_data", "common_negative_interaction_tissue_summaries.tsv"),
+            file = here("supp_data", "common_negative_sig_sig_interaction_tissue_summaries.tsv"),
             row.names = TRUE, col.names = NA, sep = "\t", quote = FALSE)
 
 #### 
