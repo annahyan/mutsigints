@@ -143,9 +143,10 @@ pos.picked.models = get_surv_best_model(positive.sig.pathway,
                                  param.list = list(
                                      "with.total.muts" = c(TRUE, FALSE), 
                                      "tmb.logged" = c(TRUE),
-                                     "binary.status" = c(TRUE, FALSE) ),
+                                     "binary.status" = c(TRUE, FALSE),
+                                     "epistatic" = c(TRUE, FALSE)),
                                  min.sample.fraction = 0)
-saveRDS(pos.picked.models, file = file.path(out.dir, "pcawg.pos.sig.path.picked.models.RDS"))
+saveRDS(pos.picked.models, file = file.path(out.dir, "pcawg.pos.sig.path.picked.models.epi.RDS"))
 ```
 
 ### Survival models for negative interactions
@@ -226,9 +227,10 @@ neg.picked.models = get_surv_best_model(negative.sig.pathway,
                                  param.list = list(
                                      "with.total.muts" = c(TRUE, FALSE), 
                                      "tmb.logged" = c(TRUE),
-                                     "binary.status" = c(TRUE, FALSE) ),
+                                     "binary.status" = c(TRUE, FALSE),
+                                     "epistatic" = c(TRUE, FALSE)),
                                  min.sample.fraction = 0)
-saveRDS(neg.picked.models, file = file.path(out.dir, "pcawg.neg.sig.path.picked.models.RDS"))
+saveRDS(neg.picked.models, file = file.path(out.dir, "pcawg.neg.sig.path.picked.models.epi.RDS"))
 ```
 
 

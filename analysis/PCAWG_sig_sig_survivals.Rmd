@@ -13,13 +13,14 @@ knitr::opts_chunk$set(comment = '', fig.width = 6,
                       warning = FALSE)
 ```
 
-```{r load-packages}
+```{r load-packages, echo = FALSE, message=FALSE}
 library(here)
 library(survival)
 library(survminer)
 
 source(here("R/load_packages.R"))
 library(gridExtra)
+library(nonnestcox)
 
 input.dir = here("data/RDS/PCAWG/metadata")
 
@@ -48,7 +49,6 @@ negative.sig.sig = read.delim(file = here("supp_data",
                                         "PCAWG_negative_interaction_tissue_summaries.tsv"),
                             row.names = 1)
 ```
-
 
 ### Survival models for positive interactions
 
@@ -102,6 +102,24 @@ for (i in 1:length(pos.plotlist) ) {
     try({print(pos.plotlist[[i]] ) })
 }
 dev.off()
+
+
+pos.plotlist = get_surv_plotlist(positive.sig.sig, 
+                                 dataset = PCAWG.full.subset.ann,
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = FALSE, 
+                                 tmb.logged = TRUE,
+                                 binary.status = FALSE,
+                                 legend.pos = c(0.8, 0.8),
+                                 epistatic = TRUE)
+
+pdf(file.path(fig.dir, "PCAWG_positive_interactions_survivals_epistatic.pdf"),
+    onefile = TRUE, width = 6, height = 8)
+
+for (i in 1:length(pos.plotlist) ) {
+    try({print(pos.plotlist[[i]] ) })
+}
+dev.off()
 ```
 
 
@@ -141,10 +159,11 @@ pos.picked.models = get_surv_best_model(positive.sig.sig,
                                  param.list = list(
                                      "with.total.muts" = c(TRUE, FALSE), 
                                      "tmb.logged" = c(TRUE),
-                                     "binary.status" = c(TRUE, FALSE) ),
+                                     "binary.status" = c(TRUE, FALSE),
+                                     "epistatic" = c(TRUE, FALSE)),
                                  min.sample.fraction = 0)
 
-saveRDS(pos.picked.models, file = file.path(out.dir, "pcawg.pos.sig.sig.picked.models.RDS"))
+saveRDS(pos.picked.models, file = file.path(out.dir, "pcawg.pos.sig.sig.picked.models.epi.RDS"))
 
 # pos.picked.models %>% HR_summary_for_all(type = "pos") %>% plot_sigint_forest()
 ```
@@ -201,6 +220,25 @@ for (i in 1:length(neg.plotlist) ) {
     try({print(neg.plotlist[[i]] ) })
 }
 dev.off()
+
+
+
+neg.plotlist = get_surv_plotlist(negative.sig.sig, 
+                                 dataset = PCAWG.full.subset.ann,
+                                 clin.df = PCAWG.clin.df,
+                                 with.total.muts = FALSE, 
+                                 tmb.logged = TRUE,
+                                 binary.status = FALSE,
+                                 legend.pos = c(0.8, 0.8),
+                                 epistatic = TRUE)
+
+pdf(file.path(fig.dir, "PCAWG_negative_interactions_survivals_epistatic.pdf"),
+    onefile = TRUE, width = 6, height = 8)
+
+for (i in 1:length(neg.plotlist) ) {
+    try({print(neg.plotlist[[i]] ) })
+}
+dev.off()
 ```
 
 ```{r}
@@ -223,16 +261,17 @@ saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.nototmut.nonbinary.R
 ```
 
 ```{r}
-neg.picked.models = get_surv_best_model(negative.sig.sig, 
+neg.picked.models = get_surv_best_model(sig.sig.tissues.matrix = negative.sig.sig, 
                                  dataset = PCAWG.full.subset.ann,
                                  clin.df = PCAWG.clin.df,
                                  param.list = list(
                                      "with.total.muts" = c(TRUE, FALSE), 
                                      "tmb.logged" = c(TRUE),
-                                     "binary.status" = c(TRUE, FALSE) ),
+                                     "binary.status" = c(TRUE, FALSE),
+                                     "epistatic" = c(TRUE, FALSE)),
                                  min.sample.fraction = 0)
 
-saveRDS(neg.picked.models, file = file.path(out.dir, "pcawg.neg.sig.sig.picked.models.RDS"))
+saveRDS(neg.picked.models, file = file.path(out.dir, "pcawg.neg.sig.sig.picked.models.epi.RDS"))
 
 # neg.picked.models %>% HR_summary_for_all(type = "neg") %>% plot_sigint_forest()
 ```
