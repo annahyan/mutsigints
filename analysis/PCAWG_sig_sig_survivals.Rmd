@@ -151,20 +151,31 @@ saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.nototmut.nonbinary.R
 #                                  tmb.logged = TRUE,
 #                                  binary.status = FALSE)
 # saveRDS(pos.picked.models, file = file.path(out.dir, "pcawg.pos.sig.sig.picked.models.RDS"))
-
-
-pos.picked.models = get_surv_best_model(positive.sig.sig, 
+pos.picked.models.epi = get_surv_best_model(sig.sig.tissues.matrix = positive.sig.sig, 
                                  dataset = PCAWG.full.subset.ann,
                                  clin.df = PCAWG.clin.df,
-                                 param.list = list(
+                                 param.list = list( 
+                                     "age.at.diagnosis" = c(TRUE, FALSE),
                                      "with.total.muts" = c(TRUE, FALSE), 
                                      "tmb.logged" = c(TRUE),
                                      "binary.status" = c(TRUE, FALSE),
                                      "epistatic" = c(TRUE, FALSE)),
                                  min.sample.fraction = 0)
 
-saveRDS(pos.picked.models, file = file.path(out.dir, "pcawg.pos.sig.sig.picked.models.epi.RDS"))
+saveRDS(pos.picked.models.epi, file = file.path(out.dir, "pcawg.pos.sig.sig.picked.models.epi.RDS"))
 
+pos.picked.models = get_surv_best_model(sig.sig.tissues.matrix = positive.sig.sig, 
+                                 dataset = PCAWG.full.subset.ann,
+                                 clin.df = PCAWG.clin.df,
+                                 param.list = list(
+                                     "age.at.diagnosis" = c(TRUE, FALSE),
+                                     "with.total.muts" = c(TRUE, FALSE), 
+                                     "tmb.logged" = c(TRUE),
+                                     "binary.status" = c(TRUE, FALSE),
+                                     "epistatic" = c(FALSE)),
+                                 min.sample.fraction = 0)
+
+saveRDS(pos.picked.models, file = file.path(out.dir, "pcawg.pos.sig.sig.picked.models.RDS"))
 # pos.picked.models %>% HR_summary_for_all(type = "pos") %>% plot_sigint_forest()
 ```
 
@@ -261,17 +272,31 @@ saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.nototmut.nonbinary.R
 ```
 
 ```{r}
+neg.picked.models.epi = get_surv_best_model(sig.sig.tissues.matrix = negative.sig.sig, 
+                                 dataset = PCAWG.full.subset.ann,
+                                 clin.df = PCAWG.clin.df,
+                                 param.list = list( 
+                                     "age.at.diagnosis" = c(TRUE, FALSE),
+                                     "with.total.muts" = c(TRUE, FALSE), 
+                                     "tmb.logged" = c(TRUE),
+                                     "binary.status" = c(TRUE, FALSE),
+                                     "epistatic" = c(FALSE)),
+                                 min.sample.fraction = 0)
+
+saveRDS(neg.picked.models.epi, file = file.path(out.dir, "pcawg.neg.sig.sig.picked.models.epi.RDS"))
+
 neg.picked.models = get_surv_best_model(sig.sig.tissues.matrix = negative.sig.sig, 
                                  dataset = PCAWG.full.subset.ann,
                                  clin.df = PCAWG.clin.df,
                                  param.list = list(
+                                     "age.at.diagnosis" = c(TRUE, FALSE),
                                      "with.total.muts" = c(TRUE, FALSE), 
                                      "tmb.logged" = c(TRUE),
                                      "binary.status" = c(TRUE, FALSE),
-                                     "epistatic" = c(TRUE, FALSE)),
+                                     "epistatic" = c(FALSE)),
                                  min.sample.fraction = 0)
 
-saveRDS(neg.picked.models, file = file.path(out.dir, "pcawg.neg.sig.sig.picked.models.epi.RDS"))
+saveRDS(neg.picked.models, file = file.path(out.dir, "pcawg.neg.sig.sig.picked.models.RDS"))
 
 # neg.picked.models %>% HR_summary_for_all(type = "neg") %>% plot_sigint_forest()
 ```

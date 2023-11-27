@@ -398,10 +398,16 @@ ggsave(plot = both.tmb.ggforest.log.HR,
 ### PCAWG all models with significant interaction between sig-sig 
 
 ```{r}
+# pcawg.pos.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig_sig_survivals"), "pcawg.pos.sig.sig.picked.models.epi.RDS"))
+
 pcawg.pos.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig_sig_survivals"), "pcawg.pos.sig.sig.picked.models.RDS"))
+
 # pcawg.pos.ss.picked.models = lapply(pcawg.pos.ss.picked.surv.out, function(x) {x[["model"]]})
 
+# pcawg.neg.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig_sig_survivals"), "pcawg.neg.sig.sig.picked.models.epi.RDS"))
+
 pcawg.neg.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig_sig_survivals"), "pcawg.neg.sig.sig.picked.models.RDS"))
+
 # pcawg.neg.ss.picked.models = lapply(pcawg.neg.ss.picked.surv.out, function(x) {x[["model"]]})
 ```
 
@@ -411,7 +417,8 @@ pcawg.neg.ss.picked.summary = HR_summary_for_all(pcawg.neg.ss.picked.surv.out, t
 
 pcawg.ss.picked.combined = rbind(pcawg.pos.ss.picked.summary, pcawg.neg.ss.picked.summary)
 
-pp = plot_sigint_forest(pcawg.ss.picked.combined)
+pp = plot_sigint_forest(pcawg.ss.picked.combined %>% filter(P.val < 0.05, grepl("[*+]", params),
+                                                               params != "log(total_muts + 1)"))
 
 ggsave(plot = pp, filename = file.path(fig.dir, "pcawg.sig.sig.adjusted.models.significant_interaction.pdf"),
        width = 7, height = 3)
