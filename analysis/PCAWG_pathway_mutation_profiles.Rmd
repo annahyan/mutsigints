@@ -6,6 +6,7 @@ output:
 ---
 
 ```{r}
+library(here)
 knitr::opts_chunk$set(comment = '', fig.width = 6, 
                       fig.height = 6, echo = FALSE, 
                       warning = FALSE)
@@ -23,7 +24,8 @@ library(org.Hs.eg.db)
 library(tidyverse)
 library(ggplot2)
 library(MutationalPatterns)
-library(here)
+library(tictoc)
+library(ggpubr)
 
 ref.genome = "BSgenome.Hsapiens.UCSC.hg19"
 
@@ -33,6 +35,10 @@ mutated.pathways.tissues = readRDS(file = here("data/RDS/PCAWG/10_onco_pathways"
 all.gene.path <- Reduce(rbind, lapply(1:10, function(x) {
     readxl::read_excel(here("data/raw/PCAWG/10_onco_pathways/genes-pathways.xlsx"), sheet = x)
 }))
+
+
+PCAWG.full.subset.ann = readRDS(file = here("data/RDS",
+                                           "PCAWG/signatures/PCAWG.full.subset.ann.RDS")) 
 ```
  
  
@@ -53,27 +59,52 @@ total.spectrum = plot_spectrum(panc.tp53.mut.profiles$all.profiles, CT = TRUE,co
 
 pathway.spectrum = plot_spectrum(panc.tp53.mut.profiles$path.profiles, CT = TRUE,condensed = FALSE, 
                                  indv_points = TRUE, legend = TRUE, error_bars = 'none')
+```
 
+### Exclude the MMRd samples 
+
+```{r}
+panc.samples.dMMR = PCAWG.full.subset.ann %>% 
+    filter(Cancer.Types == "Panc_AdenoCA", MMR > 0) %>% pull(Sample.Names)
+
+panc.samples.nodMMR = setdiff(rownames(panc.tp53.mut.profiles$path.profiles), panc.samples.dMMR)
+
+
+panc.tp53.mut.profiles$path.profiles = panc.tp53.mut.profiles$path.profiles[panc.samples.nodMMR, ]
+panc.tp53.mut.profiles$all.profiles = panc.tp53.mut.profiles$all.profiles[panc.samples.nodMMR, ]
+```
+
+
+```{r}
+total.spectrum = plot_spectrum(panc.tp53.mut.profiles$all.profiles, CT = TRUE,condensed = FALSE, 
+                           indv_points = FALSE, legend = TRUE)
+
+pathway.spectrum = plot_spectrum(panc.tp53.mut.profiles$path.profiles, CT = TRUE,condensed = FALSE, 
+                                 indv_points = TRUE, legend = TRUE, error_bars = 'none')
+```
+
+
+```{r}
 
 path.total.type.occurrences = colSums(panc.tp53.mut.profiles$path.profiles)
 
 all.total.type.occurrences = colSums(panc.tp53.mut.profiles$all.profiles)
 
 
-# to_tp53_p = total.type.occurrences[1:6] %>% enframe() %>% 
-#     ggplot(aes(x = name, y = value, fill = name)) + 
-#     geom_bar(stat = "identity") + 
+# to_tp53_p = total.type.occurrences[1:6] %>% enframe() %>%
+#     ggplot(aes(x = name, y = value, fill = name)) +
+#     geom_bar(stat = "identity") +
 #     scale_fill_manual( values = MutationalPatterns:::COLORS6) +
-#     theme_bw() + xlab("") + ylab("Relative contribution") + 
-#     theme(axis.ticks = element_blank(), axis.text.x = element_blank(), 
+#     theme_bw() + xlab("") + ylab("Relative contribution") +
+#     theme(axis.ticks = element_blank(), axis.text.x = element_blank(),
 #           panel.grid.major.x = element_blank(),
 #           legend.position = "none")
 
 
-panc_tp53_counts = ggarrange(to_tp53_p, to_p, widths = c(2,4))
-ggsave(plot = panc_tp53_counts, file = file.path(pub.fig.dir, 
-                                                 "panc_tp53_counts_mut_types.png"),
-       width = 6, height = 3)
+# panc_tp53_counts = ggarrange(to_tp53_p, to_p, widths = c(2,4))
+# ggsave(plot = panc_tp53_counts, file = file.path(pub.fig.dir, 
+#                                                  "panc_tp53_counts_mut_types.png"),
+#        width = 6, height = 3)
 
 gg.tp53 = path.total.type.occurrences %>% enframe(name = "mut.type", value = "count") %>%
     mutate(location = "TP53 pathway") %>% mutate(fraction = count / sum(count))
