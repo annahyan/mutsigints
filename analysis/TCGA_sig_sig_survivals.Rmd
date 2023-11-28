@@ -13,13 +13,14 @@ knitr::opts_chunk$set(comment = '', fig.width = 6,
                       warning = FALSE)
 ```
 
-```{r load-packages}
+```{r load-packages, message = FALSE}
 library(here)
 library(survival)
 library(survminer)
 
 source(here("R/load_packages.R"))
 library(gridExtra)
+library(nonnestcox)
 
 input.dir = here("data/RDS/TCGA/metadata")
 
@@ -56,9 +57,11 @@ negative.sig.sig = read.delim(file = here("supp_data",
 pos.plotlist = get_surv_plotlist(positive.sig.sig, 
                                  dataset = TCGA.full.subset.ann,
                                  clin.df = TCGA.clin.df,
+                                 age.at.diagnosis = TRUE,
                                  with.total.muts = TRUE, 
                                  tmb.logged = TRUE,
                                  binary.status = FALSE,
+                                 epistatic = FALSE,
                                  legend.pos = c(0.8, 0.8))
 
 pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut_nonbinary.pdf"),
@@ -101,6 +104,25 @@ for (i in 1:length(pos.plotlist) ) {
     try({print(pos.plotlist[[i]] ) })
 }
 dev.off()
+
+
+pos.plotlist = get_surv_plotlist(positive.sig.sig, 
+                                 dataset = TCGA.full.subset.ann,
+                                 clin.df = TCGA.clin.df,
+                                 age.at.diagnosis = TRUE,
+                                 with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
+                                 binary.status = FALSE,
+                                 epistatic = TRUE,
+                                 legend.pos = c(0.8, 0.8))
+
+pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut.epistatic.pdf"),
+    onefile = TRUE, width = 6, height = 8)
+
+for (i in 1:length(pos.plotlist) ) {
+    try({print(pos.plotlist[[i]] ) })
+}
+dev.off()
 ```
 
 
@@ -134,7 +156,8 @@ pos.picked.models = get_surv_best_model(positive.sig.sig,
                                      "tmb.logged" = c(TRUE),
                                      "binary.status" = c(TRUE, FALSE),
                                      "epistatic" = c(TRUE, FALSE)),
-                                 min.sample.fraction = 0)
+                                 min.sample.fraction = 0, 
+                                 filename = NULL)
 saveRDS(pos.picked.models, file = file.path(out.dir, "tcga.pos.sig.sig.picked.models.epi.RDS"))
 
 # pos.picked.models %>% HR_summary_for_all(type = "pos") %>% plot_sigint_forest()
@@ -191,6 +214,25 @@ for (i in 1:length(neg.plotlist) ) {
     try({print(neg.plotlist[[i]] ) })
 }
 dev.off()
+
+
+neg.plotlist = get_surv_plotlist(negative.sig.sig, 
+                                 dataset = TCGA.full.subset.ann,
+                                 clin.df = TCGA.clin.df,
+                                 age.at.diagnosis = TRUE,
+                                 with.total.muts = TRUE, 
+                                 tmb.logged = TRUE,
+                                 binary.status = FALSE,
+                                 epistatic = TRUE,
+                                 legend.pos = c(0.8, 0.8))
+
+pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_totmut.epistatic.pdf"),
+    onefile = TRUE, width = 6, height = 8)
+
+for (i in 1:length(neg.plotlist) ) {
+    try({print(neg.plotlist[[i]] ) })
+}
+dev.off()
 ```
 
 ```{r}
@@ -222,7 +264,7 @@ neg.picked.models = get_surv_best_model(negative.sig.sig,
                                      "with.total.muts" = c(TRUE, FALSE), 
                                      "tmb.logged" = c(TRUE),
                                      "binary.status" = c(TRUE, FALSE),
-                                     "epistatic" = c(TRUE, FALSE)),
+                                     "epistatic" = c(FALSE)),
                                  min.sample.fraction = 0)
 saveRDS(neg.picked.models, file = file.path(out.dir, "tcga.neg.sig.sig.picked.models.epi.RDS"))
 
