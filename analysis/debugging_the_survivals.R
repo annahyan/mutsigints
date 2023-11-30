@@ -1,5 +1,5 @@
-sig1 = "MMR"
-sig2 = "HIPPO"
+sig1 = "PolE"
+sig2 = "WNT"
 tissue = "Uterus_AdenoCa"
 tissues = tissue
 signatures = c(sig1, sig2)

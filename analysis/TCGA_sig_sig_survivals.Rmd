@@ -151,16 +151,38 @@ negative.sig.sig = read.delim(file = here("supp_data",
 pos.picked.models = get_surv_best_model(positive.sig.sig, 
                                  dataset = TCGA.full.subset.ann,
                                  clin.df = TCGA.clin.df,
-                                 param.list = list("age.at.diagnosis" = c(TRUE, FALSE),
+                                 param.list = list(
+                                     "age.at.diagnosis" = c(TRUE, FALSE),
                                      "with.total.muts" = c(TRUE, FALSE), 
                                      "tmb.logged" = c(TRUE),
                                      "binary.status" = c(FALSE),
                                      "epistatic" = c(TRUE, FALSE)),
-                                 min.sample.fraction = 0, 
                                  filename = here("supp_data/tcga_positive_sig_sig_survivals.xlsx"),
-                                       rm.non.sig.sheets = TRUE,
-                                 return.only.sig = TRUE)
+                                 min.sample.fraction = 0,
+                                 rm.non.sig.sheets = TRUE,
+                                 return.only.sig = TRUE,
+                                sig.threshold = 0.1)
+
 saveRDS(pos.picked.models, file = file.path(out.dir, "tcga.pos.sig.sig.picked.models.epi.RDS"))
+
+
+
+pos.picked.models = get_surv_best_model(positive.sig.sig, 
+                                 dataset = TCGA.full.subset.ann,
+                                 clin.df = TCGA.clin.df,
+                                 param.list = list(
+                                     "age.at.diagnosis" = c(TRUE, FALSE),
+                                     "with.total.muts" = c(TRUE, FALSE), 
+                                     "tmb.logged" = c(TRUE),
+                                     "binary.status" = c(FALSE),
+                                     "epistatic" = c(FALSE)),
+                                 filename = here("supp_data/tcga_positive_sig_sig_survivals_nonepi.xlsx"),
+                                 min.sample.fraction = 0,
+                                 rm.non.sig.sheets = TRUE,
+                                 return.only.sig = TRUE,
+                                 sig.threshold = 0.1)
+
+saveRDS(pos.picked.models, file = file.path(out.dir, "tcga.pos.sig.sig.picked.models.nonepi.RDS"))
 
 # pos.picked.models %>% HR_summary_for_all(type = "pos") %>% plot_sigint_forest()
 ```
@@ -268,11 +290,32 @@ neg.picked.models = get_surv_best_model(negative.sig.sig,
                                      "tmb.logged" = c(TRUE),
                                      "binary.status" = c(FALSE),
                                      "epistatic" = c(TRUE, FALSE)),
-                                 min.sample.fraction = 0,
                                  filename = here("supp_data/tcga_negative_sig_sig_survivals.xlsx"),
-                                       rm.non.sig.sheets = TRUE,
-                                 return.only.sig = TRUE)
+                                 min.sample.fraction = 0,
+                                 rm.non.sig.sheets = TRUE,
+                                 return.only.sig = TRUE,
+                                sig.threshold = 0.1)
+
 saveRDS(neg.picked.models, file = file.path(out.dir, "tcga.neg.sig.sig.picked.models.epi.RDS"))
+
+
+
+neg.picked.models = get_surv_best_model(negative.sig.sig, 
+                                 dataset = TCGA.full.subset.ann,
+                                 clin.df = TCGA.clin.df,
+                                 param.list = list(
+                                     "age.at.diagnosis" = c(TRUE, FALSE),
+                                     "with.total.muts" = c(TRUE, FALSE), 
+                                     "tmb.logged" = c(TRUE),
+                                     "binary.status" = c(FALSE),
+                                     "epistatic" = c(FALSE)),
+                                 filename = here("supp_data/tcga_negative_sig_sig_survivals_nonepi.xlsx"),
+                                 min.sample.fraction = 0,
+                                 rm.non.sig.sheets = TRUE,
+                                 return.only.sig = TRUE,
+                                 sig.threshold = 0.1)
+
+saveRDS(neg.picked.models, file = file.path(out.dir, "tcga.neg.sig.sig.picked.models.nonepi.RDS"))
 
 # neg.picked.models %>% HR_summary_for_all(type = "neg") %>% plot_sigint_forest()
 ```
