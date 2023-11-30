@@ -53,111 +53,113 @@ negative.sig.sig = read.delim(file = here("supp_data",
 
 ### Survival models for positive interactions
 
-```{r}
-pos.plotlist = get_surv_plotlist(positive.sig.sig, 
-                                 dataset = TCGA.full.subset.ann,
-                                 clin.df = TCGA.clin.df,
-                                 age.at.diagnosis = TRUE,
-                                 with.total.muts = TRUE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE,
-                                 epistatic = FALSE,
-                                 legend.pos = c(0.8, 0.8))
+<!-- ```{r} -->
+<!-- pos.plotlist = get_surv_plotlist(positive.sig.sig,  -->
+<!--                                  dataset = TCGA.full.subset.ann, -->
+<!--                                  clin.df = TCGA.clin.df, -->
+<!--                                  age.at.diagnosis = TRUE, -->
+<!--                                  with.total.muts = TRUE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE, -->
+<!--                                  epistatic = FALSE, -->
+<!--                                  legend.pos = c(0.8, 0.8)) -->
 
-pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut_nonbinary.pdf"),
-    onefile = TRUE, width = 6, height = 8)
+<!-- pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut_nonbinary.pdf"), -->
+<!--     onefile = TRUE, width = 6, height = 8) -->
 
-for (i in 1:length(pos.plotlist) ) {
-    try({print(pos.plotlist[[i]] ) })
-}
-dev.off()
-
-
-pos.plotlist = get_surv_plotlist(positive.sig.sig, 
-                                 dataset = TCGA.full.subset.ann,
-                                 clin.df = TCGA.clin.df,
-                                 with.total.muts = FALSE, 
-                                 binary.status = FALSE,
-                                 legend.pos = c(0.8, 0.8))
-
-pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_nontotmut_nonbinary.pdf"),
-    onefile = TRUE, width = 6, height = 8)
-
-for (i in 1:length(pos.plotlist) ) {
-    try({print(pos.plotlist[[i]] ) })
-}
-dev.off()
+<!-- for (i in 1:length(pos.plotlist) ) { -->
+<!--     try({print(pos.plotlist[[i]] ) }) -->
+<!-- } -->
+<!-- dev.off() -->
 
 
-pos.plotlist = get_surv_plotlist(positive.sig.sig, 
-                                 dataset = TCGA.full.subset.ann,
-                                 clin.df = TCGA.clin.df,
-                                 with.total.muts = TRUE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = TRUE,
-                                 legend.pos = c(0.8, 0.8))
+<!-- pos.plotlist = get_surv_plotlist(positive.sig.sig,  -->
+<!--                                  dataset = TCGA.full.subset.ann, -->
+<!--                                  clin.df = TCGA.clin.df, -->
+<!--                                  with.total.muts = FALSE,  -->
+<!--                                  binary.status = FALSE, -->
+<!--                                  legend.pos = c(0.8, 0.8)) -->
 
-pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut_binary.pdf"),
-    onefile = TRUE, width = 6, height = 8)
+<!-- pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_nontotmut_nonbinary.pdf"), -->
+<!--     onefile = TRUE, width = 6, height = 8) -->
 
-for (i in 1:length(pos.plotlist) ) {
-    try({print(pos.plotlist[[i]] ) })
-}
-dev.off()
-
-
-pos.plotlist = get_surv_plotlist(positive.sig.sig, 
-                                 dataset = TCGA.full.subset.ann,
-                                 clin.df = TCGA.clin.df,
-                                 age.at.diagnosis = TRUE,
-                                 with.total.muts = TRUE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE,
-                                 epistatic = TRUE,
-                                 legend.pos = c(0.8, 0.8))
-
-pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut.epistatic.pdf"),
-    onefile = TRUE, width = 6, height = 8)
-
-for (i in 1:length(pos.plotlist) ) {
-    try({print(pos.plotlist[[i]] ) })
-}
-dev.off()
-```
+<!-- for (i in 1:length(pos.plotlist) ) { -->
+<!--     try({print(pos.plotlist[[i]] ) }) -->
+<!-- } -->
+<!-- dev.off() -->
 
 
-```{r}
-pos.coxlist = get_surv_coxlist(positive.sig.sig, 
-                                 dataset = TCGA.full.subset.ann,
-                                 clin.df = TCGA.clin.df,
-                                 with.total.muts = TRUE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE)
-saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.totmut.nonbinary.RDS"))
+<!-- pos.plotlist = get_surv_plotlist(positive.sig.sig,  -->
+<!--                                  dataset = TCGA.full.subset.ann, -->
+<!--                                  clin.df = TCGA.clin.df, -->
+<!--                                  with.total.muts = TRUE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = TRUE, -->
+<!--                                  legend.pos = c(0.8, 0.8)) -->
+
+<!-- pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut_binary.pdf"), -->
+<!--     onefile = TRUE, width = 6, height = 8) -->
+
+<!-- for (i in 1:length(pos.plotlist) ) { -->
+<!--     try({print(pos.plotlist[[i]] ) }) -->
+<!-- } -->
+<!-- dev.off() -->
+
+
+<!-- pos.plotlist = get_surv_plotlist(positive.sig.sig,  -->
+<!--                                  dataset = TCGA.full.subset.ann, -->
+<!--                                  clin.df = TCGA.clin.df, -->
+<!--                                  age.at.diagnosis = TRUE, -->
+<!--                                  with.total.muts = TRUE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE, -->
+<!--                                  epistatic = TRUE, -->
+<!--                                  legend.pos = c(0.8, 0.8)) -->
+
+<!-- pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut.epistatic.pdf"), -->
+<!--     onefile = TRUE, width = 6, height = 8) -->
+
+<!-- for (i in 1:length(pos.plotlist) ) { -->
+<!--     try({print(pos.plotlist[[i]] ) }) -->
+<!-- } -->
+<!-- dev.off() -->
+<!-- ``` -->
+
+
+<!-- ```{r} -->
+<!-- pos.coxlist = get_surv_coxlist(positive.sig.sig,  -->
+<!--                                  dataset = TCGA.full.subset.ann, -->
+<!--                                  clin.df = TCGA.clin.df, -->
+<!--                                  with.total.muts = TRUE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE) -->
+<!-- saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.totmut.nonbinary.RDS")) -->
 
 
 
-pos.coxlist = get_surv_coxlist(positive.sig.sig, 
-                                 dataset = TCGA.full.subset.ann,
-                                 clin.df = TCGA.clin.df,
-                                 with.total.muts = FALSE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE)
-saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.nototmut.nonbinary.RDS"))
-```
+<!-- pos.coxlist = get_surv_coxlist(positive.sig.sig,  -->
+<!--                                  dataset = TCGA.full.subset.ann, -->
+<!--                                  clin.df = TCGA.clin.df, -->
+<!--                                  with.total.muts = FALSE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE) -->
+<!-- saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.nototmut.nonbinary.RDS")) -->
+<!-- ``` -->
 
 
 ```{r}
 pos.picked.models = get_surv_best_model(positive.sig.sig, 
                                  dataset = TCGA.full.subset.ann,
                                  clin.df = TCGA.clin.df,
-                                 param.list = list(
+                                 param.list = list("age.at.diagnosis" = c(TRUE, FALSE),
                                      "with.total.muts" = c(TRUE, FALSE), 
                                      "tmb.logged" = c(TRUE),
-                                     "binary.status" = c(TRUE, FALSE),
+                                     "binary.status" = c(FALSE),
                                      "epistatic" = c(TRUE, FALSE)),
                                  min.sample.fraction = 0, 
-                                 filename = NULL)
+                                 filename = here("supp_data/tcga_positive_sig_sig_survivals.xlsx"),
+                                       rm.non.sig.sheets = TRUE,
+                                 return.only.sig = TRUE)
 saveRDS(pos.picked.models, file = file.path(out.dir, "tcga.pos.sig.sig.picked.models.epi.RDS"))
 
 # pos.picked.models %>% HR_summary_for_all(type = "pos") %>% plot_sigint_forest()
@@ -165,95 +167,96 @@ saveRDS(pos.picked.models, file = file.path(out.dir, "tcga.pos.sig.sig.picked.mo
 
 ### Survival models for negative interactions
 
-```{r}
-neg.plotlist = get_surv_plotlist(negative.sig.sig, 
-                                 dataset = TCGA.full.subset.ann,
-                                 clin.df = TCGA.clin.df,
-                                 with.total.muts = TRUE,
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE,
-                                 legend.pos = c(0.8, 0.8))
+<!-- ```{r} -->
+<!-- neg.plotlist = get_surv_plotlist(negative.sig.sig,  -->
+<!--                                  dataset = TCGA.full.subset.ann, -->
+<!--                                  clin.df = TCGA.clin.df, -->
+<!--                                  with.total.muts = TRUE, -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE, -->
+<!--                                  legend.pos = c(0.8, 0.8)) -->
 
-pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_totmut_nonbinary.pdf"),
-    onefile = TRUE, width = 6, height = 8)
+<!-- pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_totmut_nonbinary.pdf"), -->
+<!--     onefile = TRUE, width = 6, height = 8) -->
 
-for (i in 1:length(neg.plotlist) ) {
-    try({print(neg.plotlist[[i]] ) })
-}
-dev.off()
-
-
-neg.plotlist = get_surv_plotlist(negative.sig.sig, 
-                                 dataset = TCGA.full.subset.ann,
-                                 clin.df = TCGA.clin.df,
-                                 with.total.muts = FALSE, 
-                                 binary.status = FALSE,
-                                 legend.pos = c(0.8, 0.8))
-
-pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_nontotmut_nonbinary.pdf"),
-    onefile = TRUE, width = 6, height = 8)
-
-for (i in 1:length(neg.plotlist) ) {
-    try({print(neg.plotlist[[i]] ) })
-}
-dev.off()
+<!-- for (i in 1:length(neg.plotlist) ) { -->
+<!--     try({print(neg.plotlist[[i]] ) }) -->
+<!-- } -->
+<!-- dev.off() -->
 
 
-neg.plotlist = get_surv_plotlist(negative.sig.sig, 
-                                 dataset = TCGA.full.subset.ann,
-                                 clin.df = TCGA.clin.df,
-                                 with.total.muts = TRUE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = TRUE,
-                                 legend.pos = c(0.8, 0.8))
+<!-- neg.plotlist = get_surv_plotlist(negative.sig.sig,  -->
+<!--                                  dataset = TCGA.full.subset.ann, -->
+<!--                                  clin.df = TCGA.clin.df, -->
+<!--                                  with.total.muts = FALSE,  -->
+<!--                                  binary.status = FALSE, -->
+<!--                                  legend.pos = c(0.8, 0.8)) -->
 
-pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_totmut_binary.pdf"),
-    onefile = TRUE, width = 6, height = 8)
+<!-- pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_nontotmut_nonbinary.pdf"), -->
+<!--     onefile = TRUE, width = 6, height = 8) -->
 
-for (i in 1:length(neg.plotlist) ) {
-    try({print(neg.plotlist[[i]] ) })
-}
-dev.off()
-
-
-neg.plotlist = get_surv_plotlist(negative.sig.sig, 
-                                 dataset = TCGA.full.subset.ann,
-                                 clin.df = TCGA.clin.df,
-                                 age.at.diagnosis = TRUE,
-                                 with.total.muts = TRUE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE,
-                                 epistatic = TRUE,
-                                 legend.pos = c(0.8, 0.8))
-
-pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_totmut.epistatic.pdf"),
-    onefile = TRUE, width = 6, height = 8)
-
-for (i in 1:length(neg.plotlist) ) {
-    try({print(neg.plotlist[[i]] ) })
-}
-dev.off()
-```
-
-```{r}
-neg.coxlist = get_surv_coxlist(negative.sig.sig, 
-                                 dataset = TCGA.full.subset.ann,
-                                 clin.df = TCGA.clin.df,
-                                 with.total.muts = TRUE, 
-                               tmb.logged = TRUE,
-                                 binary.status = FALSE)
-saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.totmut.nonbinary.RDS"))
+<!-- for (i in 1:length(neg.plotlist) ) { -->
+<!--     try({print(neg.plotlist[[i]] ) }) -->
+<!-- } -->
+<!-- dev.off() -->
 
 
-neg.coxlist = get_surv_coxlist(negative.sig.sig, 
-                                 dataset = TCGA.full.subset.ann,
-                                 clin.df = TCGA.clin.df,
-                                 with.total.muts = FALSE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE)
-saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.nototmut.nonbinary.RDS"))
-```
+<!-- neg.plotlist = get_surv_plotlist(negative.sig.sig,  -->
+<!--                                  dataset = TCGA.full.subset.ann, -->
+<!--                                  clin.df = TCGA.clin.df, -->
+<!--                                  with.total.muts = TRUE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = TRUE, -->
+<!--                                  legend.pos = c(0.8, 0.8)) -->
 
+<!-- pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_totmut_binary.pdf"), -->
+<!--     onefile = TRUE, width = 6, height = 8) -->
+
+<!-- for (i in 1:length(neg.plotlist) ) { -->
+<!--     try({print(neg.plotlist[[i]] ) }) -->
+<!-- } -->
+<!-- dev.off() -->
+
+
+<!-- neg.plotlist = get_surv_plotlist(negative.sig.sig,  -->
+<!--                                  dataset = TCGA.full.subset.ann, -->
+<!--                                  clin.df = TCGA.clin.df, -->
+<!--                                  age.at.diagnosis = TRUE, -->
+<!--                                  with.total.muts = TRUE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE, -->
+<!--                                  epistatic = TRUE, -->
+<!--                                  legend.pos = c(0.8, 0.8)) -->
+
+<!-- pdf(file.path(fig.dir, "TCGA_negative_interactions_survivals_totmut.epistatic.pdf"), -->
+<!--     onefile = TRUE, width = 6, height = 8) -->
+
+<!-- for (i in 1:length(neg.plotlist) ) { -->
+<!--     try({print(neg.plotlist[[i]] ) }) -->
+<!-- } -->
+<!-- dev.off() -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- neg.coxlist = get_surv_coxlist(negative.sig.sig,  -->
+<!--                                  dataset = TCGA.full.subset.ann, -->
+<!--                                  clin.df = TCGA.clin.df, -->
+<!--                                  with.total.muts = TRUE,  -->
+<!--                                tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE) -->
+<!-- saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.totmut.nonbinary.RDS")) -->
+
+
+<!-- neg.coxlist = get_surv_coxlist(negative.sig.sig,  -->
+<!--                                  dataset = TCGA.full.subset.ann, -->
+<!--                                  clin.df = TCGA.clin.df, -->
+<!--                                  with.total.muts = FALSE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE) -->
+<!-- saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.nototmut.nonbinary.RDS")) -->
+<!-- ``` -->
+
+#### Survival effect of negative interactions 
 
 ```{r}
 neg.picked.models = get_surv_best_model(negative.sig.sig, 
@@ -263,9 +266,12 @@ neg.picked.models = get_surv_best_model(negative.sig.sig,
                                      "age.at.diagnosis" = c(TRUE, FALSE),
                                      "with.total.muts" = c(TRUE, FALSE), 
                                      "tmb.logged" = c(TRUE),
-                                     "binary.status" = c(TRUE, FALSE),
-                                     "epistatic" = c(FALSE)),
-                                 min.sample.fraction = 0)
+                                     "binary.status" = c(FALSE),
+                                     "epistatic" = c(TRUE, FALSE)),
+                                 min.sample.fraction = 0,
+                                 filename = here("supp_data/tcga_negative_sig_sig_survivals.xlsx"),
+                                       rm.non.sig.sheets = TRUE,
+                                 return.only.sig = TRUE)
 saveRDS(neg.picked.models, file = file.path(out.dir, "tcga.neg.sig.sig.picked.models.epi.RDS"))
 
 # neg.picked.models %>% HR_summary_for_all(type = "neg") %>% plot_sigint_forest()

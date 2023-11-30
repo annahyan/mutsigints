@@ -67,87 +67,92 @@ negative.sig.pathway = read.delim(file = here("supp_data",
 
 ### Survival models for positive interactions
 
-```{r}
-pos.plotlist = get_surv_plotlist(positive.sig.pathway, 
-                                 dataset = TCGA.path.sig.aggregate,
-                                 clin.df = TCGA.clin.df,
-                                 with.total.muts = TRUE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE )
+<!-- ```{r} -->
+<!-- pos.plotlist = get_surv_plotlist(positive.sig.pathway,  -->
+<!--                                  dataset = TCGA.path.sig.aggregate, -->
+<!--                                  clin.df = TCGA.clin.df, -->
+<!--                                  with.total.muts = TRUE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE ) -->
 
-pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut_nonbinary.pdf"),
-    onefile = TRUE, width = 6, height = 8)
+<!-- pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut_nonbinary.pdf"), -->
+<!--     onefile = TRUE, width = 6, height = 8) -->
 
-for (i in 1:length(pos.plotlist) ) {
-    try({print(pos.plotlist[[i]] ) })
-}
-dev.off()
-
-
-pos.plotlist = get_surv_plotlist(positive.sig.pathway, 
-                                 dataset = TCGA.path.sig.aggregate,
-                                 clin.df = TCGA.clin.df,
-                                 with.total.muts = FALSE, 
-                                 binary.status = FALSE )
-
-pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_nontotmut_nonbinary.pdf"),
-    onefile = TRUE, width = 6, height = 8)
-
-for (i in 1:length(pos.plotlist) ) {
-    try({print(pos.plotlist[[i]] ) })
-}
-dev.off()
+<!-- for (i in 1:length(pos.plotlist) ) { -->
+<!--     try({print(pos.plotlist[[i]] ) }) -->
+<!-- } -->
+<!-- dev.off() -->
 
 
-pos.plotlist = get_surv_plotlist(positive.sig.pathway, 
-                                 dataset = TCGA.path.sig.aggregate,
-                                 clin.df = TCGA.clin.df,
-                                 with.total.muts = TRUE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = TRUE )
+<!-- pos.plotlist = get_surv_plotlist(positive.sig.pathway,  -->
+<!--                                  dataset = TCGA.path.sig.aggregate, -->
+<!--                                  clin.df = TCGA.clin.df, -->
+<!--                                  with.total.muts = FALSE,  -->
+<!--                                  binary.status = FALSE ) -->
 
-pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut_binary.pdf"),
-    onefile = TRUE, width = 6, height = 8)
+<!-- pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_nontotmut_nonbinary.pdf"), -->
+<!--     onefile = TRUE, width = 6, height = 8) -->
 
-for (i in 1:length(pos.plotlist) ) {
-    try({print(pos.plotlist[[i]] ) })
-}
-dev.off()
-```
+<!-- for (i in 1:length(pos.plotlist) ) { -->
+<!--     try({print(pos.plotlist[[i]] ) }) -->
+<!-- } -->
+<!-- dev.off() -->
 
 
+<!-- pos.plotlist = get_surv_plotlist(positive.sig.pathway,  -->
+<!--                                  dataset = TCGA.path.sig.aggregate, -->
+<!--                                  clin.df = TCGA.clin.df, -->
+<!--                                  with.total.muts = TRUE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = TRUE ) -->
 
-```{r}
-pos.coxlist = get_surv_coxlist(positive.sig.pathway, 
-                                 dataset = TCGA.path.sig.aggregate,
-                                 clin.df = TCGA.clin.df,
-                                 with.total.muts = TRUE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE )
+<!-- pdf(file.path(fig.dir, "TCGA_positive_interactions_survivals_totmut_binary.pdf"), -->
+<!--     onefile = TRUE, width = 6, height = 8) -->
 
-saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.totmut.nonbinary.RDS"))
+<!-- for (i in 1:length(pos.plotlist) ) { -->
+<!--     try({print(pos.plotlist[[i]] ) }) -->
+<!-- } -->
+<!-- dev.off() -->
+<!-- ``` -->
 
 
-pos.coxlist = get_surv_coxlist(positive.sig.pathway, 
-                                 dataset = TCGA.path.sig.aggregate,
-                                 clin.df = TCGA.clin.df,
-                                 with.total.muts = FALSE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE )
 
-saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.nototmut.nonbinary.RDS"))
-```
+<!-- ```{r} -->
+<!-- pos.coxlist = get_surv_coxlist(positive.sig.pathway,  -->
+<!--                                  dataset = TCGA.path.sig.aggregate, -->
+<!--                                  clin.df = TCGA.clin.df, -->
+<!--                                  with.total.muts = TRUE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE ) -->
+
+<!-- saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.totmut.nonbinary.RDS")) -->
+
+
+<!-- pos.coxlist = get_surv_coxlist(positive.sig.pathway,  -->
+<!--                                  dataset = TCGA.path.sig.aggregate, -->
+<!--                                  clin.df = TCGA.clin.df, -->
+<!--                                  with.total.muts = FALSE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE ) -->
+
+<!-- saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.nototmut.nonbinary.RDS")) -->
+<!-- ``` -->
 
 ```{r, include = FALSE, warning = FALSE, message = FALSE}
 pos.picked.models = get_surv_best_model(positive.sig.pathway, 
                                  dataset = TCGA.path.sig.aggregate,
                                  clin.df = TCGA.clin.df,
                                  param.list = list(
+                                     "age.at.diagnosis" = c(TRUE, FALSE),
                                      "with.total.muts" = c(TRUE, FALSE), 
                                      "tmb.logged" = c(TRUE),
-                                     "binary.status" = c(TRUE, FALSE),
+                                     "binary.status" = c(FALSE),
                                      "epistatic" = c(TRUE, FALSE)),
-                                 min.sample.fraction = 0)
+                                 filename = here("supp_data/tcga_negative_sig_path_survivals.xlsx"),
+                                 min.sample.fraction = 0,
+                                 rm.non.sig.sheets = TRUE,
+                                 return.only.sig = TRUE)
+
 saveRDS(pos.picked.models, file = file.path(out.dir, "tcga.pos.sig.path.picked.models.epi.RDS"))
 ```
 

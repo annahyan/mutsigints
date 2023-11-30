@@ -146,6 +146,8 @@ pos.picked.models = get_surv_best_model(positive.sig.pathway,
                                      "binary.status" = c(TRUE, FALSE),
                                      "epistatic" = c(TRUE, FALSE)),
                                  min.sample.fraction = 0)
+
+
 saveRDS(pos.picked.models, file = file.path(out.dir, "pcawg.pos.sig.path.picked.models.epi.RDS"))
 ```
 

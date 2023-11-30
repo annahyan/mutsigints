@@ -52,95 +52,95 @@ negative.sig.sig = read.delim(file = here("supp_data",
 
 ### Survival models for positive interactions
 
-```{r}
-pos.plotlist = get_surv_plotlist(positive.sig.sig, 
-                                 dataset = PCAWG.full.subset.ann,
-                                 clin.df = PCAWG.clin.df,
-                                 with.total.muts = TRUE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE,
-                                 legend.pos = c(0.8, 0.8))
+<!-- ```{r} -->
+<!-- pos.plotlist = get_surv_plotlist(positive.sig.sig,  -->
+<!--                                  dataset = PCAWG.full.subset.ann, -->
+<!--                                  clin.df = PCAWG.clin.df, -->
+<!--                                  with.total.muts = TRUE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE, -->
+<!--                                  legend.pos = c(0.8, 0.8)) -->
 
-pdf(file.path(fig.dir, "PCAWG_positive_interactions_survivals_totmut_nonbinary.pdf"),
-    onefile = TRUE, width = 6, height = 8)
+<!-- pdf(file.path(fig.dir, "PCAWG_positive_interactions_survivals_totmut_nonbinary.pdf"), -->
+<!--     onefile = TRUE, width = 6, height = 8) -->
 
-for (i in 1:length(pos.plotlist) ) {
-    try({print(pos.plotlist[[i]] ) })
-}
-dev.off()
-
-
-pos.plotlist = get_surv_plotlist(positive.sig.sig, 
-                                 dataset = PCAWG.full.subset.ann,
-                                 clin.df = PCAWG.clin.df,
-                                 with.total.muts = FALSE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE,
-                                 legend.pos = c(0.8, 0.8))
-
-pdf(file.path(fig.dir, "PCAWG_positive_interactions_survivals_nontotmut_nonbinary.pdf"),
-    onefile = TRUE, width = 6, height = 8)
-
-for (i in 1:length(pos.plotlist) ) {
-    try({print(pos.plotlist[[i]] ) })
-}
-dev.off()
+<!-- for (i in 1:length(pos.plotlist) ) { -->
+<!--     try({print(pos.plotlist[[i]] ) }) -->
+<!-- } -->
+<!-- dev.off() -->
 
 
-pos.plotlist = get_surv_plotlist(positive.sig.sig, 
-                                 dataset = PCAWG.full.subset.ann,
-                                 clin.df = PCAWG.clin.df,
-                                 with.total.muts = TRUE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = TRUE,
-                                 legend.pos = c(0.8, 0.8))
+<!-- pos.plotlist = get_surv_plotlist(positive.sig.sig,  -->
+<!--                                  dataset = PCAWG.full.subset.ann, -->
+<!--                                  clin.df = PCAWG.clin.df, -->
+<!--                                  with.total.muts = FALSE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE, -->
+<!--                                  legend.pos = c(0.8, 0.8)) -->
 
-pdf(file.path(fig.dir, "PCAWG_positive_interactions_survivals_totmut_binary.pdf"),
-    onefile = TRUE, width = 6, height = 8)
+<!-- pdf(file.path(fig.dir, "PCAWG_positive_interactions_survivals_nontotmut_nonbinary.pdf"), -->
+<!--     onefile = TRUE, width = 6, height = 8) -->
 
-for (i in 1:length(pos.plotlist) ) {
-    try({print(pos.plotlist[[i]] ) })
-}
-dev.off()
-
-
-pos.plotlist = get_surv_plotlist(positive.sig.sig, 
-                                 dataset = PCAWG.full.subset.ann,
-                                 clin.df = PCAWG.clin.df,
-                                 with.total.muts = FALSE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE,
-                                 legend.pos = c(0.8, 0.8),
-                                 epistatic = TRUE)
-
-pdf(file.path(fig.dir, "PCAWG_positive_interactions_survivals_epistatic.pdf"),
-    onefile = TRUE, width = 6, height = 8)
-
-for (i in 1:length(pos.plotlist) ) {
-    try({print(pos.plotlist[[i]] ) })
-}
-dev.off()
-```
+<!-- for (i in 1:length(pos.plotlist) ) { -->
+<!--     try({print(pos.plotlist[[i]] ) }) -->
+<!-- } -->
+<!-- dev.off() -->
 
 
-```{r}
-pos.coxlist = get_surv_coxlist(positive.sig.sig, 
-                                 dataset = PCAWG.full.subset.ann,
-                                 clin.df = PCAWG.clin.df,
-                                 with.total.muts = TRUE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE)
-saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.totmut.nonbinary.RDS"))
+<!-- pos.plotlist = get_surv_plotlist(positive.sig.sig,  -->
+<!--                                  dataset = PCAWG.full.subset.ann, -->
+<!--                                  clin.df = PCAWG.clin.df, -->
+<!--                                  with.total.muts = TRUE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = TRUE, -->
+<!--                                  legend.pos = c(0.8, 0.8)) -->
+
+<!-- pdf(file.path(fig.dir, "PCAWG_positive_interactions_survivals_totmut_binary.pdf"), -->
+<!--     onefile = TRUE, width = 6, height = 8) -->
+
+<!-- for (i in 1:length(pos.plotlist) ) { -->
+<!--     try({print(pos.plotlist[[i]] ) }) -->
+<!-- } -->
+<!-- dev.off() -->
 
 
-pos.coxlist = get_surv_coxlist(positive.sig.sig, 
-                                 dataset = PCAWG.full.subset.ann,
-                                 clin.df = PCAWG.clin.df,
-                                 with.total.muts = FALSE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE)
-saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.nototmut.nonbinary.RDS"))
-```
+<!-- pos.plotlist = get_surv_plotlist(positive.sig.sig,  -->
+<!--                                  dataset = PCAWG.full.subset.ann, -->
+<!--                                  clin.df = PCAWG.clin.df, -->
+<!--                                  with.total.muts = FALSE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE, -->
+<!--                                  legend.pos = c(0.8, 0.8), -->
+<!--                                  epistatic = TRUE) -->
+
+<!-- pdf(file.path(fig.dir, "PCAWG_positive_interactions_survivals_epistatic.pdf"), -->
+<!--     onefile = TRUE, width = 6, height = 8) -->
+
+<!-- for (i in 1:length(pos.plotlist) ) { -->
+<!--     try({print(pos.plotlist[[i]] ) }) -->
+<!-- } -->
+<!-- dev.off() -->
+<!-- ``` -->
+
+
+<!-- ```{r} -->
+<!-- pos.coxlist = get_surv_coxlist(positive.sig.sig,  -->
+<!--                                  dataset = PCAWG.full.subset.ann, -->
+<!--                                  clin.df = PCAWG.clin.df, -->
+<!--                                  with.total.muts = TRUE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE) -->
+<!-- saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.totmut.nonbinary.RDS")) -->
+
+
+<!-- pos.coxlist = get_surv_coxlist(positive.sig.sig,  -->
+<!--                                  dataset = PCAWG.full.subset.ann, -->
+<!--                                  clin.df = PCAWG.clin.df, -->
+<!--                                  with.total.muts = FALSE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE) -->
+<!-- saveRDS(pos.coxlist, file = file.path(out.dir, "pos.coxlist.nototmut.nonbinary.RDS")) -->
+<!-- ``` -->
 
 
 ```{r}
@@ -158,118 +158,131 @@ pos.picked.models.epi = get_surv_best_model(sig.sig.tissues.matrix = positive.si
                                      "age.at.diagnosis" = c(TRUE, FALSE),
                                      "with.total.muts" = c(TRUE, FALSE), 
                                      "tmb.logged" = c(TRUE),
-                                     "binary.status" = c(TRUE, FALSE),
+                                     "binary.status" = c(FALSE),
                                      "epistatic" = c(TRUE, FALSE)),
-                                 min.sample.fraction = 0)
+                                 min.sample.fraction = 0,
+                                filename = here("supp_data/pcawg_positive_sig_sig_survivals.xlsx"),
+                                       rm.non.sig.sheets = TRUE)
+# 
+# pdf(file.path(fig.dir, "PCAWG_positive_interactions_survivals_best.model.pdf"),
+#     onefile = TRUE, width = 6, height = 8)
+# 
+# for (i in 1:length(pos.plotlist) ) {
+#     try({print(pos.plotlist[[i]] ) })
+# }
+# dev.off()
+
+
 
 saveRDS(pos.picked.models.epi, file = file.path(out.dir, "pcawg.pos.sig.sig.picked.models.epi.RDS"))
 
-pos.picked.models = get_surv_best_model(sig.sig.tissues.matrix = positive.sig.sig, 
-                                 dataset = PCAWG.full.subset.ann,
-                                 clin.df = PCAWG.clin.df,
-                                 param.list = list(
-                                     "age.at.diagnosis" = c(TRUE, FALSE),
-                                     "with.total.muts" = c(TRUE, FALSE), 
-                                     "tmb.logged" = c(TRUE),
-                                     "binary.status" = c(TRUE, FALSE),
-                                     "epistatic" = c(FALSE)),
-                                 min.sample.fraction = 0)
-
-saveRDS(pos.picked.models, file = file.path(out.dir, "pcawg.pos.sig.sig.picked.models.RDS"))
+# pos.picked.models = get_surv_best_model(sig.sig.tissues.matrix = positive.sig.sig, 
+#                                  dataset = PCAWG.full.subset.ann,
+#                                  clin.df = PCAWG.clin.df,
+#                                  param.list = list(
+#                                      "age.at.diagnosis" = c(TRUE, FALSE),
+#                                      "with.total.muts" = c(TRUE, FALSE), 
+#                                      "tmb.logged" = c(TRUE),
+#                                      "binary.status" = c(TRUE, FALSE),
+#                                      "epistatic" = c(FALSE)),
+#                                  min.sample.fraction = 0)
+# 
+# saveRDS(pos.picked.models, file = file.path(out.dir, "pcawg.pos.sig.sig.picked.models.RDS"))
 # pos.picked.models %>% HR_summary_for_all(type = "pos") %>% plot_sigint_forest()
 ```
 
 
 ### Survival models for negative interactions
 
-```{r}
-neg.plotlist = get_surv_plotlist(negative.sig.sig, 
-                                 dataset = PCAWG.full.subset.ann,
-                                 clin.df = PCAWG.clin.df,
-                                 with.total.muts = TRUE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE,
-                                 legend.pos = c(0.8, 0.8))
+<!-- ```{r} -->
+<!-- neg.plotlist = get_surv_plotlist(negative.sig.sig,  -->
+<!--                                  dataset = PCAWG.full.subset.ann, -->
+<!--                                  clin.df = PCAWG.clin.df, -->
+<!--                                  with.total.muts = TRUE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE, -->
+<!--                                  legend.pos = c(0.8, 0.8)) -->
 
-pdf(file.path(fig.dir, "PCAWG_negative_interactions_survivals_totmut_nonbinary.pdf"),
-    onefile = TRUE, width = 6, height = 8)
+<!-- pdf(file.path(fig.dir, "PCAWG_negative_interactions_survivals_totmut_nonbinary.pdf"), -->
+<!--     onefile = TRUE, width = 6, height = 8) -->
 
-for (i in 1:length(neg.plotlist) ) {
-    try({print(neg.plotlist[[i]] ) })
-}
-dev.off()
-
-
-neg.plotlist = get_surv_plotlist(negative.sig.sig, 
-                                 dataset = PCAWG.full.subset.ann,
-                                 clin.df = PCAWG.clin.df,
-                                 with.total.muts = FALSE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE,
-                                 legend.pos = c(0.8, 0.8))
-
-pdf(file.path(fig.dir, "PCAWG_negative_interactions_survivals_nontotmut_nonbinary.pdf"),
-    onefile = TRUE, width = 6, height = 8)
-
-for (i in 1:length(neg.plotlist) ) {
-    try({print(neg.plotlist[[i]] ) })
-}
-dev.off()
+<!-- for (i in 1:length(neg.plotlist) ) { -->
+<!--     try({print(neg.plotlist[[i]] ) }) -->
+<!-- } -->
+<!-- dev.off() -->
 
 
-neg.plotlist = get_surv_plotlist(negative.sig.sig, 
-                                 dataset = PCAWG.full.subset.ann,
-                                 clin.df = PCAWG.clin.df,
-                                 with.total.muts = TRUE, 
-                                 binary.status = TRUE,
-                                 legend.pos = c(0.8, 0.8))
+<!-- neg.plotlist = get_surv_plotlist(negative.sig.sig,  -->
+<!--                                  dataset = PCAWG.full.subset.ann, -->
+<!--                                  clin.df = PCAWG.clin.df, -->
+<!--                                  with.total.muts = FALSE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE, -->
+<!--                                  legend.pos = c(0.8, 0.8)) -->
 
-pdf(file.path(fig.dir, "PCAWG_negative_interactions_survivals_totmut_binary.pdf"),
-    onefile = TRUE, width = 6, height = 8)
+<!-- pdf(file.path(fig.dir, "PCAWG_negative_interactions_survivals_nontotmut_nonbinary.pdf"), -->
+<!--     onefile = TRUE, width = 6, height = 8) -->
 
-for (i in 1:length(neg.plotlist) ) {
-    try({print(neg.plotlist[[i]] ) })
-}
-dev.off()
+<!-- for (i in 1:length(neg.plotlist) ) { -->
+<!--     try({print(neg.plotlist[[i]] ) }) -->
+<!-- } -->
+<!-- dev.off() -->
+
+
+<!-- neg.plotlist = get_surv_plotlist(negative.sig.sig,  -->
+<!--                                  dataset = PCAWG.full.subset.ann, -->
+<!--                                  clin.df = PCAWG.clin.df, -->
+<!--                                  with.total.muts = TRUE,  -->
+<!--                                  binary.status = TRUE, -->
+<!--                                  legend.pos = c(0.8, 0.8)) -->
+
+<!-- pdf(file.path(fig.dir, "PCAWG_negative_interactions_survivals_totmut_binary.pdf"), -->
+<!--     onefile = TRUE, width = 6, height = 8) -->
+
+<!-- for (i in 1:length(neg.plotlist) ) { -->
+<!--     try({print(neg.plotlist[[i]] ) }) -->
+<!-- } -->
+<!-- dev.off() -->
 
 
 
-neg.plotlist = get_surv_plotlist(negative.sig.sig, 
-                                 dataset = PCAWG.full.subset.ann,
-                                 clin.df = PCAWG.clin.df,
-                                 with.total.muts = FALSE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE,
-                                 legend.pos = c(0.8, 0.8),
-                                 epistatic = TRUE)
+<!-- neg.plotlist = get_surv_plotlist(negative.sig.sig,  -->
+<!--                                  dataset = PCAWG.full.subset.ann, -->
+<!--                                  clin.df = PCAWG.clin.df, -->
+<!--                                  age.at.diagnosis = TRUE, -->
+<!--                                  with.total.muts = FALSE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE, -->
+<!--                                  legend.pos = c(0.8, 0.8), -->
+<!--                                  epistatic = TRUE) -->
 
-pdf(file.path(fig.dir, "PCAWG_negative_interactions_survivals_epistatic.pdf"),
-    onefile = TRUE, width = 6, height = 8)
+<!-- pdf(file.path(fig.dir, "PCAWG_negative_interactions_survivals_epistatic.pdf"), -->
+<!--     onefile = TRUE, width = 6, height = 8) -->
 
-for (i in 1:length(neg.plotlist) ) {
-    try({print(neg.plotlist[[i]] ) })
-}
-dev.off()
-```
+<!-- for (i in 1:length(neg.plotlist) ) { -->
+<!--     try({print(neg.plotlist[[i]] ) }) -->
+<!-- } -->
+<!-- dev.off() -->
+<!-- ``` -->
 
-```{r}
-neg.coxlist = get_surv_coxlist(negative.sig.sig, 
-                                 dataset = PCAWG.full.subset.ann,
-                                 clin.df = PCAWG.clin.df,
-                                 with.total.muts = TRUE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE)
-saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.totmut.nonbinary.RDS"))
+<!-- ```{r} -->
+<!-- neg.coxlist = get_surv_coxlist(negative.sig.sig,  -->
+<!--                                  dataset = PCAWG.full.subset.ann, -->
+<!--                                  clin.df = PCAWG.clin.df, -->
+<!--                                  with.total.muts = TRUE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE) -->
+<!-- saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.totmut.nonbinary.RDS")) -->
 
-neg.coxlist = get_surv_coxlist(negative.sig.sig, 
-                                 dataset = PCAWG.full.subset.ann,
-                                 clin.df = PCAWG.clin.df,
-                                 with.total.muts = FALSE, 
-                                 tmb.logged = TRUE,
-                                 binary.status = FALSE)
-saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.nototmut.nonbinary.RDS"))
+<!-- neg.coxlist = get_surv_coxlist(negative.sig.sig,  -->
+<!--                                  dataset = PCAWG.full.subset.ann, -->
+<!--                                  clin.df = PCAWG.clin.df, -->
+<!--                                  with.total.muts = FALSE,  -->
+<!--                                  tmb.logged = TRUE, -->
+<!--                                  binary.status = FALSE) -->
+<!-- saveRDS(neg.coxlist, file = file.path(out.dir, "neg.coxlist.nototmut.nonbinary.RDS")) -->
 
-```
+<!-- ``` -->
 
 ```{r}
 neg.picked.models.epi = get_surv_best_model(sig.sig.tissues.matrix = negative.sig.sig, 
@@ -279,24 +292,27 @@ neg.picked.models.epi = get_surv_best_model(sig.sig.tissues.matrix = negative.si
                                      "age.at.diagnosis" = c(TRUE, FALSE),
                                      "with.total.muts" = c(TRUE, FALSE), 
                                      "tmb.logged" = c(TRUE),
-                                     "binary.status" = c(TRUE, FALSE),
-                                     "epistatic" = c(FALSE)),
-                                 min.sample.fraction = 0)
+                                     "binary.status" = c(FALSE),
+                                     "epistatic" = c(TRUE, FALSE)),
+                                 min.sample.fraction = 0,
+                                 filename = here("supp_data/pcawg_negative_sig_sig_survivals.xlsx"),
+                                       rm.non.sig.sheets = TRUE,
+                                 return.only.sig = TRUE)
 
 saveRDS(neg.picked.models.epi, file = file.path(out.dir, "pcawg.neg.sig.sig.picked.models.epi.RDS"))
 
-neg.picked.models = get_surv_best_model(sig.sig.tissues.matrix = negative.sig.sig, 
-                                 dataset = PCAWG.full.subset.ann,
-                                 clin.df = PCAWG.clin.df,
-                                 param.list = list(
-                                     "age.at.diagnosis" = c(TRUE, FALSE),
-                                     "with.total.muts" = c(TRUE, FALSE), 
-                                     "tmb.logged" = c(TRUE),
-                                     "binary.status" = c(TRUE, FALSE),
-                                     "epistatic" = c(FALSE)),
-                                 min.sample.fraction = 0)
-
-saveRDS(neg.picked.models, file = file.path(out.dir, "pcawg.neg.sig.sig.picked.models.RDS"))
+# neg.picked.models = get_surv_best_model(sig.sig.tissues.matrix = negative.sig.sig, 
+#                                  dataset = PCAWG.full.subset.ann,
+#                                  clin.df = PCAWG.clin.df,
+#                                  param.list = list(
+#                                      "age.at.diagnosis" = c(TRUE, FALSE),
+#                                      "with.total.muts" = c(TRUE, FALSE), 
+#                                      "tmb.logged" = c(TRUE),
+#                                      "binary.status" = c(TRUE, FALSE),
+#                                      "epistatic" = c(FALSE)),
+#                                  min.sample.fraction = 0)
+# 
+# saveRDS(neg.picked.models, file = file.path(out.dir, "pcawg.neg.sig.sig.picked.models.RDS"))
 
 # neg.picked.models %>% HR_summary_for_all(type = "neg") %>% plot_sigint_forest()
 ```
