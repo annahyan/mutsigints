@@ -29,17 +29,17 @@ fig.dir = here("figures/survival_summaries")
 
 
 ```{r}
-pcawg.sig.sig.pos = readRDS(here("data/RDS/PCAWG/sig_sig_survivals/pos.coxlist.totmut.nonbinary.RDS"))
-pcawg.sig.sig.neg = readRDS(here("data/RDS/PCAWG/sig_sig_survivals/neg.coxlist.totmut.nonbinary.RDS"))
+pcawg.sig.sig.pos = readRDS(here("data/RDS/PCAWG/sig_sig_survivals/pcawg.pos.sig.sig.picked.models.epi.nonfilter.RDS"))
+pcawg.sig.sig.neg = readRDS(here("data/RDS/PCAWG/sig_sig_survivals/pcawg.neg.sig.sig.picked.models.epi.nonfilter.RDS"))
 
-tcga.sig.sig.pos = readRDS(here("data/RDS/TCGA/sig_sig_survivals/pos.coxlist.totmut.nonbinary.RDS"))
-tcga.sig.sig.neg = readRDS(here("data/RDS/TCGA/sig_sig_survivals/neg.coxlist.totmut.nonbinary.RDS"))
+tcga.sig.sig.pos = readRDS(here("data/RDS/TCGA/sig_sig_survivals/tcga.pos.sig.sig.picked.models.epi.nonfilter.RDS"))
+tcga.sig.sig.neg = readRDS(here("data/RDS/TCGA/sig_sig_survivals/tcga.neg.sig.sig.picked.models.epi.nonfilter.RDS"))
 
-pcawg.sig.path.pos = readRDS(here("data/RDS/PCAWG/sig_pathway_survivals/pos.coxlist.totmut.nonbinary.RDS"))
-pcawg.sig.path.neg = readRDS(here("data/RDS/PCAWG/sig_pathway_survivals/neg.coxlist.totmut.nonbinary.RDS"))
+pcawg.sig.path.pos = readRDS(here("data/RDS/PCAWG/sig_pathway_survivals/pcawg.pos.sig.path.picked.models.epi.nonfilter.RDS"))
+pcawg.sig.path.neg = readRDS(here("data/RDS/PCAWG/sig_pathway_survivals/pcawg.neg.sig.path.picked.models.epi.nonfilter.RDS"))
 
-tcga.sig.path.pos = readRDS(here("data/RDS/TCGA/sig_pathway_survivals/pos.coxlist.totmut.nonbinary.RDS"))
-tcga.sig.path.neg = readRDS(here("data/RDS/TCGA/sig_pathway_survivals/neg.coxlist.totmut.nonbinary.RDS"))
+tcga.sig.path.pos = readRDS(here("data/RDS/TCGA/sig_pathway_survivals/tcga.pos.sig.path.picked.models.epi.nonfilter.RDS"))
+tcga.sig.path.neg = readRDS(here("data/RDS/TCGA/sig_pathway_survivals/tcga.neg.sig.path.picked.models.epi.nonfilter.RDS"))
 
 
 # pcawg.sig.sig.pos = readRDS(here("data/RDS/PCAWG/sig_sig_survivals/pos.coxlist.nototmut.nonbinary.RDS"))
