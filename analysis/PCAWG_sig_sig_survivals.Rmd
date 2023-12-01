@@ -162,6 +162,24 @@ pos.picked.models = get_surv_best_model(positive.sig.sig,
 saveRDS(pos.picked.models, file = file.path(out.dir, "pcawg.pos.sig.sig.picked.models.epi.RDS"))
 
 
+pos.picked.models.nofilter = get_surv_best_model(positive.sig.sig, 
+                                 dataset = PCAWG.full.subset.ann,
+                                 clin.df = PCAWG.clin.df,
+                                 param.list = list(
+                                     "age.at.diagnosis" = c(TRUE, FALSE),
+                                     "with.total.muts" = c(TRUE, FALSE), 
+                                     "tmb.logged" = c(TRUE),
+                                     "binary.status" = c(FALSE),
+                                     "epistatic" = c(TRUE, FALSE)),
+                                 filename = NULL,
+                                 min.sample.fraction = 0,
+                                 rm.non.sig.sheets = TRUE,
+                                 return.only.sig = TRUE,
+                                sig.threshold = 1)
+saveRDS(pos.picked.models.nofilter, file = file.path(out.dir, "pcawg.pos.sig.sig.picked.models.epi.nonfilter.RDS"))
+
+
+
 
 pos.picked.models = get_surv_best_model(positive.sig.sig, 
                                  dataset = PCAWG.full.subset.ann,
@@ -292,6 +310,21 @@ neg.picked.models = get_surv_best_model(negative.sig.sig,
 
 saveRDS(neg.picked.models, file = file.path(out.dir, "pcawg.neg.sig.sig.picked.models.epi.RDS"))
 
+neg.picked.models.nofilter = get_surv_best_model(negative.sig.sig, 
+                                 dataset = PCAWG.full.subset.ann,
+                                 clin.df = PCAWG.clin.df,
+                                 param.list = list(
+                                     "age.at.diagnosis" = c(TRUE, FALSE),
+                                     "with.total.muts" = c(TRUE, FALSE), 
+                                     "tmb.logged" = c(TRUE),
+                                     "binary.status" = c(FALSE),
+                                     "epistatic" = c(TRUE, FALSE)),
+                                 filename = NULL,
+                                 min.sample.fraction = 0,
+                                 rm.non.sig.sheets = TRUE,
+                                 return.only.sig = TRUE,
+                                sig.threshold = 1)
+saveRDS(neg.picked.models.nofilter, file = file.path(out.dir, "pcawg.neg.sig.sig.picked.models.epi.nonfilter.RDS"))
 
 
 neg.picked.models = get_surv_best_model(negative.sig.sig, 
