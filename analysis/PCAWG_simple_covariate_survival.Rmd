@@ -1,0 +1,59 @@
+---
+title: "Survival analysis only for covariates"
+output: 
+  html_document:
+    df_print: paged
+---
+
+```{r}
+# .rs.restartR()
+rm(list = ls())
+knitr::opts_chunk$set(comment = '', fig.width = 6, 
+                      fig.height = 6, echo = FALSE, 
+                      warning = FALSE)
+```
+
+```{r load-packages, echo = FALSE, message=FALSE}
+library(here)
+library(survival)
+library(survminer)
+
+source(here("R/load_packages.R"))
+library(gridExtra)
+library(nonnestcox)
+
+input.dir = here("data/RDS/PCAWG/metadata")
+
+out.dir = here("data/RDS/PCAWG/sig_sig_survivals")
+fig.dir = here("figures/sig_sig_survivals")
+
+for (dir.name in c(fig.dir, out.dir)) {
+    if (! file.exists(dir.name) ) {
+        dir.create(dir.name, recursive = TRUE)
+    }
+}
+```
+
+### Reading in clinical and signature data
+
+```{r}
+PCAWG.full.subset.ann = readRDS(file = here("data/RDS",
+                                           "PCAWG/signatures/PCAWG.full.subset.ann.RDS"))   
+PCAWG.clin.df = readRDS(file = file.path(input.dir, "PCAWG.clin.df.RDS") )
+
+positive.sig.sig = read.delim(file = here("supp_data", 
+                                        "PCAWG_positive_interaction_tissue_summaries.tsv"),
+                              row.names = 1)
+
+negative.sig.sig = read.delim(file = here("supp_data", 
+                                        "PCAWG_negative_interaction_tissue_summaries.tsv"),
+                            row.names = 1)
+```
+
+
+### Minimal survival code
+
+```{r}
+tissue = "Skin_Melanoma"
+```
+

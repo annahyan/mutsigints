@@ -57,7 +57,6 @@ tcga.sig.path.neg = readRDS(here("data/RDS/TCGA/sig_pathway_survivals/tcga.neg.s
 
 ### Forest plot for HR for tissues - Age and TMB
 
-
 ```{r}
 pcawg.pos.sig.sig.HRs.all = HR_summary_for_all(pcawg.sig.sig.pos, type = "pos")
 pcawg.neg.sig.sig.HRs.all = HR_summary_for_all(pcawg.sig.sig.neg, type = "neg")
@@ -74,17 +73,17 @@ tcga.neg.sig.path.HRs.all = HR_summary_for_all(tcga.sig.path.neg, type = "neg")
 
 
 ```{r}
-HR.all.vars = list(pcawg.pos.sig.sig.HRs.all = pcawg.pos.sig.sig.HRs.all, 
-                   pcawg.neg.sig.sig.HRs.all = pcawg.neg.sig.sig.HRs.all,
-                     pcawg.pos.sig.path.HRs.all = pcawg.pos.sig.path.HRs.all, 
-                     pcawg.neg.sig.path.HRs.all = pcawg.neg.sig.path.HRs.all, 
-                     tcga.pos.sig.sig.HRs.all = tcga.pos.sig.sig.HRs.all,
-                     tcga.neg.sig.sig.HRs.all = tcga.neg.sig.sig.HRs.all, 
-                     tcga.pos.sig.path.HRs.all = tcga.pos.sig.path.HRs.all, 
-                     tcga.neg.sig.path.HRs.all = tcga.neg.sig.path.HRs.all)
-
-HR.all.vars.total.plots = list()
+# HR.all.vars = list(pcawg.pos.sig.sig.HRs.all = pcawg.pos.sig.sig.HRs.all, 
+#                    pcawg.neg.sig.sig.HRs.all = pcawg.neg.sig.sig.HRs.all,
+#                      pcawg.pos.sig.path.HRs.all = pcawg.pos.sig.path.HRs.all, 
+#                      pcawg.neg.sig.path.HRs.all = pcawg.neg.sig.path.HRs.all, 
+#                      tcga.pos.sig.sig.HRs.all = tcga.pos.sig.sig.HRs.all,
+#                      tcga.neg.sig.sig.HRs.all = tcga.neg.sig.sig.HRs.all, 
+#                      tcga.pos.sig.path.HRs.all = tcga.pos.sig.path.HRs.all, 
+#                      tcga.neg.sig.path.HRs.all = tcga.neg.sig.path.HRs.all)
 # 
+# HR.all.vars.total.plots = list()
+# # 
 # for (var in names(HR.all.vars)) {
 #     HR.all.vars.total.plots[[var]] = HR.all.vars[[var]]  %>%
 #         filter(P.val < 0.05) %>%
@@ -104,63 +103,62 @@ HR.all.vars.total.plots = list()
 # }
 
 
-for (var in names(HR.all.vars)) {
-    HR.all.vars.total.plots[[var]] = HR.all.vars[[var]]  %>% drop_na() %>%
-        filter(P.val < 0.05) %>%
-   ggplot(aes(y = params, x = log(estimate), color = tissue)) +
-    geom_hline(aes(yintercept = params), alpha = 0.1) +
-      theme_classic(base_size = 15) +
-    geom_point(position=position_dodge(0.7), shape = 15, size = 3) +
-    geom_errorbar(aes(y = params, xmin = log(lower.95), xmax = log(upper.95)),
-                  width=.2,
-                  position=position_dodge(0.7)) +
-    scale_y_discrete(position = "right") +
-    geom_vline(xintercept = 0, linetype="dashed", color = "gray") +
-    # coord_cartesian(xlim = c(-1, 20)) +
+# for (var in names(HR.all.vars)) {
+#     HR.all.vars.total.plots[[var]] = HR.all.vars[[var]]  %>% drop_na() %>%
+#         filter(P.val < 0.05) %>%
+#    ggplot(aes(y = params, x = log(estimate), color = tissue)) +
+#     geom_hline(aes(yintercept = params), alpha = 0.1) +
+#       theme_classic(base_size = 15) +
+#     geom_point(position=position_dodge(0.7), shape = 15, size = 3) +
+#     geom_errorbar(aes(y = params, xmin = log(lower.95), xmax = log(upper.95)),
+#                   width=.2,
+#                   position=position_dodge(0.7)) +
+#     scale_y_discrete(position = "right") +
+#     geom_vline(xintercept = 0, linetype="dashed", color = "gray") +
+#     # coord_cartesian(xlim = c(-1, 20)) +
+# 
+#   theme(axis.line.y = element_blank(),
+#         axis.ticks.y = element_blank()) + ggtitle(var)
+# }
+# 
+# pdf(file.path(fig.dir, "logHR.all.survival.summaries.raw.pdf"),
+#     width = 7, height = 3.5)
+# for (var in names(HR.all.vars.total.plots)) {
+#     print (HR.all.vars.total.plots[[var]])
+# }
+# dev.off()
 
-  theme(axis.line.y = element_blank(),
-        axis.ticks.y = element_blank()) + ggtitle(var)
-}
-
-pdf(file.path(fig.dir, "logHR.all.survival.summaries.raw.pdf"),
-    width = 7, height = 3.5)
-for (var in names(HR.all.vars.total.plots)) {
-    print (HR.all.vars.total.plots[[var]])
-}
-dev.off()
 
 
-
-for (var in names(HR.all.vars)) {
-    HR.all.vars.total.plots[[var]] = HR.all.vars[[var]]  %>% drop_na() %>%
-        filter(P.val < 0.05) %>%
-        filter(! params %in% c("age_at_diagnosis", "log(total_muts + 1)")) %>%
-   ggplot(aes(y = params, x = log(estimate), color = tissue)) +
-    geom_hline(aes(yintercept = params), alpha = 0.1) +
-      theme_classic(base_size = 15) +
-    geom_point(position=position_dodge(0.7), shape = 15, size = 3) +
-    geom_errorbar(aes(y = params, xmin = log(lower.95), xmax = log(upper.95)),
-                  width=.2,
-                  position=position_dodge(0.7)) +
-    scale_y_discrete(position = "right") +
-    geom_vline(xintercept = 0, linetype="dashed", color = "gray") +
-        xlab("log(HR)") +
-    # coord_cartesian(xlim = c(-1, 20)) +
-
-  theme(axis.line.y = element_blank(),
-        axis.ticks.y = element_blank()) + ggtitle(var)
-}
-
-pdf(file.path(fig.dir, "logHR.subset.survival.summaries.raw.pdf"),
-    width = 7, height = 3.5)
-for (var in names(HR.all.vars.total.plots)) {
-    print (HR.all.vars.total.plots[[var]])
-}
-dev.off()
+# for (var in names(HR.all.vars)) {
+#     HR.all.vars.total.plots[[var]] = HR.all.vars[[var]]  %>% drop_na() %>%
+#         filter(P.val < 0.05) %>%
+#         filter(! params %in% c("age_at_diagnosis", "log(total_muts + 1)")) %>%
+#    ggplot(aes(y = params, x = log(estimate), color = tissue)) +
+#     geom_hline(aes(yintercept = params), alpha = 0.1) +
+#       theme_classic(base_size = 15) +
+#     geom_point(position=position_dodge(0.7), shape = 15, size = 3) +
+#     geom_errorbar(aes(y = params, xmin = log(lower.95), xmax = log(upper.95)),
+#                   width=.2,
+#                   position=position_dodge(0.7)) +
+#     scale_y_discrete(position = "right") +
+#     geom_vline(xintercept = 0, linetype="dashed", color = "gray") +
+#         xlab("log(HR)") +
+#     # coord_cartesian(xlim = c(-1, 20)) +
+# 
+#   theme(axis.line.y = element_blank(),
+#         axis.ticks.y = element_blank()) + ggtitle(var)
+# }
+# 
+# pdf(file.path(fig.dir, "logHR.subset.survival.summaries.raw.pdf"),
+#     width = 7, height = 3.5)
+# for (var in names(HR.all.vars.total.plots)) {
+#     print (HR.all.vars.total.plots[[var]])
+# }
+# dev.off()
 
 
 ```
-
 
 ## PCAWG
 #### PCAWG sig-sig interactions
@@ -169,17 +167,53 @@ dev.off()
 # pcawg.pos.sig.sig.HRs.all = HR_summary_for_all(pcawg.sig.sig.pos)
 # pcawg.neg.sig.sig.HRs.all = HR_summary_for_all(pcawg.sig.sig.neg)
 
-pcawg.sig.sig.comb = rbind (pcawg.pos.sig.sig.HRs.all, pcawg.neg.sig.sig.HRs.all)
+# pcawg.sig.sig.comb = rbind (pcawg.pos.sig.sig.HRs.all, pcawg.neg.sig.sig.HRs.all)
+
+pcawg.sig.sig.comb = rbind (pcawg.pos.sig.sig.HRs.all, pcawg.neg.sig.sig.HRs.all,
+                            pcawg.pos.sig.path.HRs.all, pcawg.neg.sig.path.HRs.all)
+
+
 pcawg.sig.sig.comb$data = "PCAWG"
 
-p = plot_param_piechart(pcawg.sig.sig.comb, param = "log(total_muts + 1)")
+p = plot_param_piechart(pcawg.sig.sig.comb, param = "log(total_muts + 1)", add.param = TRUE)
 
 ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.sig.tmb.piechart.pdf"),
        width = 3, height = 1.5)
 ```
 
+<!-- ### Exploring the added parameters and their relations to the rest of the estimates -->
+
+<!-- ```{r} -->
+<!-- pcawg.sig.sig.comb = rbind (pcawg.pos.sig.sig.HRs.all, pcawg.neg.sig.sig.HRs.all, -->
+<!--                             pcawg.pos.sig.path.HRs.all, pcawg.pos.sig.path.HRs.all) -->
+
+<!-- add_param_row = function(drun, orig.data, param) { -->
+
+<!--     out = do.call(rbind, lapply(unique(drun$cond), function(cc) { -->
+<!--       orig.data %>% filter(cond == cc) %>% -->
+<!--         mutate(estimate = 0, lower.95 = 0, upper.95 = 0, P.val = 1, -->
+<!--                params = param, sig.star = " ") %>% -->
+<!--         unique () -->
+<!--     } ) ) -->
+<!--     row.names(out) = NULL -->
+<!--     return(out) -->
+<!--   } -->
+
+<!-- pcawg.TMB.explore = pcawg.sig.sig.comb %>% -->
+<!--     group_by(cond) %>% -->
+<!--     summarise(non.param = all(params != "log(total_muts + 1)")) %>% -->
+<!--     filter(non.param) %>% -->
+<!--     ungroup() %>% -->
+<!--     do(add_param_row(., pcawg.sig.sig.comb, "log(total_muts + 1)")) %>% -->
+<!--     bind_rows(pcawg.sig.sig.comb, .) %>% -->
+<!--     arrange(cond, params) -->
+
+
+<!-- ``` -->
+
+
 ```{r}
-p = plot_param_piechart(pcawg.sig.sig.comb, param = "age_at_diagnosis")
+p = plot_param_piechart(pcawg.sig.sig.comb, param = "age_at_diagnosis", add.param = TRUE)
 
 ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.sig.age.piechart.pdf"),
        width = 3, height = 1.5)
@@ -187,8 +221,8 @@ ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.sig.age.piechart.pdf")
 
 
 ```{r}
-pcawg.age.ggforest = plot_HR_vars(
-    all.conds.df = pcawg.sig.sig.comb, param = "age_at_diagnosis",
+pcawg.age.ggforest = pcawg.sig.sig.comb %>% surv_add_param_fillers (., param = "age_at_diagnosis") %>% 
+    plot_HR_vars( param = "age_at_diagnosis",
              average = TRUE, no_stripes = FALSE, log.HR = FALSE) + 
     theme(axis.title.y = element_blank())
 
