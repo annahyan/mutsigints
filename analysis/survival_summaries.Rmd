@@ -169,13 +169,12 @@ tcga.neg.sig.path.HRs.all = HR_summary_for_all(tcga.sig.path.neg, type = "neg")
 
 # pcawg.sig.sig.comb = rbind (pcawg.pos.sig.sig.HRs.all, pcawg.neg.sig.sig.HRs.all)
 
-pcawg.sig.sig.comb = rbind (pcawg.pos.sig.sig.HRs.all, pcawg.neg.sig.sig.HRs.all,
+pcawg.all.comb = rbind (pcawg.pos.sig.sig.HRs.all, pcawg.neg.sig.sig.HRs.all,
                             pcawg.pos.sig.path.HRs.all, pcawg.neg.sig.path.HRs.all)
+pcawg.all.comb$data = "PCAWG"
 
 
-pcawg.sig.sig.comb$data = "PCAWG"
-
-p = plot_param_piechart(pcawg.sig.sig.comb, param = "log(total_muts + 1)", add.param = TRUE)
+p = plot_param_piechart(pcawg.all.comb, param = "log(total_muts + 1)", add.param = TRUE)
 
 ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.sig.tmb.piechart.pdf"),
        width = 3, height = 1.5)
@@ -184,7 +183,7 @@ ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.sig.tmb.piechart.pdf")
 <!-- ### Exploring the added parameters and their relations to the rest of the estimates -->
 
 <!-- ```{r} -->
-<!-- pcawg.sig.sig.comb = rbind (pcawg.pos.sig.sig.HRs.all, pcawg.neg.sig.sig.HRs.all, -->
+<!-- pcawg.all.comb = rbind (pcawg.pos.sig.sig.HRs.all, pcawg.neg.sig.sig.HRs.all, -->
 <!--                             pcawg.pos.sig.path.HRs.all, pcawg.pos.sig.path.HRs.all) -->
 
 <!-- add_param_row = function(drun, orig.data, param) { -->
@@ -199,13 +198,13 @@ ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.sig.tmb.piechart.pdf")
 <!--     return(out) -->
 <!--   } -->
 
-<!-- pcawg.TMB.explore = pcawg.sig.sig.comb %>% -->
+<!-- pcawg.TMB.explore = pcawg.all.comb %>% -->
 <!--     group_by(cond) %>% -->
 <!--     summarise(non.param = all(params != "log(total_muts + 1)")) %>% -->
 <!--     filter(non.param) %>% -->
 <!--     ungroup() %>% -->
-<!--     do(add_param_row(., pcawg.sig.sig.comb, "log(total_muts + 1)")) %>% -->
-<!--     bind_rows(pcawg.sig.sig.comb, .) %>% -->
+<!--     do(add_param_row(., pcawg.all.comb, "log(total_muts + 1)")) %>% -->
+<!--     bind_rows(pcawg.all.comb, .) %>% -->
 <!--     arrange(cond, params) -->
 
 
@@ -213,7 +212,7 @@ ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.sig.tmb.piechart.pdf")
 
 
 ```{r}
-p = plot_param_piechart(pcawg.sig.sig.comb, param = "age_at_diagnosis", add.param = TRUE)
+p = plot_param_piechart(pcawg.all.comb, param = "age_at_diagnosis", add.param = TRUE)
 
 ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.sig.age.piechart.pdf"),
        width = 3, height = 1.5)
@@ -221,48 +220,38 @@ ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.sig.age.piechart.pdf")
 
 
 ```{r}
-pcawg.age.ggforest = pcawg.sig.sig.comb %>% surv_add_param_fillers (., param = "age_at_diagnosis") %>% 
+pcawg.age.ggforest = pcawg.all.comb %>% 
+    surv_add_param_fillers (., param = "age_at_diagnosis") %>% 
     plot_HR_vars( param = "age_at_diagnosis",
-             average = TRUE, no_stripes = FALSE, log.HR = FALSE) + 
+             average = TRUE, no_stripes = FALSE, log.HR = TRUE) + 
     theme(axis.title.y = element_blank())
 
+
 ggsave(plot = pcawg.age.ggforest, 
-       filename = file.path(fig.dir, "pcawg.age.ggforest.pdf"),
+       filename = file.path(fig.dir, "pcawg.age.ggforest.logHR.pdf"),
        width = 4.5, height = 3)
 
 
-pcawg.age.ggforest.log.HR = plot_HR_vars(
-    all.conds.df = pcawg.sig.sig.comb, param = "age_at_diagnosis", log.HR = TRUE,
-             average = TRUE, no_stripes = FALSE)
-
-ggsave(plot = pcawg.age.ggforest.log.HR, 
-       filename = file.path(fig.dir, "pcawg.age.ggforest.log.HR.pdf"),
-       width = 4.5, height = 3)
-
-pcawg.tmb.ggforest = plot_HR_vars(
-    all.conds.df = pcawg.sig.sig.comb, param = "log(total_muts + 1)",
-             average = TRUE, no_stripes = FALSE)
+pcawg.tmb.ggforest = pcawg.all.comb %>% 
+    surv_add_param_fillers (., param = "log(total_muts + 1)") %>% 
+    plot_HR_vars(param = "log(total_muts + 1)",
+             average = TRUE, no_stripes = FALSE, log.HR = TRUE)
 
 ggsave(plot = pcawg.tmb.ggforest, 
-       filename = file.path(fig.dir, "pcawg.tmb.ggforest.pdf"),
-       width = 4.5, height = 3)
-
-pcawg.tmb.ggforest.log.HR = plot_HR_vars(
-    all.conds.df = pcawg.sig.sig.comb, param = "log(total_muts + 1)", log.HR = TRUE,
-             average = TRUE, no_stripes = FALSE)
-
-ggsave(plot = pcawg.tmb.ggforest.log.HR, 
-       filename = file.path(fig.dir, "pcawg.tmb.ggforest.log.HR.pdf"),
+       filename = file.path(fig.dir, "pcawg.tmb.ggforest.logHR.pdf"),
        width = 4.5, height = 3)
 ```
 
 
 
 ```{r}
+pcawg.sig.sig.comb = rbind (pcawg.pos.sig.sig.HRs.all, pcawg.neg.sig.sig.HRs.all)
+pcawg.sig.sig.comb$data = "PCAWG"
+
 pp = plot_sigint_forest(pcawg.sig.sig.comb)
 
 ggsave(plot = pp, filename = file.path(fig.dir, "pcawg.sig.sig.significant_interaction.pdf"),
-       width = 7, height = 2.8)
+       width = 6.5, height = 2)
 ```
  
 #### PCAWG sig-path interactions
@@ -272,7 +261,6 @@ ggsave(plot = pp, filename = file.path(fig.dir, "pcawg.sig.sig.significant_inter
 # pcawg.neg.sig.sig.HRs.all = HR_summary_for_all(pcawg.sig.sig.neg)
 
 pcawg.sig.path.comb = rbind (pcawg.pos.sig.path.HRs.all, pcawg.neg.sig.path.HRs.all)
-
 
 pcawg.sig.path.age.tissues = pcawg.sig.path.comb %>% 
     filter(params == "age_at_diagnosis") %>% 
@@ -298,12 +286,12 @@ ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.path.age.piechart.pdf"
 ```
 
 
-<!-- ```{r} -->
-<!-- pp = plot_sigint_forest(pcawg.sig.path.comb) -->
+```{r}
+pp = plot_sigint_forest(pcawg.sig.path.comb)
 
-<!-- ggsave(plot = pp, filename = file.path(fig.dir, "pcawg.sig.path.significant_interaction.pdf"), -->
-<!--        width = 7, height = 2.3) -->
-<!-- ``` -->
+ggsave(plot = pp, filename = file.path(fig.dir, "pcawg.sig.path.significant_interaction.pdf"),
+       width = 7, height = 2.3)
+```
  
  
 ## TCGA
@@ -311,17 +299,21 @@ ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.path.age.piechart.pdf"
 
 
 ```{r}
-tcga.sig.sig.comb = rbind (tcga.pos.sig.sig.HRs.all, tcga.neg.sig.sig.HRs.all)
-tcga.sig.sig.comb$data = "TCGA"
+tcga.all.comb = rbind (tcga.pos.sig.sig.HRs.all, tcga.neg.sig.sig.HRs.all,
+                           tcga.pos.sig.path.HRs.all, tcga.neg.sig.path.HRs.all)
+tcga.all.comb$data = "TCGA"
  
-p = plot_param_piechart(tcga.sig.sig.comb, param = "log(total_muts + 1)")
+p = plot_param_piechart(tcga.all.comb, param = "log(total_muts + 1)")
 
 ggsave(plot = p, filename = file.path(fig.dir, "tcga.sig.sig.tmb.piechart.pdf"),
        width = 3, height = 1.5)
 ```
 
 ```{r}
-p = plot_param_piechart(tcga.sig.sig.comb, param = "age_at_diagnosis")
+p = tcga.all.comb %>% 
+    surv_add_param_fillers ( param = "age_at_diagnosis") %>% 
+    plot_param_piechart(param = "age_at_diagnosis", 
+                        add.param = FALSE)
 
 ggsave(plot = p, filename = file.path(fig.dir, "tcga.sig.sig.age.piechart.pdf"),
        width = 3, height = 1.5)
@@ -330,42 +322,33 @@ ggsave(plot = p, filename = file.path(fig.dir, "tcga.sig.sig.age.piechart.pdf"),
 
 
 ```{r}
-tcga.age.ggforest = plot_HR_vars(all.conds.df = tcga.sig.sig.comb, param = "age_at_diagnosis",
-             average = TRUE, no_stripes = FALSE) + 
+tcga.age.ggforest = tcga.all.comb %>% 
+    surv_add_param_fillers ( param = "age_at_diagnosis") %>%
+    plot_HR_vars(param = "age_at_diagnosis",
+             average = TRUE, no_stripes = FALSE, log.HR = TRUE) + 
     theme(axis.title.y = element_blank())
 
 ggsave(plot = tcga.age.ggforest, 
-       filename = file.path(fig.dir, "tcga.age.ggforest.pdf"),
+       filename = file.path(fig.dir, "tcga.age.ggforest.logHR.pdf"),
        width = 4.5, height = 3)
 
 
-tcga.age.ggforest.log.HR = plot_HR_vars(
-    all.conds.df = tcga.sig.sig.comb, param = "age_at_diagnosis", log.HR = TRUE,
-             average = TRUE, no_stripes = FALSE)
-
-ggsave(plot = tcga.age.ggforest.log.HR, 
-       filename = file.path(fig.dir, "tcga.age.ggforest.log.HR.pdf"),
-       width = 4.5, height = 3)
-
-tcga.tmb.ggforest = plot_HR_vars(all.conds.df = tcga.sig.sig.comb, param = "log(total_muts + 1)",
-             average = TRUE, no_stripes = FALSE)
+tcga.tmb.ggforest = tcga.all.comb %>% 
+    surv_add_param_fillers ( param = "log(total_muts + 1)") %>%
+    plot_HR_vars(param = "log(total_muts + 1)",
+             average = TRUE, no_stripes = FALSE, log.HR = TRUE)
 
 ggsave(plot = tcga.tmb.ggforest, 
-       filename = file.path(fig.dir, "tcga.tmb.ggforest.pdf"),
-       width = 4.5, height = 3)
-
-tcga.tmb.ggforest.log.HR = plot_HR_vars(
-    all.conds.df = tcga.sig.sig.comb, param = "log(total_muts + 1)", log.HR = TRUE,
-             average = TRUE, no_stripes = FALSE)
-
-ggsave(plot = tcga.tmb.ggforest.log.HR, 
-       filename = file.path(fig.dir, "tcga.tmb.ggforest.log.HR.pdf"),
+       filename = file.path(fig.dir, "tcga.tmb.ggforest.logHR.pdf"),
        width = 4.5, height = 3)
 ```
 
-
+### TCGA signature-signature interactions 
 
 ```{r}
+tcga.sig.sig.comb = rbind (tcga.pos.sig.sig.HRs.all, tcga.neg.sig.sig.HRs.all)
+tcga.sig.sig.comb$data = "TCGA"
+
 pp = plot_sigint_forest(tcga.sig.sig.comb)
 
 ggsave(plot = pp, filename = file.path(fig.dir, "tcga.sig.sig.significant_interaction.pdf"),
@@ -373,19 +356,6 @@ ggsave(plot = pp, filename = file.path(fig.dir, "tcga.sig.sig.significant_intera
 ```
  
 #### TCGA sig-path interactions
-
-```{r}
-# tcga.pos.sig.sig.HRs.all = HR_summary_for_all(tcga.sig.sig.pos)
-# tcga.neg.sig.sig.HRs.all = HR_summary_for_all(tcga.sig.sig.neg)
-
-tcga.sig.path.comb = rbind (tcga.pos.sig.path.HRs.all, tcga.neg.sig.path.HRs.all)
-
-p = plot_param_piechart(tcga.sig.path.comb, "age_at_diagnosis")
-
-ggsave(plot = p, filename = file.path(fig.dir, "tcga.sig.path.age.piechart.pdf"),
-       width = 3, height = 3)
-```
-
 
 ```{r}
 pp = plot_sigint_forest(tcga.sig.path.comb)
@@ -398,15 +368,18 @@ ggsave(plot = pp, filename = file.path(fig.dir, "tcga.sig.path.significant_inter
 ### Age and TMB for both datasets
 
 ```{r}
-both.data.comb = rbind(pcawg.sig.sig.comb, tcga.sig.sig.comb)
+both.data.comb = rbind(pcawg.all.comb, tcga.all.comb)
 
-p = plot_param_piechart(both.data.comb, param = "age_at_diagnosis")
+p = both.data.comb %>% 
+    surv_add_param_fillers(param = "age_at_diagnosis") %>% 
+    plot_param_piechart(param = "age_at_diagnosis")
 
 ggsave(plot = p, filename = file.path(fig.dir, "both.sig.sig.age.piechart.pdf"),
        width = 3, height = 1.5)
 
-both.age.ggforest.log.HR = plot_HR_vars(
-    all.conds.df = both.data.comb, param = "age_at_diagnosis", log.HR = TRUE,
+both.age.ggforest.log.HR = both.data.comb %>% 
+    surv_add_param_fillers(param = "age_at_diagnosis") %>% 
+    plot_HR_vars(param = "age_at_diagnosis", log.HR = TRUE,
              average = TRUE, no_stripes = FALSE)
 
 ggsave(plot = both.age.ggforest.log.HR, 
@@ -414,14 +387,17 @@ ggsave(plot = both.age.ggforest.log.HR,
        width = 4, height = 5)
 
 
-p = plot_param_piechart(both.data.comb, param = "log(total_muts + 1)")
+p = both.data.comb %>% 
+    surv_add_param_fillers(param = "log(total_muts + 1)") %>% 
+    plot_param_piechart(param = "log(total_muts + 1)")
 
 ggsave(plot = p, filename = file.path(fig.dir, "both.sig.sig.tmb.piechart.pdf"),
        width = 3, height = 1.5)
 
 
-both.tmb.ggforest.log.HR = plot_HR_vars(
-    all.conds.df = both.data.comb, param = "log(total_muts + 1)", log.HR = TRUE,
+both.tmb.ggforest.log.HR =  both.data.comb %>% 
+    surv_add_param_fillers(param = "log(total_muts + 1)") %>% 
+    plot_HR_vars(param = "log(total_muts + 1)", log.HR = TRUE,
              average = TRUE, no_stripes = FALSE)
 
 ggsave(plot = both.tmb.ggforest.log.HR, 
@@ -432,15 +408,15 @@ ggsave(plot = both.tmb.ggforest.log.HR,
 ### PCAWG all models with significant interaction between sig-sig 
 
 ```{r}
-# pcawg.pos.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig_sig_survivals"), "pcawg.pos.sig.sig.picked.models.epi.RDS"))
+pcawg.pos.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig_sig_survivals"), "pcawg.pos.sig.sig.picked.models.epi.RDS"))
 
-pcawg.pos.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig_sig_survivals"), "pcawg.pos.sig.sig.picked.models.RDS"))
+# pcawg.pos.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig_sig_survivals"), "pcawg.pos.sig.sig.picked.models.RDS"))
 
 # pcawg.pos.ss.picked.models = lapply(pcawg.pos.ss.picked.surv.out, function(x) {x[["model"]]})
 
-# pcawg.neg.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig_sig_survivals"), "pcawg.neg.sig.sig.picked.models.epi.RDS"))
+pcawg.neg.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig_sig_survivals"), "pcawg.neg.sig.sig.picked.models.epi.RDS"))
 
-pcawg.neg.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig_sig_survivals"), "pcawg.neg.sig.sig.picked.models.RDS"))
+# pcawg.neg.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig_sig_survivals"), "pcawg.neg.sig.sig.picked.models.RDS"))
 
 # pcawg.neg.ss.picked.models = lapply(pcawg.neg.ss.picked.surv.out, function(x) {x[["model"]]})
 ```
@@ -463,10 +439,10 @@ ggsave(plot = pp, filename = file.path(fig.dir, "pcawg.sig.sig.adjusted.models.s
 
 
 ```{r}
-pcawg.pos.sp.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig_pathway_survivals"), "pcawg.pos.sig.path.picked.models.RDS"))
+pcawg.pos.sp.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig_pathway_survivals"), "pcawg.pos.sig.path.picked.models.epi.RDS"))
 # pcawg.pos.ss.picked.models = lapply(pcawg.pos.ss.picked.surv.out, function(x) {x[["model"]]})
 
-pcawg.neg.sp.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig_pathway_survivals"), "pcawg.neg.sig.path.picked.models.RDS"))
+pcawg.neg.sp.picked.surv.out = readRDS(file = file.path(here("data/RDS/PCAWG/sig_pathway_survivals"), "pcawg.neg.sig.path.picked.models.epi.RDS"))
 # pcawg.neg.ss.picked.models = lapply(pcawg.neg.ss.picked.surv.out, function(x) {x[["model"]]})
 ```
 
@@ -491,10 +467,12 @@ ggsave(plot = pp, filename = file.path(fig.dir, "pcawg.sig.path.adjusted.models.
 ### TCGA all models with significant interaction between sig-sig
 
 ```{r}
-tcga.pos.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/TCGA/sig_sig_survivals"), "tcga.pos.sig.sig.picked.models.RDS"))
+tcga.pos.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/TCGA/sig_sig_survivals"),
+                                                       "tcga.pos.sig.sig.picked.models.epi.RDS"))
 # tcga.pos.ss.picked.models = lapply(tcga.pos.ss.picked.surv.out, function(x) {x[["model"]]})
 
-tcga.neg.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/TCGA/sig_sig_survivals"), "tcga.neg.sig.sig.picked.models.RDS"))
+tcga.neg.ss.picked.surv.out = readRDS(file = file.path(here("data/RDS/TCGA/sig_sig_survivals"),
+                                                       "tcga.neg.sig.sig.picked.models.epi.RDS"))
 # tcga.neg.ss.picked.models = lapply(tcga.neg.ss.picked.surv.out, function(x) {x[["model"]]})
 ```
 
@@ -521,10 +499,10 @@ ggsave(plot = pp, filename = file.path(fig.dir, "tcga.sig.sig.adjusted.models.si
 ### TCGA all models with significant interaction between sig-path
 
 ```{r}
-tcga.pos.sp.picked.surv.out = readRDS(file = file.path(here("data/RDS/TCGA/sig_pathway_survivals"), "tcga.pos.sig.path.picked.models.RDS"))
+tcga.pos.sp.picked.surv.out = readRDS(file = file.path(here("data/RDS/TCGA/sig_pathway_survivals"), "tcga.pos.sig.path.picked.models.epi.RDS"))
 # tcga.pos.ss.picked.models = lapply(tcga.pos.ss.picked.surv.out, function(x) {x[["model"]]})
 
-tcga.neg.sp.picked.surv.out = readRDS(file = file.path(here("data/RDS/TCGA/sig_pathway_survivals"), "tcga.neg.sig.path.picked.models.RDS"))
+tcga.neg.sp.picked.surv.out = readRDS(file = file.path(here("data/RDS/TCGA/sig_pathway_survivals"), "tcga.neg.sig.path.picked.models.epi.RDS"))
 # tcga.neg.ss.picked.models = lapply(tcga.neg.ss.picked.surv.out, function(x) {x[["model"]]})
 ```
 

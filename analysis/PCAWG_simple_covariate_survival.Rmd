@@ -25,7 +25,8 @@ library(nonnestcox)
 input.dir = here("data/RDS/PCAWG/metadata")
 
 out.dir = here("data/RDS/PCAWG/sig_sig_survivals")
-fig.dir = here("figures/sig_sig_survivals")
+
+fig.dir = here("figures/survival_summaries")
 
 for (dir.name in c(fig.dir, out.dir)) {
     if (! file.exists(dir.name) ) {
@@ -51,9 +52,75 @@ negative.sig.sig = read.delim(file = here("supp_data",
 ```
 
 
-### Minimal survival code
+### Minimal survival for age_at_diagnosis
 
 ```{r}
-tissue = "Skin_Melanoma"
+# tissue = "Skin_Melanoma"
+
+PCAWG.age.survivals = list()
+for (tissue in unique(PCAWG.full.subset.ann$Cancer.Types)) {
+    try({PCAWG.age.survivals[[tissue]] = survival_for_covariates(dataset = PCAWG.full.subset.ann,
+                                                            clin.df = PCAWG.clin.df,
+                                                            tissue = tissue,
+                                                            age.at.diagnosis = TRUE)
+    })
+}
+
 ```
+
+```{r}
+PCAWG.only.age.survival.piechart = PCAWG.age.survivals %>% HR_summary_for_all() %>% 
+    plot_param_piechart(param = "age_at_diagnosis")
+
+PCAWG.only.age.survival.forest = PCAWG.age.survivals %>% 
+    HR_summary_for_all() %>% 
+    mutate(data = "PCAWG") %>% 
+    plot_HR_vars( param = "age_at_diagnosis",
+                  average = TRUE, no_stripes = FALSE, log.HR = FALSE) + 
+    theme(axis.title.y = element_blank())
+
+ggsave(PCAWG.only.age.survival.forest, 
+       filename = file.path(fig.dir, "PCAWG.only.age.survival.forest.pdf"),
+       width = 4, height = 4)
+```
+
+### Minimal survival for logged TMB
+
+```{r}
+# tissue = "Skin_Melanoma"
+
+PCAWG.tmb.survivals = list()
+for (tissue in unique(PCAWG.full.subset.ann$Cancer.Types)) {
+    try({PCAWG.tmb.survivals[[tissue]] = survival_for_covariates(dataset = PCAWG.full.subset.ann,
+                                                            clin.df = PCAWG.clin.df,
+                                                            tissue = tissue,
+                                                            age.at.diagnosis = FALSE,
+                                                            with.total.muts = TRUE,
+                                                            tmb.logged = TRUE)
+    })
+}
+
+PCAWG.tmb.survivals$Thy_AdenoCA = NULL
+PCAWG.tmb.survivals$CNS_PiloAstro = NULL
+PCAWG.tmb.survivals$Kidney_ChRCC = NULL
+
+```
+
+
+```{r}
+PCAWG.only.tmb.survival.piechart = PCAWG.tmb.survivals %>% HR_summary_for_all() %>% 
+    plot_param_piechart(param = "log(total_muts + 1)")
+
+PCAWG.only.tmb.survival.forest = PCAWG.tmb.survivals %>% 
+    HR_summary_for_all() %>% 
+    mutate(data = "PCAWG") %>% 
+    plot_HR_vars( param = "log(total_muts + 1)",
+                  average = TRUE, no_stripes = FALSE, log.HR = FALSE) + 
+    theme(axis.title.y = element_blank())
+
+ggsave(PCAWG.only.tmb.survival.forest, 
+       filename = file.path(fig.dir, "PCAWG.only.tmb.survival.forest.pdf"),
+       width = 4, height = 4)
+```
+
 
