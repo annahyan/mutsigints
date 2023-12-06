@@ -164,20 +164,17 @@ tcga.neg.sig.path.HRs.all = HR_summary_for_all(tcga.sig.path.neg, type = "neg")
 #### PCAWG sig-sig interactions
 
 ```{r}
-# pcawg.pos.sig.sig.HRs.all = HR_summary_for_all(pcawg.sig.sig.pos)
-# pcawg.neg.sig.sig.HRs.all = HR_summary_for_all(pcawg.sig.sig.neg)
-
 # pcawg.sig.sig.comb = rbind (pcawg.pos.sig.sig.HRs.all, pcawg.neg.sig.sig.HRs.all)
-
+# 
 pcawg.all.comb = rbind (pcawg.pos.sig.sig.HRs.all, pcawg.neg.sig.sig.HRs.all,
                             pcawg.pos.sig.path.HRs.all, pcawg.neg.sig.path.HRs.all)
 pcawg.all.comb$data = "PCAWG"
 
-
-p = plot_param_piechart(pcawg.all.comb, param = "log(total_muts + 1)", add.param = TRUE)
-
-ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.sig.tmb.piechart.pdf"),
-       width = 3, height = 1.5)
+# 
+# p = plot_param_piechart(pcawg.all.comb, param = "log(total_muts + 1)", add.param = TRUE)
+# 
+# ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.sig.tmb.piechart.pdf"),
+#        width = 3, height = 1.5)
 ```
 
 <!-- ### Exploring the added parameters and their relations to the rest of the estimates -->
@@ -212,10 +209,10 @@ ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.sig.tmb.piechart.pdf")
 
 
 ```{r}
-p = plot_param_piechart(pcawg.all.comb, param = "age_at_diagnosis", add.param = TRUE)
-
-ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.sig.age.piechart.pdf"),
-       width = 3, height = 1.5)
+# p = plot_param_piechart(pcawg.all.comb, param = "age_at_diagnosis", add.param = TRUE)
+# 
+# ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.sig.age.piechart.pdf"),
+#        width = 3, height = 1.5)
 ```
 
 
@@ -251,7 +248,7 @@ pcawg.sig.sig.comb$data = "PCAWG"
 pp = plot_sigint_forest(pcawg.sig.sig.comb)
 
 ggsave(plot = pp, filename = file.path(fig.dir, "pcawg.sig.sig.significant_interaction.pdf"),
-       width = 6.5, height = 2)
+       width = 6.5, height = 1.5)
 ```
  
 #### PCAWG sig-path interactions
@@ -262,24 +259,7 @@ ggsave(plot = pp, filename = file.path(fig.dir, "pcawg.sig.sig.significant_inter
 
 pcawg.sig.path.comb = rbind (pcawg.pos.sig.path.HRs.all, pcawg.neg.sig.path.HRs.all)
 
-pcawg.sig.path.age.tissues = pcawg.sig.path.comb %>% 
-    filter(params == "age_at_diagnosis") %>% 
-    mutate(HR.sign = estimate > 1,
-           significance = ifelse(sig.star != " ", TRUE, FALSE),
-           HR.sign = ifelse(significance == FALSE, FALSE, HR.sign)) %>% 
-    group_by(tissue, significance, HR.sign) %>% 
-    select(tissue, significance, HR.sign) %>% unique()
-
-p = pcawg.sig.path.age.tissues %>% 
-    group_by(significance, HR.sign) %>% 
-    summarize(counts = n()) %>%
-    ggplot(aes(x = "", y = counts, fill = significance)) +
-    geom_col(color = "white") +
-    geom_text(aes(label = counts),
-              position = position_stack(vjust = 0.5), size =15) +
-    scale_fill_manual(values = c("gray90", "coral1")) +
-    coord_polar(theta = "y") + theme_void() + 
-    theme(legend.position = "none")
+p = plot_param_piechart(pcawg.sig.path.comb, param = "age_at_diagnosis", add.param = TRUE)
 
 ggsave(plot = p, filename = file.path(fig.dir, "pcawg.sig.path.age.piechart.pdf"),
        width = 3, height = 3)
@@ -303,7 +283,7 @@ tcga.all.comb = rbind (tcga.pos.sig.sig.HRs.all, tcga.neg.sig.sig.HRs.all,
                            tcga.pos.sig.path.HRs.all, tcga.neg.sig.path.HRs.all)
 tcga.all.comb$data = "TCGA"
  
-p = plot_param_piechart(tcga.all.comb, param = "log(total_muts + 1)")
+p = plot_param_piechart(tcga.all.comb, param = "log(total_muts + 1)", add.param = TRUE)
 
 ggsave(plot = p, filename = file.path(fig.dir, "tcga.sig.sig.tmb.piechart.pdf"),
        width = 3, height = 1.5)
@@ -352,16 +332,19 @@ tcga.sig.sig.comb$data = "TCGA"
 pp = plot_sigint_forest(tcga.sig.sig.comb)
 
 ggsave(plot = pp, filename = file.path(fig.dir, "tcga.sig.sig.significant_interaction.pdf"),
-       width = 7, height = 3)
+       width = 7, height = 2)
 ```
  
 #### TCGA sig-path interactions
 
 ```{r}
+tcga.sig.path.comb = rbind (tcga.pos.sig.path.HRs.all, tcga.neg.sig.path.HRs.all)
+tcga.sig.path.comb$data = "TCGA"
+
 pp = plot_sigint_forest(tcga.sig.path.comb)
 
 ggsave(plot = pp, filename = file.path(fig.dir, "tcga.sig.path.significant_interaction.pdf"),
-       width = 7, height = 3)
+       width = 7, height = 2)
 ```
  
  

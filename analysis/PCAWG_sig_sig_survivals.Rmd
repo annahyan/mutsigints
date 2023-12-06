@@ -366,7 +366,28 @@ mult_tissues_ROS_SBS40_adjusted = ggadjustedcurves(mult_tissues_ROS_SBS40$coxout
 ggsave(plot = mult_tissues_ROS_SBS40_adjusted + theme(plot.margin = unit(c(0, 1.5, 0,0), units = "cm") ),
        filename = file.path(fig.dir, "PCAWG_mult_tissues_SBS40_ROS.survivals.pdf"),
        width = 4, height = 3.5)
+```
 
+```{r}
+mult_tissues_ROS_SBS40_best = pick_survival_model_int(dataset = PCAWG.full.subset.ann, 
+                                                      signatures = c( "SBS40", "ROS"), 
+                                                      tissue = c("Prost_AdenoCA", "Panc_AdenoCA", "Ovarian_AdenoCA"), 
+                                                      clin.df = PCAWG.clin.df,
+                                                      param.values = list(
+                                     "age.at.diagnosis" = c(TRUE, FALSE),
+                                     "with.total.muts" = c(TRUE, FALSE), 
+                                     "tmb.logged" = c(TRUE),
+                                     "binary.status" = c(FALSE),
+                                     "epistatic" = c(TRUE, FALSE)),
+                                              min.sample.fraction = 0,
+                                              filename = NULL,
+                                              rm.non.sig.sheets = rm.non.sig.sheets,
+                                              return.only.sig = FALSE,
+                                              sig.threshold = 0.05)
+```
+
+
+```{r}
 
 mult_tissues_ROS_SBS40_ggforest = ggforest(model = mult_tissues_ROS_SBS40$coxout, data = mult_tissues_ROS_SBS40$survival.df)
 
@@ -488,7 +509,7 @@ ov_HR_SBS40_forest = ggforest(model = ov_HR_SBS40$coxout, data = ov_HR_SBS40$sur
 
 
 ```{r}
-panc_ROS_SBS5 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
+ov_SBS40_HR = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
                                                       signatures = c("SBS40", "HR"), 
                                                       tissues = "Ovary_AdenoCA", 
                                                       clin.df = PCAWG.clin.df,
