@@ -30,7 +30,7 @@ source(here("R/process_sigs_PCAWG.R"))
 ```
 
 ```{r}
-signature.clonality = read.delim(here("data/evolution_and_heterogeneity/2018-07-25-allSignatureChanges.tsv"))
+signature.clonality = read.delim(here("data/evolution_and_heterogeneity/2018-07-25-allSignatureChanges.txt"))
 sample.names = signature.clonality$samplename %>% unique()
 
 columns.to.add = c("icgc_donor_id")

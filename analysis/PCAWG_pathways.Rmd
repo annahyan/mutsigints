@@ -429,7 +429,7 @@ ggsave(plot = pp.STP,
 
 
 pp.PTS = plot_all_counts(lapply(PCAWG.sig.path.interactions.significant, function(x) x$PTS), 
-                                              threshold = 0.2, psize = 5,
+                                              threshold = 0.1, psize = 5,
                                               expand.mult = c(0.13, 0.13))
 
 ggsave(plot = pp.PTS,

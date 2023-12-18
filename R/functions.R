@@ -1851,12 +1851,14 @@ pick_survival_model_int = function(dataset = dataset,
 #'  @param binary.status If TRUE, the model will compare samples with both signatures
 #'  with all the other samples having either of the signatures or none. Default:
 #'  FALSE
+#'  @param split.by.tissue If TRUE for a given interaction the models are fit individually.
 
 get_surv_best_model = function(sig.sig.tissues.matrix,
                             dataset,
                             clin.df,
                             param.list, 
-                            min.sample.fraction = 0) { 
+                            min.sample.fraction = 0,
+                            split.by.tissue = TRUE) { 
     
     tt <- ttheme_default(colhead=list(fg_params = list(parse=TRUE)),
                          base_size = 10,
@@ -1882,12 +1884,32 @@ get_surv_best_model = function(sig.sig.tissues.matrix,
         sig2 = colnames(sig.sig.tissues.matrix)[indeces[2]]
         
         tissues = strsplit(sig.sig.tissues.matrix[indeces[1], indeces[2]], split = ", ")[[1]]
-        for (tissue in tissues) {
-            cat("Attempting cox survival for:", tissue, "::", sig1, "+", sig2, "j = ", j, "\n")
+        
+        if (split.by.tissue) {
+            for (tissue in tissues) {
+                cat("Attempting cox survival for:", tissue, "::", sig1, "+", sig2, "j = ", j, "\n")
+                try({surv.out = pick_survival_model_int(dataset = dataset, 
+                                                        signatures = c(sig1, sig2), 
+                                                        tissues = tissue, 
+                                                        clin.df = clin.df,
+                                                        param.values = param.list,
+                                                        min.sample.fraction = min.sample.fraction)
+                if ( is.null(surv.out$out.model) ) {
+                    cat("\tThe interaction is not significant. Skipping.\n")
+                    next
+                }
+                
+                j = j + 1
+                out_coxlist[[paste(tissue, "::", sig1, "+", sig2)]] = 
+                    list(input.params = unlist(surv.out$params), 
+                         model = surv.out$out.model$coxout,
+                         minority.smp.fraction = surv.out$minority.smp.fraction)} )
+            }
+        } else {
             try({surv.out = pick_survival_model_int(dataset = dataset, 
-                                                      signatures = c(sig1, sig2), 
-                                                      tissues = tissue, 
-                                                      clin.df = clin.df,
+                                                    signatures = c(sig1, sig2), 
+                                                    tissues = tissues, 
+                                                    clin.df = clin.df,
                                                     param.values = param.list,
                                                     min.sample.fraction = min.sample.fraction)
             if ( is.null(surv.out$out.model) ) {
@@ -1896,12 +1918,12 @@ get_surv_best_model = function(sig.sig.tissues.matrix,
             }
             
             j = j + 1
-            out_coxlist[[paste(tissue, "::", sig1, "+", sig2)]] = 
+            out_coxlist[[paste(sig1, "+", sig2)]] = 
                 list(input.params = unlist(surv.out$params), 
                      model = surv.out$out.model$coxout,
                      minority.smp.fraction = surv.out$minority.smp.fraction)} )
         }
-    }
+    } 
     return(out_coxlist)
 }
 

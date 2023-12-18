@@ -351,7 +351,7 @@ saveRDS(neg.picked.models, file = file.path(out.dir, "pcawg.neg.sig.sig.picked.m
 mult_tissues_ROS_SBS40 = survival_for_interactions(dataset = PCAWG.full.subset.ann, 
                                                       signatures = c( "SBS40", "ROS"), 
                                                       tissues = c("Prost_AdenoCA", "Panc_AdenoCA", "CNS_Medullo", 
-                                                                  "Ovarian_AdenoCA"), 
+                                                                  "Ovary_AdenoCA"), 
                                                       clin.df = PCAWG.clin.df,
                                                       legend_pos = c(0.9, 0.9),
                                                       with.total.muts = TRUE,
@@ -371,20 +371,44 @@ ggsave(plot = mult_tissues_ROS_SBS40_adjusted + theme(plot.margin = unit(c(0, 1.
 ```{r}
 mult_tissues_ROS_SBS40_best = pick_survival_model_int(dataset = PCAWG.full.subset.ann, 
                                                       signatures = c( "SBS40", "ROS"), 
-                                                      tissue = c("Prost_AdenoCA", "Panc_AdenoCA", "Ovarian_AdenoCA"), 
+                                                      tissue = c("Prost_AdenoCA", "Panc_AdenoCA", 
+                                                                 "Ovary_AdenoCA", "CNS_Medullo"), 
                                                       clin.df = PCAWG.clin.df,
                                                       param.values = list(
                                      "age.at.diagnosis" = c(TRUE, FALSE),
                                      "with.total.muts" = c(TRUE, FALSE), 
                                      "tmb.logged" = c(TRUE),
                                      "binary.status" = c(FALSE),
-                                     "epistatic" = c(TRUE, FALSE)),
+                                     "epistatic" = c(TRUE)),
                                               min.sample.fraction = 0,
                                               filename = NULL,
                                               rm.non.sig.sheets = rm.non.sig.sheets,
                                               return.only.sig = FALSE,
                                               sig.threshold = 0.05)
+
+
+mult_tissues_ROS_SBS40_ggforest = ggforest(model = mult_tissues_ROS_SBS40_best$out.model$coxout, 
+                                           data = mult_tissues_ROS_SBS40_best$out.model$survival.df)
+
 ```
+
+```{r}
+tt <- ttheme_default(colhead=list(fg_params = list(parse=TRUE)),
+                       base_size = 10,
+                       padding = unit(c(2, 4), "mm"))
+
+sbs40_ros_survival_coeffs = round( summary( 
+    mult_tissues_ROS_SBS40_best$out.model$coxout)$coefficients, 2)
+
+sbs40_ros_survival_coeffs = cbind(sbs40_ros_survival_coeffs, 
+                                  sapply(sbs40_ros_survival_coeffs[,5], mutsigintsKit:::get_sig_stars))
+
+sbs40_ros_tblgrob = tableGrob(sbs40_ros_survival_coeffs, theme=tt)
+
+ggplot2::ggsave(filename = file.path(fig.dir, "sbs40_ros_survival_model_coefficients.pdf"), 
+                sbs40_ros_tblgrob, width = 5, height = 3.6)
+```
+
 
 
 ```{r}
