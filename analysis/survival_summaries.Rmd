@@ -372,7 +372,7 @@ ggsave(plot = both.age.ggforest.log.HR,
 
 p = both.data.comb %>% 
     surv_add_param_fillers(param = "log(total_muts + 1)") %>% 
-    plot_param_piechart(param = "log(total_muts + 1)")
+    plot_param_piechart(param = "log(total_muts + 1)", average = TRUE)
 
 ggsave(plot = p, filename = file.path(fig.dir, "both.sig.sig.tmb.piechart.pdf"),
        width = 3, height = 1.5)
@@ -381,7 +381,7 @@ ggsave(plot = p, filename = file.path(fig.dir, "both.sig.sig.tmb.piechart.pdf"),
 both.tmb.ggforest.log.HR =  both.data.comb %>% 
     surv_add_param_fillers(param = "log(total_muts + 1)") %>% 
     plot_HR_vars(param = "log(total_muts + 1)", log.HR = TRUE,
-             average = TRUE, no_stripes = FALSE)
+             average = FALSE, no_stripes = FALSE)
 
 ggsave(plot = both.tmb.ggforest.log.HR, 
        filename = file.path(fig.dir, "both.tmb.ggforest.log.HR.pdf"),
