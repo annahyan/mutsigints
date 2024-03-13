@@ -228,7 +228,7 @@ saveRDS(PCAWG.tissue.null.metrics.dist,
 ```
 
 
-### Metrics null model in PCAWG  
+### Metrics null model in TCGA  
 
 
 ```{r, warning=FALSE}

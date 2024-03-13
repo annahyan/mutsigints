@@ -6,6 +6,9 @@ output:
 ---
 
 ```{r}
+rm(list = ls())
+.rs.restartR()
+
 library(here)
 knitr::opts_chunk$set(comment = '', fig.width = 6, 
                       fig.height = 6, echo = FALSE, 

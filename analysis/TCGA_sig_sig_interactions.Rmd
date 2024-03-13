@@ -6,6 +6,9 @@ output:
 ---
 
 ```{r}
+rm(list = ls())
+.rs.restartR()
+
 knitr::opts_chunk$set(comment = '', fig.width = 6, 
                       fig.height = 6, echo = FALSE, 
                       warning = FALSE)
@@ -78,6 +81,19 @@ print(tissue.heatmap)
 
 ggsave(filename = file.path(fig.dir, paste0(tissue, "_sig_heatmap.png") ), 
        plot = tissue.heatmap, width = 4, height = 5)
+
+for (tissue in c("Stomach_AdenoCa", "Breast_cancer", "Uterus_AdenoCa")) {
+    
+    tissue.heatmap = subset_tissue(TCGA.full.subset.ann, tissue = tissue) %>% 
+    plot_tissue_heatmap(main = tissue, border_color = NA) %>% add_pheatmap_legend_title()
+    
+    print(tissue.heatmap)
+    
+    # ggsave(filename = file.path(fig.dir, paste0(tissue, "_sig_heatmap.png") ), 
+     #       plot = tissue.heatmap, width = 4, height = 5)
+    ggsave(filename = file.path(fig.dir, paste0("TCGA_", tissue, "_sig_heatmap.pdf") ), 
+           plot = tissue.heatmap, width = 4, height = 5)
+}
 ```
 
 
@@ -170,9 +186,9 @@ dev.off()
 TCGA.int.tissues = get_interaction_tissues(TCGA.networks.concat)
 
 write.table(as.data.frame(TCGA.int.tissues$pos.tissues), 
-          file = here("supp_data", "TCGA_positive_interaction_tissue_summaries.tsv"),
+          file = here("supp_data", "TCGA_sig_sig_positive_interaction_tissue_summaries.tsv"),
           row.names = TRUE, col.names = NA, sep = "\t", quote = FALSE)
 write.table(as.data.frame(TCGA.int.tissues$neg.tissues), 
-          file = here("supp_data", "TCGA_negative_interaction_tissue_summaries.tsv"),
+          file = here("supp_data", "TCGA_sig_sig_negative_interaction_tissue_summaries.tsv"),
           row.names = TRUE, col.names = NA, sep = "\t", quote = FALSE)
 ```

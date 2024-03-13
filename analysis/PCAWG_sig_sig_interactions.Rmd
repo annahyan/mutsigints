@@ -67,10 +67,6 @@ pp = print_multi_graphs(tissue.multi.graph,
 pout = minor_plot(pp, expand.factor = 0.05, expand.factor.y = 0)
 print(pout)
 
-ggsave(filename = file.path(fig.dir, paste0(tissue, "_sig_sig_network.png") ),
-       plot = pout,
-       width = 6, height = 4)
-
 ggsave(filename = file.path(fig.dir, paste0(tissue, "_sig_sig_network.pdf") ),
        plot = pout,
        width = 6, height = 4)
@@ -96,11 +92,25 @@ tissue.heatmap = subset_tissue(PCAWG.full.subset.ann, tissue = tissue) %>%
     plot_tissue_heatmap(main = tissue, border_color = NA) %>% add_pheatmap_legend_title()
 
 print(tissue.heatmap)
+ 
+# ggsave(filename = file.path(fig.dir, paste0(tissue, "_sig_heatmap.png") ), 
+#        plot = tissue.heatmap, width = 4, height = 5)
 
-ggsave(filename = file.path(fig.dir, paste0(tissue, "_sig_heatmap.png") ), 
-       plot = tissue.heatmap, width = 4, height = 5)
 ggsave(filename = file.path(fig.dir, paste0(tissue, "_sig_heatmap.pdf") ), 
        plot = tissue.heatmap, width = 4, height = 5)
+
+for (tissue in c("Stomach_AdenoCA", "Breast_AdenoCA", "Uterus_AdenoCA")) {
+    
+    tissue.heatmap = subset_tissue(PCAWG.full.subset.ann, tissue = tissue) %>% 
+    plot_tissue_heatmap(main = tissue, border_color = NA) %>% add_pheatmap_legend_title()
+    
+    print(tissue.heatmap)
+    
+    # ggsave(filename = file.path(fig.dir, paste0(tissue, "_sig_heatmap.png") ), 
+     #       plot = tissue.heatmap, width = 4, height = 5)
+    ggsave(filename = file.path(fig.dir, paste0("PCAWG_", tissue, "_sig_heatmap.pdf") ), 
+           plot = tissue.heatmap, width = 4, height = 5)
+}
 ```
 
 
@@ -173,19 +183,19 @@ for (tissue in tissues) {
 
 
 ```{r plotting-int-network}
-sig.sig.ints.summary.plot.1 = plot_all_counts(PCAWG.networks.concat, min.abssum = 1,
-                                            psize = 4.5, lsize = 1.7, 
-                                            expand.mult = c(0.02, 0.02)) + 
-    coord_cartesian(x = c(1, 23), clip = "off")
-
-sig.sig.ints.summary.plot.3 = plot_all_counts(PCAWG.networks.concat, min.abssum = 3,
-                                            psize = 4.5, lsize = 1.7, 
-                                            expand.mult = c(0.02, 0.02)) + 
-    coord_cartesian(x = c(1, 20), clip = "off")
-
-ggsave(filename = file.path(fig.dir, paste0("PCAWG_sig_sig_ints_summary_plot_lim3.png") ),
-       plot = sig.sig.ints.summary.plot,
-       width = 3.7, height = 3.5)
+# sig.sig.ints.summary.plot.1 = plot_all_counts(PCAWG.networks.concat, min.abssum = 1,
+#                                             psize = 4.5, lsize = 1.7, 
+#                                             expand.mult = c(0.02, 0.02)) + 
+#     coord_cartesian(x = c(1, 23), clip = "off")
+# 
+# sig.sig.ints.summary.plot.3 = plot_all_counts(PCAWG.networks.concat, min.abssum = 3,
+#                                             psize = 4.5, lsize = 1.7, 
+#                                             expand.mult = c(0.02, 0.02)) + 
+#     coord_cartesian(x = c(1, 20), clip = "off")
+# 
+# ggsave(filename = file.path(fig.dir, paste0("PCAWG_sig_sig_ints_summary_plot_lim3.png") ),
+#        plot = sig.sig.ints.summary.plot,
+#        width = 3.7, height = 3.5)
 
 
 sig.sig.ints.summary.plot.4 = plot_all_counts(PCAWG.networks.concat, min.abssum = 4,
@@ -199,23 +209,24 @@ print(sig.sig.ints.summary.plot.4)
 dev.off()
 
 
-sig.sig.ints.summary.plot.5 = plot_all_counts(PCAWG.networks.concat, min.abssum = 5,
-                                            psize = 6, lsize = 2, 
-                                            expand.mult = c(0.02, 0.02)) + 
-    coord_cartesian(x = c(1, 13), clip = "off")
-
-ggsave(filename = file.path(fig.dir, paste0("sig_sig_ints_summary_plot_lim5.png") ),
-       plot = sig.sig.ints.summary.plot,
-       width = 3.7, height = 3.5)
-
-ggsave(filename = file.path(fig.dir, paste0("sig_sig_ints_summary_plot_lim5.pdf") ),
-       plot = sig.sig.ints.summary.plot,
-       width = 3.7, height = 3.5)
-
-cairo_pdf(filename = file.path(fig.dir, paste0("PCAWG_sig_sig_ints_summary_plot_lim5_cairo.pdf") ),
-          width = 3.7, height = 3.5)
-print(sig.sig.ints.summary.plot)
-dev.off()
+# sig.sig.ints.summary.plot.5 = plot_all_counts(PCAWG.networks.concat, min.abssum = 5,
+#                                             psize = 6, lsize = 2, 
+#                                             expand.mult = c(0.02, 0.02)) + 
+#     coord_cartesian(x = c(1, 13), clip = "off")
+# 
+# ggsave(filename = file.path(fig.dir, paste0("sig_sig_ints_summary_plot_lim5.png") ),
+#        plot = sig.sig.ints.summary.plot,
+#        width = 3.7, height = 3.5)
+# 
+# ggsave(filename = file.path(fig.dir, paste0("sig_sig_ints_summary_plot_lim5.pdf") ),
+#        plot = sig.sig.ints.summary.plot,
+#        width = 3.7, height = 3.5)
+# 
+# 
+# cairo_pdf(filename = file.path(fig.dir, paste0("PCAWG_sig_sig_ints_summary_plot_lim5_cairo.pdf") ),
+#           width = 3.7, height = 3.5)
+# print(sig.sig.ints.summary.plot)
+# dev.off()
 # concat.summaries = summarize_by_tissues(PCAWG.networks.concat)
 ```
 
@@ -226,9 +237,9 @@ dev.off()
 PCAWG.int.tissues = get_interaction_tissues(PCAWG.networks.concat)
 
 write.table(as.data.frame(PCAWG.int.tissues$pos.tissues), 
-          file = here("supp_data", "PCAWG_positive_interaction_tissue_summaries.tsv"),
+          file = here("supp_data", "PCAWG_sig_sig_positive_interaction_tissue_summaries.tsv"),
           row.names = TRUE, col.names = NA, sep = "\t", quote = FALSE)
 write.table(as.data.frame(PCAWG.int.tissues$neg.tissues), 
-          file = here("supp_data", "PCAWG_negative_interaction_tissue_summaries.tsv"),
+          file = here("supp_data", "PCAWG_sig_sig_negative_interaction_tissue_summaries.tsv"),
           row.names = TRUE, col.names = NA, sep = "\t", quote = FALSE)
 ```

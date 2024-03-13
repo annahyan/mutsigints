@@ -6,7 +6,7 @@ output:
 ---
 
 ```{r}
-# .rs.restartR()
+.rs.restartR()
 rm(list = ls())
 knitr::opts_chunk$set(comment = '', fig.width = 6, 
                       fig.height = 6, echo = FALSE, 
@@ -42,12 +42,12 @@ PCAWG.full.subset.ann = readRDS(file = here("data/RDS",
 PCAWG.clin.df = readRDS(file = file.path(input.dir, "PCAWG.clin.df.RDS") )
 
 positive.sig.sig = read.delim(file = here("supp_data", 
-                                        "PCAWG_positive_interaction_tissue_summaries.tsv"),
-                              row.names = 1)
+                                        "PCAWG_sig_sig_positive_interaction_tissue_summaries.tsv"),
+                              check.names = FALSE, row.names = 1)
 
 negative.sig.sig = read.delim(file = here("supp_data", 
-                                        "PCAWG_negative_interaction_tissue_summaries.tsv"),
-                            row.names = 1)
+                                        "PCAWG_sig_sig_negative_interaction_tissue_summaries.tsv"), 
+                              check.names = FALSE, row.names = 1)
 ```
 
 ### Survival models for positive interactions

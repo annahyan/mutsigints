@@ -6,6 +6,9 @@ output: html_document
 ---
 
 ```{r, setup, include=FALSE}
+rm(list = ls())
+.rs.restartR()
+
 knitr::opts_chunk$set(comment = '', fig.width = 6, 
                       fig.height = 6, include = FALSE, message = FALSE)
 ```
