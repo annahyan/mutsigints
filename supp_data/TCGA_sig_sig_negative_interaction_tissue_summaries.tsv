@@ -1,0 +1,14 @@
+	APOBEC	CL SBS1	CL SBS5	HR	MMR	Technical	PolE	SBS40	SBS17	Tobacco	SBS38	UV	SBS28
+APOBEC		Breast_cancer, Cervix_CA, Eso_AdenoCa, Stomach_AdenoCa	Cervix_CA, Head_SCC	Breast_cancer	Breast_cancer, Stomach_AdenoCa, Uterus_AdenoCa		Uterus_AdenoCa		Eso_AdenoCa	Head_SCC, Lung_AdenoCa, Lung_SCC			
+CL SBS1	Breast_cancer, Cervix_CA, Eso_AdenoCa, Stomach_AdenoCa					Skin_Melanoma		Stomach_AdenoCa	Stomach_AdenoCa	Head_SCC	Skin_Melanoma		
+CL SBS5	Cervix_CA, Head_SCC					Lung_AdenoCa, Skin_Melanoma		ColoRect_AdenoCa, Lung_AdenoCa, Ovary_AdenoCa, Sarcoma, Stomach_AdenoCa, Uterus_AdenoCa			Skin_Melanoma		
+HR	Breast_cancer												
+MMR	Breast_cancer, Stomach_AdenoCa, Uterus_AdenoCa							ColoRect_AdenoCa, Stomach_AdenoCa, Uterus_AdenoCa	Stomach_AdenoCa				Uterus_AdenoCa
+Technical		Skin_Melanoma	Lung_AdenoCa, Skin_Melanoma							Lung_AdenoCa, Lung_SCC		Skin_Melanoma	
+PolE	Uterus_AdenoCa							Uterus_AdenoCa					
+SBS40		Stomach_AdenoCa	ColoRect_AdenoCa, Lung_AdenoCa, Ovary_AdenoCa, Sarcoma, Stomach_AdenoCa, Uterus_AdenoCa		ColoRect_AdenoCa, Stomach_AdenoCa, Uterus_AdenoCa		Uterus_AdenoCa			Lung_AdenoCa			
+SBS17	Eso_AdenoCa	Stomach_AdenoCa			Stomach_AdenoCa								
+Tobacco	Head_SCC, Lung_AdenoCa, Lung_SCC	Head_SCC				Lung_AdenoCa, Lung_SCC		Lung_AdenoCa					
+SBS38		Skin_Melanoma	Skin_Melanoma									Skin_Melanoma	
+UV						Skin_Melanoma					Skin_Melanoma		
+SBS28					Uterus_AdenoCa								
