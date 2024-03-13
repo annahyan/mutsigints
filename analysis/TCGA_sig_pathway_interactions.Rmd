@@ -6,6 +6,9 @@ output:
 ---
 
 ```{r}
+rm(list = ls())
+.rs.restartR()
+
 knitr::opts_chunk$set(comment = '', fig.width = 6, 
                       fig.height = 6, echo = FALSE, 
                       warning = FALSE)
@@ -14,6 +17,7 @@ knitr::opts_chunk$set(comment = '', fig.width = 6,
 
 ```{r load-packages, message=FALSE}
 library(here)
+library(cowplot)
 fig.dir = here("figures/pathways_analysis")
 
 if(! file.exists(fig.dir)){
@@ -326,9 +330,10 @@ for(tissue in names(TCGA.sig.path.interactions)) {
             sig = rownames(metric.values)[non.zero.values[i, 1]]
             path = colnames(metric.values)[non.zero.values[i, 2]]
             
-            p.values[sig, path] = min(percentile(TCGA.sig.path.nulls[[tissue]][[metric.name]][sig, path, ] ,
+            p.values[sig, path] = min(percentile(
+                TCGA.sig.path.nulls[[tissue]][[metric.name]][gsub(" ", ".", sig), path, ] ,
                                                   metric.values[sig, path]),
-                                      1 - percentile(TCGA.sig.path.nulls[[tissue]][[metric.name]][sig, path, ] ,
+                1 - percentile(TCGA.sig.path.nulls[[tissue]][[metric.name]][gsub(" ", ".", sig), path, ] ,
                                                   metric.values[sig, path]))
             
             if(p.values[sig, path] > sig.threshold) {
@@ -415,12 +420,13 @@ saveRDS(TCGA.sig.path.interactions.significant, here("data/RDS/TCGA/10_onco_path
 ```{r}
 pp.OR = plot_all_counts(lapply(TCGA.sig.path.interactions.significant, function(x) x$OR), 
                                               threshold = 0.2, psize = 5,
-                                              expand.mult = c(0.13, 0.13))
+                                              expand.mult = c(0.03, 0.03)) + 
+    theme(axis.text = element_text(family = "Arial"))
 
 ggsave(plot = pp.OR,
                filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
                                     "TCGA_summarized_sig_pathway_null_adjusted.dotplot.pdf"),
-               height = 2.4, width = 3.4, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
+               height = 2.7, width = 3.8, bg = "white", device = cairo_pdf)
 
 
 
@@ -428,26 +434,28 @@ ggsave(plot = pp.OR,
 
 pp.STP = plot_all_counts(lapply(TCGA.sig.path.interactions.significant, function(x) x$STP), 
                          threshold = 0.1, psize = 6,
-                         expand.mult = c(0.03, 0.03))                         
+                         expand.mult = c(0.03, 0.03))  + 
+    theme(axis.text = element_text(family = "Arial"))                      
 
 ggsave(plot = pp.STP,
        filename = file.path(fig.dir, "signature_to_pathway",
                             "by_tissues", "log_log",
                             "TCGA_logged_logistic_summarized.null.adjusted.pdf"),
-       height = 2.8, width = 4, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
+       height = 2.8, width = 4, bg = "white", device = cairo_pdf)
 
 
 
 
 pp.PTS = plot_all_counts(lapply(TCGA.sig.path.interactions.significant, function(x) x$PTS), 
                          threshold = 0.2, psize = 5,
-                         expand.mult = c(0.1, 0.1))
+                         expand.mult = c(0.03, 0.03)) + 
+    theme(axis.text = element_text(family = "Arial"))
 
 
 ggsave(plot = pp.PTS,
                filename = file.path(fig.dir, "pathway_to_signature",
                                     "by_tissues", "lm_log", "TCGA_logged_summarized_OLS_path_to_sigs.lm.null.adjusted.pdf"),
-               height = 2.7, width = 3.6, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
+               height = 2.7, width = 4, bg = "white", device = cairo_pdf)
 
 
 ```
@@ -458,13 +466,13 @@ ggsave(plot = pp.PTS,
 ### Bipartite graph - not used 
 
 ```{r}
-sig.path.oddsratio.bipartite = minor_plot(plot_bipartite2(tissue.odds.ratio.unadjusted),
+sig.path.oddsratio.bipartite = minor_plot(plot_bipartite2(lapply(TCGA.sig.path.interactions.significant, function(x) x$OR)),
                                        expand.factor = 0.5, expand.factor.y = 0.01)
 
 ggsave(plot = sig.path.oddsratio.bipartite,
        filename = file.path(fig.dir, "pathway_to_signature", "by_tissues", "oddsratio",
-                                    "TCGA_summarized_sig_pathway_unadjusted.bipartite.pdf"),
-       height = 5, width = 6, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
+                                    "TCGA_summarized_sig_pathway_adjusted.bipartite.pdf"),
+       height = 5, width = 6, bg = "white", device = cairo_pdf)
 ```
 
 ### Tissues of Odds ratio interactions
@@ -601,7 +609,7 @@ ggsave(plot = skin.annotated.heatmap,
        width = 4.5, height = 4)
 
 
-int.heatmap = ggheatmap_wrapper(tissue.odds.ratio[[tissue]], 
+int.heatmap = ggheatmap_wrapper(tissue.odds.ratio.null.adjusted[[tissue]], 
                                         title = tissue)
         
 print(int.heatmap)
@@ -610,10 +618,6 @@ ggsave(plot = int.heatmap,
                      paste0("TCGA_", tissue, "_sig_pathway.dotplot.pdf")),
 height = 5, width = 6, bg = "white")
 ```
-
-
-
-
 
 ### Three summaries together
 
@@ -630,11 +634,21 @@ pp.TCGA.combined.summaries = annotate_figure(
 
 ggsave(plot = pp.TCGA.combined.summaries,
                filename = file.path(fig.dir, "TCGA_combined_summaries_sig_pathway.pdf"),
-               height = 10, width = 4, bg = "white", device = cairo_pdf, family = "DejaVu Sans")
+               height = 10, width = 4, bg = "white", device = cairo_pdf)
 ```
 
 
 
+```{r}
+pp.TCGA.combined.summaries = ggdraw() +
+  draw_plot(pp.OR + ggtitle("Co-occurrence"), x = 0, y = 0.7, width = 0.8, height = .3) +
+  draw_plot(pp.PTS + ggtitle("lm(signature ~ pathway)"), x = 0, y = .35, width = .8, height = .35) +
+  draw_plot(pp.STP + ggtitle("glm(pathway ~ signature)"), x = 0, y = 0, width = 0.8, height = 0.35)
+
+ggsave(plot = pp.TCGA.combined.summaries,
+               filename = file.path(fig.dir, "TCGA_combined_summaries_sig_pathway.pdf"),
+               height = 9, width = 5, bg = "white", device = cairo_pdf)
+```
 
 ### All signatures and pathway mutation OR interaction heatmaps
 
