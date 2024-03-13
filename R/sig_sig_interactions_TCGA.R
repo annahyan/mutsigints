@@ -1,5 +1,7 @@
 library(here)
 
+rm(list = ls())
+
 source(here("R/load_packages.R"))
 library(openxlsx)
 
@@ -22,10 +24,10 @@ tissues = names(TCGA.null.dists)
 # 
 # TCGA.cooccurrence = get_metrics_list(TCGA.full.subset.ann, cooccurrence,
 #                  min.tissue.samples = 20,
-#                  sample.rate = 0.9, sample.N = 100, 
+#                  sample.rate = 0.9, sample.N = 100,
 #                  N = 1, seed = 1, p.adjust = TRUE)
 # 
-# saveRDS(TCGA.cooccurrence, 
+# saveRDS(TCGA.cooccurrence,
 #         file = file.path(data.out.dir, "TCGA.cooccurrence.RDS") )
 # 
 # # Plotting individual experiments
@@ -33,17 +35,17 @@ tissues = names(TCGA.null.dists)
 # 
 # TCGA.cooccurrence.summary.nets = lapply(TCGA.cooccurrence, summarize_calcs )
 # 
-# saveRDS(TCGA.cooccurrence.summary.nets, 
+# saveRDS(TCGA.cooccurrence.summary.nets,
 #         file = file.path(data.out.dir, "TCGA.cooccurrence.summary.nets.RDS") )
 # 
 # ### Mutual information(BCMI)
 # 
 # TCGA.bcmi = get_metrics_list(TCGA.full.subset.ann, bcmi,
 #                                       min.tissue.samples = 20,
-#                                       sample.rate = 0.9, sample.N = 100, 
+#                                       sample.rate = 0.9, sample.N = 100,
 #                                       N = 1, seed = 1, p.adjust = TRUE)
 # 
-# saveRDS(TCGA.bcmi, 
+# saveRDS(TCGA.bcmi,
 #         file = file.path(data.out.dir, "TCGA.bcmi.RDS") )
 # 
 # #Plotting individual experiments
@@ -51,18 +53,18 @@ tissues = names(TCGA.null.dists)
 # 
 # TCGA.bcmi.summary.nets = lapply(TCGA.bcmi, summarize_calcs )
 # 
-# saveRDS(TCGA.bcmi.summary.nets, 
+# saveRDS(TCGA.bcmi.summary.nets,
 #         file = file.path(data.out.dir, "TCGA.bcmi.summary.nets.RDS") )
 # 
 # ### Pearson correlation
 # 
 # TCGA.pearson = get_metrics_list(TCGA.full.subset.ann, cor_sigs,
 #                               min.tissue.samples = 20,
-#                               sample.rate = 0.9, sample.N = 100, 
+#                               sample.rate = 0.9, sample.N = 100,
 #                               N = 1, seed = 1, p.adjust = TRUE,
 #                               method = "pearson")
 # 
-# saveRDS(TCGA.pearson, 
+# saveRDS(TCGA.pearson,
 #         file = file.path(data.out.dir, "TCGA.pearson.RDS") )
 # 
 # #Plotting individual experiments
@@ -70,7 +72,7 @@ tissues = names(TCGA.null.dists)
 # 
 # TCGA.pearson.summary.nets = lapply(TCGA.pearson, summarize_calcs )
 # 
-# saveRDS(TCGA.pearson.summary.nets, 
+# saveRDS(TCGA.pearson.summary.nets,
 #         file = file.path(data.out.dir, "TCGA.pearson.summary.nets.RDS") )
 # 
 # 
@@ -78,11 +80,11 @@ tissues = names(TCGA.null.dists)
 # 
 # TCGA.spearman = get_metrics_list(TCGA.full.subset.ann, cor_sigs,
 #                                  min.tissue.samples = 20,
-#                                  sample.rate = 0.9, sample.N = 100, 
+#                                  sample.rate = 0.9, sample.N = 100,
 #                                  N = 1, seed = 1, p.adjust = TRUE,
 #                                  method = "spearman")
 # 
-# saveRDS(TCGA.spearman, 
+# saveRDS(TCGA.spearman,
 #         file = file.path(data.out.dir, "TCGA.spearman.RDS") )
 # 
 # #Plotting individual experiments
@@ -90,7 +92,7 @@ tissues = names(TCGA.null.dists)
 # 
 # TCGA.spearman.summary.nets = lapply(TCGA.spearman, summarize_calcs )
 # 
-# saveRDS(TCGA.spearman.summary.nets, 
+# saveRDS(TCGA.spearman.summary.nets,
 #         file = file.path(data.out.dir, "TCGA.spearman.summary.nets.RDS") )
 # 
 # 
@@ -98,11 +100,11 @@ tissues = names(TCGA.null.dists)
 # 
 # TCGA.coda = get_metrics_list(TCGA.full.subset.ann, cor_coda,
 #                                   min.tissue.samples = 20,
-#                                   sample.rate = 0.9, sample.N = 100, 
+#                                   sample.rate = 0.9, sample.N = 100,
 #                                   N = 1, seed = 1, p.adjust = TRUE,
 #                                   rand.add = FALSE)
 # 
-# saveRDS(TCGA.coda, 
+# saveRDS(TCGA.coda,
 #         file = file.path(data.out.dir, "TCGA.coda.RDS") )
 # 
 # #Plotting individual experiments
@@ -110,7 +112,7 @@ tissues = names(TCGA.null.dists)
 # 
 # TCGA.coda.summary.nets = lapply(TCGA.coda, summarize_calcs )
 # 
-# saveRDS(TCGA.coda.summary.nets, 
+# saveRDS(TCGA.coda.summary.nets,
 #         file = file.path(data.out.dir, "TCGA.coda.summary.nets.RDS") )
 
 
@@ -125,7 +127,10 @@ TCGA.spearman.summary.nets = readRDS(file = file.path(data.out.dir, "TCGA.spearm
 TCGA.coda.summary.nets = readRDS(file = file.path(data.out.dir, "TCGA.coda.summary.nets.RDS") )
 
 out.file = here("supp_data/tcga_sig_sig_all_metrics_report.xlsx")
-file.remove(out.file)
+
+if(file.exists(out.fie)) {
+    file.remove(out.file)    
+}
 
 
 all.interactions = list(MI = TCGA.bcmi.summary.nets,
@@ -141,7 +146,7 @@ all.sig.interactions = all.interactions
 for(tissue in tissues) {
     
     for (metric.name in names(all.interactions)) {
-        cat(tissue, "\n")
+        cat(tissue, ":", metric.name, "\n")
         out =  all.interactions[[metric.name]][[tissue]]
         metric.values = out %>% rm_zeros()
         if (length(metric.values) == 0) {next} 

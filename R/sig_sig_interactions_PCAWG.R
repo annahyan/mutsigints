@@ -22,47 +22,47 @@ tissues = names(PCAWG.null.dists)
 
 # PCAWG.cooccurrence = get_metrics_list(PCAWG.full.subset.ann, cooccurrence,
 #                  min.tissue.samples = 20,
-#                  sample.rate = 0.9, sample.N = 100, 
+#                  sample.rate = 0.9, sample.N = 100,
 #                  N = 1, seed = 1, p.adjust = TRUE)
 # 
-# saveRDS(PCAWG.cooccurrence, 
+# saveRDS(PCAWG.cooccurrence,
 #         file = file.path(data.out.dir, "PCAWG.cooccurrence.RDS") )
-# 
+
 # # Plotting individual experiments
 # # pp = plot_all_experiments(PCAWG.cooccurrence$Biliary_AdenoCA, "title")
 # 
 # PCAWG.cooccurrence.summary.nets = lapply(PCAWG.cooccurrence, summarize_calcs )
 # 
-# saveRDS(PCAWG.cooccurrence.summary.nets, 
+# saveRDS(PCAWG.cooccurrence.summary.nets,
 #         file = file.path(data.out.dir, "PCAWG.cooccurrence.summary.nets.RDS") )
 # 
 # ### Mutual information(BCMI)
 # 
 # PCAWG.bcmi = get_metrics_list(PCAWG.full.subset.ann, bcmi,
 #                                       min.tissue.samples = 20,
-#                                       sample.rate = 0.9, sample.N = 100, 
+#                                       sample.rate = 0.9, sample.N = 100,
 #                                       N = 1, seed = 1, p.adjust = TRUE)
 # 
-# saveRDS(PCAWG.bcmi, 
+# saveRDS(PCAWG.bcmi,
 #         file = file.path(data.out.dir, "PCAWG.bcmi.RDS") )
-# 
+
 # #Plotting individual experiments
 # # pp = plot_all_experiments(PCAWG.bcmi$Biliary_AdenoCA, "title")
 # 
 # PCAWG.bcmi.summary.nets = lapply(PCAWG.bcmi, summarize_calcs )
 # 
-# saveRDS(PCAWG.bcmi.summary.nets, 
+# saveRDS(PCAWG.bcmi.summary.nets,
 #         file = file.path(data.out.dir, "PCAWG.bcmi.summary.nets.RDS") )
 
 # ### Pearson correlation
 # 
 # PCAWG.pearson = get_metrics_list(PCAWG.full.subset.ann, cor_sigs,
 #                               min.tissue.samples = 20,
-#                               sample.rate = 0.9, sample.N = 100, 
+#                               sample.rate = 0.9, sample.N = 100,
 #                               N = 1, seed = 1, p.adjust = TRUE,
 #                               method = "pearson")
 # 
-# saveRDS(PCAWG.pearson, 
+# saveRDS(PCAWG.pearson,
 #         file = file.path(data.out.dir, "PCAWG.pearson.RDS") )
 # 
 # #Plotting individual experiments
@@ -70,7 +70,7 @@ tissues = names(PCAWG.null.dists)
 # 
 # PCAWG.pearson.summary.nets = lapply(PCAWG.pearson, summarize_calcs )
 # 
-# saveRDS(PCAWG.pearson.summary.nets, 
+# saveRDS(PCAWG.pearson.summary.nets,
 #         file = file.path(data.out.dir, "PCAWG.pearson.summary.nets.RDS") )
 # 
 # 
@@ -78,11 +78,11 @@ tissues = names(PCAWG.null.dists)
 # 
 # PCAWG.spearman = get_metrics_list(PCAWG.full.subset.ann, cor_sigs,
 #                                  min.tissue.samples = 20,
-#                                  sample.rate = 0.9, sample.N = 100, 
+#                                  sample.rate = 0.9, sample.N = 100,
 #                                  N = 1, seed = 1, p.adjust = TRUE,
 #                                  method = "spearman")
 # 
-# saveRDS(PCAWG.spearman, 
+# saveRDS(PCAWG.spearman,
 #         file = file.path(data.out.dir, "PCAWG.spearman.RDS") )
 # 
 # #Plotting individual experiments
@@ -90,7 +90,7 @@ tissues = names(PCAWG.null.dists)
 # 
 # PCAWG.spearman.summary.nets = lapply(PCAWG.spearman, summarize_calcs )
 # 
-# saveRDS(PCAWG.spearman.summary.nets, 
+# saveRDS(PCAWG.spearman.summary.nets,
 #         file = file.path(data.out.dir, "PCAWG.spearman.summary.nets.RDS") )
 # 
 # 
@@ -98,11 +98,11 @@ tissues = names(PCAWG.null.dists)
 # 
 # PCAWG.coda = get_metrics_list(PCAWG.full.subset.ann, cor_coda,
 #                                   min.tissue.samples = 20,
-#                                   sample.rate = 0.9, sample.N = 100, 
+#                                   sample.rate = 0.9, sample.N = 100,
 #                                   N = 1, seed = 1, p.adjust = TRUE,
 #                                   rand.add = FALSE)
 # 
-# saveRDS(PCAWG.coda, 
+# saveRDS(PCAWG.coda,
 #         file = file.path(data.out.dir, "PCAWG.coda.RDS") )
 # 
 # #Plotting individual experiments
@@ -110,7 +110,7 @@ tissues = names(PCAWG.null.dists)
 # 
 # PCAWG.coda.summary.nets = lapply(PCAWG.coda, summarize_calcs )
 # 
-# saveRDS(PCAWG.coda.summary.nets, 
+# saveRDS(PCAWG.coda.summary.nets,
 #         file = file.path(data.out.dir, "PCAWG.coda.summary.nets.RDS") )
 
 
@@ -123,8 +123,13 @@ PCAWG.spearman.summary.nets = readRDS(file = file.path(data.out.dir, "PCAWG.spea
 
 PCAWG.coda.summary.nets = readRDS(file = file.path(data.out.dir, "PCAWG.coda.summary.nets.RDS") )
 
+
+### Removing the supplementary file if it exists
 out.file = here("supp_data/pcawg_sig_sig_all_metrics_report.xlsx")
-file.remove(out.file)
+
+if (file.exists(out.file)) {
+    file.remove(out.file)  
+} 
 
 all.interactions = list(MI = PCAWG.bcmi.summary.nets,
                         cooccurrence = PCAWG.cooccurrence.summary.nets,
@@ -138,7 +143,7 @@ all.sig.interactions = all.interactions
 for(tissue in tissues) {
     
     for (metric.name in names(all.interactions)) {
-        cat(tissue, "\n")
+        cat(tissue, ":", metric.name, "\n")
         out =  all.interactions[[metric.name]][[tissue]]
         metric.values = out %>% rm_zeros()
         if (length(metric.values) == 0) {next} 
@@ -263,6 +268,5 @@ for (tissue in tissues) {
         
     }
 }
-
 
 saveRDS(all.sig.interactions, file = here("data/RDS/PCAWG/signatures/PCAWG.all.significant.interactions.RDS"))
