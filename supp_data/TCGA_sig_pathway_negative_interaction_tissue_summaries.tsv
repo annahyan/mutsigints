@@ -1,11 +1,11 @@
 	Cell Cycle	HIPPO	MYC	NRF2	PI3K	RTK RAS	TP53	TGF-Beta	WNT	NOTCH
 APOBEC					Uterus_AdenoCa	ColoRect_AdenoCa		Cervix_CA, Stomach_AdenoCa, Uterus_AdenoCa	Breast_cancer, Cervix_CA, Uterus_AdenoCa	Stomach_AdenoCa, Uterus_AdenoCa
+CL SBS5		Skin_Melanoma						Skin_Melanoma		
 HR					Breast_cancer			Breast_cancer		
 MMR							ColoRect_AdenoCa, Stomach_AdenoCa			
 SBS29					Breast_cancer					
-SBS5		Skin_Melanoma						Skin_Melanoma		
 SBS17		Stomach_AdenoCa		Eso_AdenoCa	Eso_AdenoCa			Stomach_AdenoCa	Stomach_AdenoCa	Stomach_AdenoCa
 SBS40		ColoRect_AdenoCa, Liver_HCC, Stomach_AdenoCa, Uterus_AdenoCa	ColoRect_AdenoCa					ColoRect_AdenoCa, Stomach_AdenoCa, Uterus_AdenoCa	Stomach_AdenoCa, Uterus_AdenoCa	ColoRect_AdenoCa, Stomach_AdenoCa, Uterus_AdenoCa
 Tobacco	Lung_AdenoCa		Lung_AdenoCa							
-Ageing		Skin_Melanoma								
+CL SBS1		Skin_Melanoma								
 Technical								Lung_AdenoCa		
