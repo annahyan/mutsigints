@@ -37,7 +37,9 @@ vignettes/*.pdf
 /figures/*
 
 /tmp
-/posters
+/posters/
+/supp_out_format/
+
 
 # data files
 /data*
