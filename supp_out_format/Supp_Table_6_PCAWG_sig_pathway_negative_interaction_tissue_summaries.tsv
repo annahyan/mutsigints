@@ -1,9 +1,0 @@
-	Cell Cycle	TP53	RTK RAS	NOTCH	PI3K	TGF-Beta
-HR	Panc_AdenoCA	Panc_Endocrine				
-SBS40		Kidney_RCC	Skin_Melanoma		Skin_Melanoma	
-SBS5		Kidney_RCC, Panc_Endocrine				Prost_AdenoCA
-SBS16		Liver_HCC				
-MUTYH				Lymph_BNHL		
-PolH		Lymph_CLL				
-Ageing		Panc_Endocrine				
-SBS38			Skin_Melanoma			
