@@ -1,8 +1,6 @@
 library(here)
-library(tidygraph)
 library(igraph)
 library(ggraph)
-library(chrwiseSignatures)
 
 source(here("R/functions.R"))
 
