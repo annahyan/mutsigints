@@ -22,7 +22,7 @@ TCGA.null.dists = readRDS(file.path(here("data", "RDS", "TCGA", "signatures"),
 tissues = names(TCGA.null.dists)
 # ### Cooccurrence
 # 
-# TCGA.cooccurrence = get_metrics_list(TCGA.full.subset.ann, cooccurrence,
+# TCGA.cooccurrence = calculate_bootstrap_metric(TCGA.full.subset.ann, cooccurrence,
 #                  min.tissue.samples = 20,
 #                  sample.rate = 0.9, sample.N = 100,
 #                  N = 1, seed = 1, p.adjust = TRUE)
@@ -40,7 +40,7 @@ tissues = names(TCGA.null.dists)
 # 
 # ### Mutual information(BCMI)
 # 
-# TCGA.bcmi = get_metrics_list(TCGA.full.subset.ann, bcmi,
+# TCGA.bcmi = calculate_bootstrap_metric(TCGA.full.subset.ann, bcmi,
 #                                       min.tissue.samples = 20,
 #                                       sample.rate = 0.9, sample.N = 100,
 #                                       N = 1, seed = 1, p.adjust = TRUE)
@@ -58,7 +58,7 @@ tissues = names(TCGA.null.dists)
 # 
 # ### Pearson correlation
 # 
-# TCGA.pearson = get_metrics_list(TCGA.full.subset.ann, cor_sigs,
+# TCGA.pearson = calculate_bootstrap_metric(TCGA.full.subset.ann, cor_sigs,
 #                               min.tissue.samples = 20,
 #                               sample.rate = 0.9, sample.N = 100,
 #                               N = 1, seed = 1, p.adjust = TRUE,
@@ -78,7 +78,7 @@ tissues = names(TCGA.null.dists)
 # 
 # ### Spearman correlation
 # 
-# TCGA.spearman = get_metrics_list(TCGA.full.subset.ann, cor_sigs,
+# TCGA.spearman = calculate_bootstrap_metric(TCGA.full.subset.ann, cor_sigs,
 #                                  min.tissue.samples = 20,
 #                                  sample.rate = 0.9, sample.N = 100,
 #                                  N = 1, seed = 1, p.adjust = TRUE,
@@ -98,7 +98,7 @@ tissues = names(TCGA.null.dists)
 # 
 # ### CoDa correlation
 # 
-# TCGA.coda = get_metrics_list(TCGA.full.subset.ann, cor_coda,
+# TCGA.coda = calculate_bootstrap_metric(TCGA.full.subset.ann, cor_coda,
 #                                   min.tissue.samples = 20,
 #                                   sample.rate = 0.9, sample.N = 100,
 #                                   N = 1, seed = 1, p.adjust = TRUE,

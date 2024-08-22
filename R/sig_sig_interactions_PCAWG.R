@@ -20,7 +20,7 @@ PCAWG.null.dists = readRDS(file.path(here("data", "RDS", "PCAWG", "signatures"),
 tissues = names(PCAWG.null.dists)
 ### Cooccurrence
 
-# PCAWG.cooccurrence = get_metrics_list(PCAWG.full.subset.ann, cooccurrence,
+# PCAWG.cooccurrence = calculate_bootstrap_metric(PCAWG.full.subset.ann, cooccurrence,
 #                  min.tissue.samples = 20,
 #                  sample.rate = 0.9, sample.N = 100,
 #                  N = 1, seed = 1, p.adjust = TRUE)
@@ -38,7 +38,7 @@ tissues = names(PCAWG.null.dists)
 # 
 # ### Mutual information(BCMI)
 # 
-# PCAWG.bcmi = get_metrics_list(PCAWG.full.subset.ann, bcmi,
+# PCAWG.bcmi = calculate_bootstrap_metric(PCAWG.full.subset.ann, bcmi,
 #                                       min.tissue.samples = 20,
 #                                       sample.rate = 0.9, sample.N = 100,
 #                                       N = 1, seed = 1, p.adjust = TRUE)
@@ -56,7 +56,7 @@ tissues = names(PCAWG.null.dists)
 
 # ### Pearson correlation
 # 
-# PCAWG.pearson = get_metrics_list(PCAWG.full.subset.ann, cor_sigs,
+# PCAWG.pearson = calculate_bootstrap_metric(PCAWG.full.subset.ann, cor_sigs,
 #                               min.tissue.samples = 20,
 #                               sample.rate = 0.9, sample.N = 100,
 #                               N = 1, seed = 1, p.adjust = TRUE,
@@ -76,7 +76,7 @@ tissues = names(PCAWG.null.dists)
 # 
 # ### Spearman correlation
 # 
-# PCAWG.spearman = get_metrics_list(PCAWG.full.subset.ann, cor_sigs,
+# PCAWG.spearman = calculate_bootstrap_metric(PCAWG.full.subset.ann, cor_sigs,
 #                                  min.tissue.samples = 20,
 #                                  sample.rate = 0.9, sample.N = 100,
 #                                  N = 1, seed = 1, p.adjust = TRUE,
@@ -96,7 +96,7 @@ tissues = names(PCAWG.null.dists)
 # 
 # ### CoDa correlation
 # 
-# PCAWG.coda = get_metrics_list(PCAWG.full.subset.ann, cor_coda,
+# PCAWG.coda = calculate_bootstrap_metric(PCAWG.full.subset.ann, cor_coda,
 #                                   min.tissue.samples = 20,
 #                                   sample.rate = 0.9, sample.N = 100,
 #                                   N = 1, seed = 1, p.adjust = TRUE,
